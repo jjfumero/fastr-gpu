@@ -347,7 +347,8 @@ suite = {
 
     "com.oracle.truffle.r.library" : {
       "sourceDirs" : ["src"],
-      "dependencies" : [
+      "dependencies" : [		
+		"marawacc:MARAWACC",
         "com.oracle.truffle.r.nodes",
         "com.oracle.truffle.r.runtime.ffi",
       ],
