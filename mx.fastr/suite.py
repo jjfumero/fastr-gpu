@@ -26,9 +26,9 @@ suite = {
   "imports" : {
     "suites" : [
             {
-               "name" : "graal",
-               "version" : "a741fb43974b3008ae2551db1b9338d640c1e1cc",
-               "urls" : [{"url" : "http://lafo.ssw.uni-linz.ac.at/hg/graal-compiler", "kind" : "hg"}]
+               "name" : "marawacc",
+               "version" : "5a0f188689fb2248f0abca332f2e2bbd64516744",
+               "urls" : [{"url" : "ssh://hg@bitbucket.org/juanfumero/newgraal", "kind" : "hg"}]
             },
         ],
    },
