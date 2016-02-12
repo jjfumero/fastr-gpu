@@ -5,6 +5,7 @@ import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 
 import uk.ac.ed.accelerator.common.*;
 import uk.ac.ed.accelerator.ocl.OCLRuntimeUtils;
+import uk.ac.ed.accelerator.wocl.OCLDeviceInfo;
 
 public abstract class OCLInfo extends RExternalBuiltinNode.Arg0 {
 
@@ -28,6 +29,11 @@ public abstract class OCLInfo extends RExternalBuiltinNode.Arg0 {
         GraalAcceleratorPlatform platform = GraalAcceleratorSystem.getInstance().getPlatform();
         GraalAcceleratorDevice device = platform.getDevice();
         System.out.println(device.toString());
+        OCLDeviceInfo deviceInfo = (OCLDeviceInfo) device.getDeviceInfo();
+        System.out.println("NAME: " + deviceInfo.getDeviceName());
+        System.out.println("VENDOR: " + deviceInfo.getVendorName());
+        System.out.println("TYPE: " + deviceInfo.getDeviceType());
+        System.out.println("DRIVER: " + deviceInfo.getDriverVersion());
         return "";
     }
 }
