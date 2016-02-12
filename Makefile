@@ -1,0 +1,2 @@
+all:
+	mx build -p

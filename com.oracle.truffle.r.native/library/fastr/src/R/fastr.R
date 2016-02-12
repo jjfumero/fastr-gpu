@@ -146,4 +146,6 @@ fastr.trace <- function(what, tracer, exit, at, print, signature, where, edit) {
      .FastR(.NAME="fastr.trace", what, tracer, exit, at, print, signature, where, edit)#, from, untrace, classMethod)
 }
 
-
+gpu.deviceInfo <- function() {
+	.FastR(.NAME="gpu.deviceInfo")
+}

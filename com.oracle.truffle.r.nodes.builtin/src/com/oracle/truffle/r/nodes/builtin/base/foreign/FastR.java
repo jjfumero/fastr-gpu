@@ -25,6 +25,8 @@ package com.oracle.truffle.r.nodes.builtin.base.foreign;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.*;
 import com.oracle.truffle.r.library.fastr.*;
+import com.oracle.truffle.r.library.gpu.OCLInfo;
+import com.oracle.truffle.r.library.gpu.OCLInfoNodeGen;
 import com.oracle.truffle.r.nodes.builtin.*;
 import com.oracle.truffle.r.runtime.*;
 import com.oracle.truffle.r.runtime.data.*;
@@ -112,6 +114,8 @@ public abstract class FastR extends RBuiltinNode {
                 return FastRThrowItFactory.ThrowItNodeGen.create();
             case "fastr.trace":
                 return FastRTraceFactory.TraceNodeGen.create();
+            case "gpu.deviceInfo":
+                return OCLInfoNodeGen.create();
             default:
                 return null;
         }
