@@ -8,11 +8,12 @@ import uk.ac.ed.accelerator.ocl.OCLRuntimeUtils;
 
 public abstract class OCLInfo extends RExternalBuiltinNode.Arg0 {
 
+    private static boolean initialized = false;
+
     private static void gpuInitialization() {
-        // There is no guarantee the GraalAcceleratorPlatform is prepared.
-        // Check is needed.
         try {
             OCLRuntimeUtils.waitForTheOpenCLInitialization();
+            initialized = true;
         } catch (InterruptedException e) {
             e.printStackTrace();
             System.out.println("Error");
@@ -21,12 +22,12 @@ public abstract class OCLInfo extends RExternalBuiltinNode.Arg0 {
 
     @Specialization
     protected String clInfo() {
-        StringBuffer s = new StringBuffer();
-        gpuInitialization();
-        GraalAcceleratorSystem system = GraalAcceleratorSystem.getInstance();
-        GraalAcceleratorPlatform platform = system.getPlatform();
+        if (!initialized) {
+            gpuInitialization();
+        }
+        GraalAcceleratorPlatform platform = GraalAcceleratorSystem.getInstance().getPlatform();
         GraalAcceleratorDevice device = platform.getDevice();
-        s.append(device.toString());
-        return s.toString();
+        System.out.println(device.toString());
+        return "";
     }
 }
