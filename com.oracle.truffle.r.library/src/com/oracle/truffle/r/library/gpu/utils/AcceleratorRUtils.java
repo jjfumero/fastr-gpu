@@ -3,6 +3,7 @@ package com.oracle.truffle.r.library.gpu.utils;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.r.runtime.ArgumentsSignature;
 import com.oracle.truffle.r.runtime.RArguments;
 import com.oracle.truffle.r.runtime.data.RFunction;
@@ -84,6 +85,17 @@ public class AcceleratorRUtils {
         // Create the package
         Object[] argsPackage = RArguments.create(function, null, null, 0, argsRFunction, ArgumentsSignature.get(nameArgs), null);
         return argsPackage;
+    }
+
+    public static String getSourceCode(RFunction function) {
+        String source = null;
+        if (function.getRBuiltin() != null) {
+            source = function.getRBuiltin().getName();
+        } else {
+            SourceSection sourceSection = function.getTarget().getRootNode().getSourceSection();
+            source = sourceSection.toString();
+        }
+        return source;
     }
 
     private AcceleratorRUtils() {
