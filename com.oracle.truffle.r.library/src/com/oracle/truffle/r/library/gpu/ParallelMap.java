@@ -12,13 +12,7 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 public abstract class ParallelMap extends RExternalBuiltinNode.Arg3 {
 
-    @SuppressWarnings("unused")
-    @Specialization
-    public RAbstractVector computeMap(RAbstractIntVector input, RFunction function, RAbstractIntVector inputB) {
-
-        int nArgs = AcceleratorRUtils.getNumberOfArguments(function);
-        String[] argsName = AcceleratorRUtils.getArgumentsNames(function);
-
+    public String getSourceCode(RFunction function) {
         String source = null;
         if (function.getRBuiltin() != null) {
             source = function.getRBuiltin().getName();
@@ -26,8 +20,21 @@ public abstract class ParallelMap extends RExternalBuiltinNode.Arg3 {
             SourceSection sourceSection = function.getTarget().getRootNode().getSourceSection();
             source = sourceSection.toString();
         }
+        return source;
+    }
+
+    @SuppressWarnings("unused")
+    @Specialization
+    public RAbstractVector computeMap(RAbstractIntVector input, RFunction function, RAbstractIntVector inputB) {
+
+        int nArgs = AcceleratorRUtils.getNumberOfArguments(function);
+        String[] argsName = AcceleratorRUtils.getArgumentsNames(function);
+
+        String source = getSourceCode(function);
 
         StringBuffer rcodeSource = new StringBuffer(source);
+
+        // Create output
         RIntVector output = RDataFactory.createIntVector(input.getLength());
 
         for (int i = 0; i < input.getLength(); i++) {
