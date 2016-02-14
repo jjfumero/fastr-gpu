@@ -28,7 +28,7 @@ public abstract class OCLInfo extends RExternalBuiltinNode.Arg0 {
         }
         GraalAcceleratorPlatform platform = GraalAcceleratorSystem.getInstance().getPlatform();
         GraalAcceleratorDevice device = platform.getDevice();
-        System.out.println(device.toString());
+        // System.out.println(device.toString());
         OCLDeviceInfo deviceInfo = (OCLDeviceInfo) device.getDeviceInfo();
         System.out.println("NAME: " + deviceInfo.getDeviceName());
         System.out.println("VENDOR: " + deviceInfo.getVendorName());

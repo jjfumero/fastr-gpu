@@ -146,6 +146,13 @@ fastr.trace <- function(what, tracer, exit, at, print, signature, where, edit) {
      .FastR(.NAME="fastr.trace", what, tracer, exit, at, print, signature, where, edit)#, from, untrace, classMethod)
 }
 
+#  ################################################################
+#	  					GPU Intrinsics 							  #
+#  ################################################################
 gpu.deviceInfo <- function() {
 	.FastR(.NAME="gpu.deviceInfo")
+}
+
+gpu.parallelMap <- function(inputA, userFunction, inputB) {
+	.FastR(.NAME="gpu.map", inputA, userFunction, inputB)
 }
