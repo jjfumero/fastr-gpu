@@ -10,7 +10,7 @@ import com.oracle.truffle.r.runtime.data.RIntVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractIntVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
-public abstract class ParallelMap extends RExternalBuiltinNode.Arg3 {
+public abstract class XMap extends RExternalBuiltinNode.Arg3 {
 
     @SuppressWarnings("unused")
     @Specialization
