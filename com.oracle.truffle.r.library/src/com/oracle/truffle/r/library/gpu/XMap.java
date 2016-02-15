@@ -29,7 +29,7 @@ public abstract class XMap extends RExternalBuiltinNode.Arg3 {
 
         // Process the expression
         for (int i = 0; i < input.getLength(); i++) {
-            Object[] argsPackage = AcceleratorRUtils.getArgsPackage(nArgs, function, input, null, argsName, i);
+            Object[] argsPackage = AcceleratorRUtils.getArgsPackage(nArgs, function, input, new RAbstractVector[]{inputB}, argsName, i);
             Object value = target.call(argsPackage);
             output.setElement(i, value);
         }

@@ -78,7 +78,7 @@ public class AcceleratorRUtils {
 
         if (args != null) {
             for (int i = 0; i < args.length; i++) {
-                argsRFunction[i + 1] = args[i].getDataAtAsObject(0);
+                argsRFunction[i + 1] = args[i].getDataAtAsObject(idx);
             }
         }
 
