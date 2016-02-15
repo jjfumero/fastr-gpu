@@ -1,3 +1,16 @@
+# ASTx
+
+This is a clone of [FastR] (https://bitbucket.org/allr/fastr/) with GPU support. 
+The GPU backend is an extension of GraalVM and Graal Compiler with OpenCL code generation
+and data management for GPU computing. 
+
+The goal of ASTx is to execute potential R level expressions on the GPU by using Graal and the GPU backend. 
+
+
+## Example
+
+
+
 # FastR
 
 FastR is an implementation of the [R Language](http://www.r-project.org/) in Java atop [Truffle and Graal](http://openjdk.java.net/projects/graal/).
