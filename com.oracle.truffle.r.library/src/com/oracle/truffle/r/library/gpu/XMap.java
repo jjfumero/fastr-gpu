@@ -24,7 +24,7 @@ package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
 
-import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.utils.AcceleratorRUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
@@ -102,11 +102,10 @@ public final class XMap extends RExternalBuiltinNode {
         }
 
         ArrayList<Object> output = new ArrayList<>(input.getLength());
-
-        CallTarget target = function.getTarget();
+        RootCallTarget callTarget = function.getTarget();
         for (int i = 0; i < input.getLength(); i++) {
             argsPackage = AcceleratorRUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
-            Object val = target.call(argsPackage);
+            Object val = callTarget.call(argsPackage);
             output.add(val);
         }
 
