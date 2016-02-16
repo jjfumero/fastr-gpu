@@ -153,6 +153,7 @@ gpu.deviceInfo <- function() {
 	.FastR(.NAME="gpu.deviceInfo")
 }
 
-gpu.parallelMap <- function(inputA, userFunction, inputB) {
-	.FastR(.NAME="gpu.map", inputA, userFunction, inputB)
+gpu.parallelMap <- function(inputA, userFunction, ...) {		
+	.FastR(.NAME="gpu.map", inputA, userFunction, ...)
 }
+
