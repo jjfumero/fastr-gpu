@@ -89,7 +89,7 @@ public final class XMap extends RExternalBuiltinNode {
         Object[] argsPackage = AcceleratorRUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, 0);
         Object value = function.getTarget().call(argsPackage);
 
-        Type t;
+        Type t = null;
 
         if (value instanceof Integer) {
             t = Type.INT;
@@ -102,8 +102,10 @@ public final class XMap extends RExternalBuiltinNode {
         }
 
         ArrayList<Object> output = new ArrayList<>(input.getLength());
+        output.add(value);
+
         RootCallTarget callTarget = function.getTarget();
-        for (int i = 0; i < input.getLength(); i++) {
+        for (int i = 1; i < input.getLength(); i++) {
             argsPackage = AcceleratorRUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
             Object val = callTarget.call(argsPackage);
             output.add(val);
