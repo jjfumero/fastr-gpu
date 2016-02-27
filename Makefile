@@ -8,3 +8,4 @@ parallel:
 
 clean:
 	mx clean
+

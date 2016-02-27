@@ -157,3 +157,7 @@ gpu.parallelMap <- function(inputA, userFunction, ...) {
 	.FastR(.NAME="gpu.map", inputA, userFunction, ...)
 }
 
+gpu.vectorMul <- function(a, b) {		
+	.FastR(.NAME="gpu.vectorMul", a, b)
+}
+

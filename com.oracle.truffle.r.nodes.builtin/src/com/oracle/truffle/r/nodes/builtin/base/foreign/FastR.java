@@ -42,6 +42,8 @@ import com.oracle.truffle.r.library.fastr.FastRTypeofNodeGen;
 import com.oracle.truffle.r.library.fastr.InteropExportNodeGen;
 import com.oracle.truffle.r.library.fastr.InteropImportNodeGen;
 import com.oracle.truffle.r.library.gpu.OCLInfoNodeGen;
+import com.oracle.truffle.r.library.gpu.VectorMultOp;
+import com.oracle.truffle.r.library.gpu.VectorMultOpNodeGen;
 import com.oracle.truffle.r.library.gpu.XMap;
 import com.oracle.truffle.r.nodes.builtin.RBuiltinNode;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
@@ -134,10 +136,14 @@ public abstract class FastR extends RBuiltinNode {
                 return FastRThrowItFactory.ThrowItNodeGen.create();
             case "fastr.trace":
                 return FastRTraceFactory.TraceNodeGen.create();
+
+                // GPU Builtins
             case "gpu.deviceInfo":
                 return OCLInfoNodeGen.create();
             case "gpu.map":
                 return new XMap();
+            case "gpu.vectorMul":
+                return VectorMultOpNodeGen.create();
             default:
                 return null;
         }

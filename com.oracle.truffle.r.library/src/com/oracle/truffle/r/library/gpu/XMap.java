@@ -44,9 +44,7 @@ public final class XMap extends RExternalBuiltinNode {
 
     @Override
     public Object call(RArgsValuesAndNames args) {
-
         // flink.map(x, function, ...)
-
         RAbstractVector input = (RAbstractVector) args.getArgument(0);
         RFunction function = (RFunction) args.getArgument(1);
 
@@ -54,11 +52,6 @@ public final class XMap extends RExternalBuiltinNode {
         if (args.getLength() > 2) {
             input2 = (RAbstractVector) args.getArgument(2);
         }
-
-        System.out.println("Input:" + input);
-        System.out.println("F:" + function);
-        System.out.println("B:" + input2);
-
         return computeMap(input, function, input2);
     }
 
