@@ -16,6 +16,8 @@ import org.jocl.cl_program;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.data.RDataFactory;
+import com.oracle.truffle.r.runtime.data.RIntSequence;
+import com.oracle.truffle.r.runtime.data.RIntVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 public abstract class VectorMultOp extends RExternalBuiltinNode.Arg2 {
@@ -174,7 +176,7 @@ public abstract class VectorMultOp extends RExternalBuiltinNode.Arg2 {
     }
 
     @Specialization
-    public RAbstractVector compute(RAbstractVector v1, RAbstractVector v2) {
+    public RAbstractVector compute(RIntVector v1, RIntVector v2) {
 
         if (!initializationDone) {
             oclInitialization();
@@ -184,28 +186,37 @@ public abstract class VectorMultOp extends RExternalBuiltinNode.Arg2 {
             return null;
         }
 
-        // Restricted to: 2 arrays of integers or 2 arrays of doubles
-        if (v1.getDataAtAsObject(0) instanceof Integer && v2.getDataAtAsObject(0) instanceof Integer) {
-            int[] a = new int[v1.getLength()];
-            int[] b = new int[v1.getLength()];
-            for (int i = 0; i < v1.getLength(); i++) {
-                a[i] = (int) v1.getDataAtAsObject(i);
-                b[i] = (int) v2.getDataAtAsObject(i);
-            }
-            int[] c = new int[v1.getLength()];
-            saxpyJOCLInteger(c.length, a, b, c);
-            return RDataFactory.createIntVector(c, false);
-        } else {
-
-            double[] a = new double[v1.getLength()];
-            double[] b = new double[v1.getLength()];
-            for (int i = 0; i < v1.getLength(); i++) {
-                a[i] = (double) v1.getDataAtAsObject(i);
-                b[i] = (double) v2.getDataAtAsObject(i);
-            }
-            double[] c = new double[v1.getLength()];
-            saxpyJOCLDouble(c.length, a, b, c);
-            return RDataFactory.createDoubleVector(c, false);
+        int[] a = new int[v1.getLength()];
+        int[] b = new int[v1.getLength()];
+        for (int i = 0; i < v1.getLength(); i++) {
+            a[i] = (int) v1.getDataAtAsObject(i);
+            b[i] = (int) v2.getDataAtAsObject(i);
         }
+        int[] c = new int[v1.getLength()];
+        saxpyJOCLInteger(c.length, a, b, c);
+        return RDataFactory.createIntVector(c, false);
+
+    }
+
+    @Specialization
+    public RAbstractVector compute(RIntSequence v1, RIntSequence v2) {
+
+        if (!initializationDone) {
+            oclInitialization();
+        }
+
+        if (v1.getLength() != v2.getLength()) {
+            return null;
+        }
+
+        int[] a = new int[v1.getLength()];
+        int[] b = new int[v1.getLength()];
+        for (int i = 0; i < v1.getLength(); i++) {
+            a[i] = (int) v1.getDataAtAsObject(i);
+            b[i] = (int) v2.getDataAtAsObject(i);
+        }
+        int[] c = new int[v1.getLength()];
+        saxpyJOCLInteger(c.length, a, b, c);
+        return RDataFactory.createIntVector(c, false);
     }
 }
