@@ -1,0 +1,2 @@
+mx Rscript --J @'-G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilation -G:Dump=:1 -G:MethodFilter=Truffle.*' $*
+
