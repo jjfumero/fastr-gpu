@@ -32,3 +32,6 @@ export(fastr.trace)
 export(gpu.deviceInfo)
 export(gpu.parallelMap)
 export(gpu.vectorMul)
+
+# Utilities
+export(nanotime)

@@ -149,6 +149,10 @@ fastr.trace <- function(what, tracer, exit, at, print, signature, where, edit) {
 #  ################################################################
 #	  					GPU Intrinsics 							  #
 #  ################################################################
+nanotime <- function() {
+	.FastR(.NAME="builtin.nanotime")
+}
+
 gpu.deviceInfo <- function() {
 	.FastR(.NAME="gpu.deviceInfo")
 }
