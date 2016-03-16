@@ -11,13 +11,13 @@ g <- function() {
 }
 
 
-for (i in 1:100) {
+for (i in 1:10000) {
 
 	start <- nanotime()	
 	g()
 	end <- nanotime()
 		
-	print(end-start) 
+	#print(end-start) 
 }
 
 #print(output)
