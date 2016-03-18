@@ -24,13 +24,13 @@ package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
 
-import uk.ac.ed.accelerator.marawacc.Marawacc;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.TypeFactory;
 import uk.ac.ed.jpai.ArrayFunction;
-import uk.ac.ed.jpai.MapAccelerator;
 
 import com.oracle.truffle.api.RootCallTarget;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.r.library.gpu.utils.AcceleratorRUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
@@ -76,7 +76,15 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
 
         ArrayFunction<T, R> function = (ArrayFunction<T, R>) uk.ac.ed.jpai.Marawacc.mapJavaThreads(8, x -> {
             Object[] argsPackage = AcceleratorRUtils.getArgsPackage(1, f, x, nameArgs);
-            return callTarget.call(argsPackage);
+
+            long start = System.nanoTime();
+            Object r = callTarget.call(argsPackage);
+            long end = System.nanoTime();
+            if ((end - start) > 100000) {
+                System.out.println(Thread.currentThread().getName() + ": " + (end - start));
+            }
+
+            return r;
         });
 
         return function;
@@ -96,16 +104,15 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
 
             PArray<?> result = composeLambda.apply(i);
 
-            System.out.println("result -- ");
-            for (int k = 0; k < result.size(); k++) {
-                System.out.println(result.get(k));
-            }
+// System.out.println("result -- ");
+// for (int k = 0; k < result.size(); k++) {
+// System.out.println(result.get(k));
+// }
         }
-
     }
 
     @SuppressWarnings({"unused"})
-    public static RAbstractVector computeMap(RAbstractVector input, RFunction function, RAbstractVector inputB) {
+    public static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector inputB) {
 
         int nArgs = AcceleratorRUtils.getNumberOfArguments(function);
         String[] argsName = AcceleratorRUtils.getArgumentsNames(function);
@@ -157,10 +164,15 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
         }
 
         // NOTE: force the compilation with no profiling (the lambda should be different)
-// try {
-// boolean compileFunction = AccTruffleCompiler.compileFunction(function);
-// } catch (InvocationTargetException | IllegalAccessException e) {
-// e.printStackTrace();
-// }
+        // try {
+        // boolean compileFunction = AccTruffleCompiler.compileFunction(function);
+        // } catch (InvocationTargetException | IllegalAccessException e) {
+        // e.printStackTrace();
+        // }
     }
+
+    public static RAbstractVector computeMap(RAbstractVector input, RFunction function, RAbstractVector inputB) {
+        return computeMap(input, function, function.getTarget(), inputB);
+    }
+
 }
