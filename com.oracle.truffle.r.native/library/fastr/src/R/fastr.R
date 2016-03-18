@@ -153,6 +153,10 @@ nanotime <- function() {
 	.FastR(.NAME="builtin.nanotime")
 }
 
+gpu.init <- function() {
+	.FastR(.NAME="gpu.init")
+}
+
 gpu.deviceInfo <- function() {
 	.FastR(.NAME="gpu.deviceInfo")
 }

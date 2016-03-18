@@ -1,31 +1,22 @@
 package com.oracle.truffle.r.library.gpu;
 
+import uk.ac.ed.accelerator.common.GraalAcceleratorDevice;
+import uk.ac.ed.accelerator.common.GraalAcceleratorPlatform;
+import uk.ac.ed.accelerator.common.GraalAcceleratorSystem;
+import uk.ac.ed.accelerator.wocl.OCLDeviceInfo;
+
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 
-import uk.ac.ed.accelerator.common.*;
-import uk.ac.ed.accelerator.ocl.OCLRuntimeUtils;
-import uk.ac.ed.accelerator.wocl.OCLDeviceInfo;
-
-public abstract class OCLInfo extends RExternalBuiltinNode.Arg0 {
-
-    private static boolean initialized = false;
-
-    private static void gpuInitialization() {
-        try {
-            OCLRuntimeUtils.waitForTheOpenCLInitialization();
-            initialized = true;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            System.out.println("Error");
-        }
-    }
+/**
+ * Node builtin for communication with Marawacc (GPU Backend for Graal).
+ *
+ */
+public abstract class MarawaccOCLInfoBuiltin extends RExternalBuiltinNode.Arg0 {
 
     @Specialization
     protected String clInfo() {
-        if (!initialized) {
-            gpuInitialization();
-        }
+        MarawaccInitBuiltinNodeGen.marawaccInitialization();
         GraalAcceleratorPlatform platform = GraalAcceleratorSystem.getInstance().getPlatform();
         GraalAcceleratorDevice device = platform.getDevice();
         // System.out.println(device.toString());

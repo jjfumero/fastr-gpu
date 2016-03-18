@@ -29,6 +29,7 @@ export(fastr.throw)
 export(fastr.trace)
 
 # GPU Functions
+export(gpu.init)
 export(gpu.deviceInfo)
 export(gpu.parallelMap)
 export(gpu.vectorMul)

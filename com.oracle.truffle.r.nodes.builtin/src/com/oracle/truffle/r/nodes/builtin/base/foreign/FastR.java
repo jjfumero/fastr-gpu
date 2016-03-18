@@ -41,10 +41,13 @@ import com.oracle.truffle.r.library.fastr.FastRTreeNodeGen;
 import com.oracle.truffle.r.library.fastr.FastRTypeofNodeGen;
 import com.oracle.truffle.r.library.fastr.InteropExportNodeGen;
 import com.oracle.truffle.r.library.fastr.InteropImportNodeGen;
+import com.oracle.truffle.r.library.gpu.MarawaccInitBuiltinNodeGen;
+import com.oracle.truffle.r.library.gpu.MarawaccOCLInfoBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.OCLInfoNodeGen;
+import com.oracle.truffle.r.library.gpu.OCLVectorMulBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.RNanoTimeBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.VectorMultOpNodeGen;
-import com.oracle.truffle.r.library.gpu.XMap;
+import com.oracle.truffle.r.library.gpu.XMapBuiltin;
 import com.oracle.truffle.r.nodes.builtin.RBuiltinNode;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.RBuiltin;
@@ -141,11 +144,13 @@ public abstract class FastR extends RBuiltinNode {
             case "builtin.nanotime":
                 return RNanoTimeBuiltinNodeGen.create();
             case "gpu.deviceInfo":
-                return OCLInfoNodeGen.create();
+                return MarawaccOCLInfoBuiltinNodeGen.create();
             case "gpu.map":
-                return new XMap();
+                return new XMapBuiltin();
             case "gpu.vectorMul":
-                return VectorMultOpNodeGen.create();
+                return OCLVectorMulBuiltinNodeGen.create();
+            case "gpu.init":
+                return MarawaccInitBuiltinNodeGen.create();
             default:
                 return null;
         }

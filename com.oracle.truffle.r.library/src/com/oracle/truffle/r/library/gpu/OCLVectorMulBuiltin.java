@@ -20,7 +20,7 @@ import com.oracle.truffle.r.runtime.data.RIntSequence;
 import com.oracle.truffle.r.runtime.data.RIntVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
-public abstract class VectorMultOp extends RExternalBuiltinNode.Arg2 {
+public abstract class OCLVectorMulBuiltin extends RExternalBuiltinNode.Arg2 {
 
     // @formatter:off
     private static final String SAXPY_KERNELS=

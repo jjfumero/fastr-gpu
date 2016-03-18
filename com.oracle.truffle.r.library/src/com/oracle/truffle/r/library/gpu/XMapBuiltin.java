@@ -34,7 +34,7 @@ import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.RIntVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
-public final class XMap extends RExternalBuiltinNode {
+public final class XMapBuiltin extends RExternalBuiltinNode {
 
     private enum Type {
         INT,
