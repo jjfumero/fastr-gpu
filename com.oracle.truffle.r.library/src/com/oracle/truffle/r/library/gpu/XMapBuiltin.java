@@ -24,6 +24,12 @@ package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
 
+import uk.ac.ed.accelerator.marawacc.Marawacc;
+import uk.ac.ed.datastructures.common.PArray;
+import uk.ac.ed.datastructures.common.TypeFactory;
+import uk.ac.ed.jpai.ArrayFunction;
+import uk.ac.ed.jpai.MapAccelerator;
+
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.utils.AcceleratorRUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
@@ -65,7 +71,34 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
         return RDataFactory.createDoubleVector(array, false);
     }
 
-    @SuppressWarnings({"unused", "static-method"})
+    @SuppressWarnings("unchecked")
+    private static <T, R> ArrayFunction<T, R> composeLambda(RootCallTarget callTarget, Object... args) {
+
+        ArrayFunction<T, R> function = (ArrayFunction<T, R>) uk.ac.ed.jpai.Marawacc.map(x -> {
+            return callTarget.call(args);
+        });
+
+        return function;
+    }
+
+    private void checkMarawaccAPILambdas(int nArgs, RootCallTarget callTarget, Object... argsPackage) {
+        if (nArgs == 1) {
+            ArrayFunction<Integer, ?> composeLambda = composeLambda(callTarget, argsPackage);
+            System.out.println(composeLambda);
+
+            // Use the lambda as an example
+            PArray<Integer> i = new PArray<>(1, TypeFactory.Integer());
+            PArray<?> result = composeLambda.apply(i);
+
+            System.out.println("result -- ");
+            for (int k = 0; k < result.size(); k++) {
+                System.out.println(result.get(k));
+            }
+        }
+
+    }
+
+    @SuppressWarnings({"unused"})
     public RAbstractVector computeMap(RAbstractVector input, RFunction function, RAbstractVector inputB) {
 
         int nArgs = AcceleratorRUtils.getNumberOfArguments(function);
@@ -98,6 +131,10 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
         output.add(value);
 
         RootCallTarget callTarget = function.getTarget();
+
+        // Just to check the lambda expressions
+        checkMarawaccAPILambdas(nArgs, callTarget, argsPackage);
+
         for (int i = 1; i < input.getLength(); i++) {
             argsPackage = AcceleratorRUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
             Object val = callTarget.call(argsPackage);
