@@ -72,22 +72,28 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T, R> ArrayFunction<T, R> composeLambda(RootCallTarget callTarget, Object... args) {
+    private static <T, R> ArrayFunction<T, R> composeLambda(RootCallTarget callTarget, RFunction f, String[] nameArgs) {
 
-        ArrayFunction<T, R> function = (ArrayFunction<T, R>) uk.ac.ed.jpai.Marawacc.map(x -> {
-            return callTarget.call(args);
+        ArrayFunction<T, R> function = (ArrayFunction<T, R>) uk.ac.ed.jpai.Marawacc.mapJavaThreads(8, x -> {
+            Object[] argsPackage = AcceleratorRUtils.getArgsPackage(1, f, x, nameArgs);
+            return callTarget.call(argsPackage);
         });
 
         return function;
     }
 
-    private void checkMarawaccAPILambdas(int nArgs, RootCallTarget callTarget, Object... argsPackage) {
+    private static void checkMarawaccAPILambdas(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction f, String[] nameArgs) {
         if (nArgs == 1) {
-            ArrayFunction<Integer, ?> composeLambda = composeLambda(callTarget, argsPackage);
+            ArrayFunction<Integer, ?> composeLambda = composeLambda(callTarget, f, nameArgs);
             System.out.println(composeLambda);
 
             // Use the lambda as an example
-            PArray<Integer> i = new PArray<>(1, TypeFactory.Integer());
+            PArray<Integer> i = new PArray<>(input.getLength(), TypeFactory.Integer());
+            // Marshal data
+            for (int k = 0; k < i.size(); k++) {
+                i.put(k, (Integer) input.getDataAtAsObject(k));
+            }
+
             PArray<?> result = composeLambda.apply(i);
 
             System.out.println("result -- ");
@@ -99,7 +105,7 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings({"unused"})
-    public RAbstractVector computeMap(RAbstractVector input, RFunction function, RAbstractVector inputB) {
+    public static RAbstractVector computeMap(RAbstractVector input, RFunction function, RAbstractVector inputB) {
 
         int nArgs = AcceleratorRUtils.getNumberOfArguments(function);
         String[] argsName = AcceleratorRUtils.getArgumentsNames(function);
@@ -133,7 +139,7 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
         RootCallTarget callTarget = function.getTarget();
 
         // Just to check the lambda expressions
-        checkMarawaccAPILambdas(nArgs, callTarget, argsPackage);
+        checkMarawaccAPILambdas(nArgs, input, callTarget, function, argsName);
 
         for (int i = 1; i < input.getLength(); i++) {
             argsPackage = AcceleratorRUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);

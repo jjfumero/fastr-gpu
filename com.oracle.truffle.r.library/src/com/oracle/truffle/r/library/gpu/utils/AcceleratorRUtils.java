@@ -87,6 +87,16 @@ public class AcceleratorRUtils {
         return argsPackage;
     }
 
+    public static Object[] getArgsPackage(int nArgs, RFunction function, Object input, String[] nameArgs) {
+        // prepare args for the function with varargs
+        Object[] argsRFunction = new Object[nArgs];
+        argsRFunction[0] = input;
+
+        // Create the package
+        Object[] argsPackage = RArguments.create(function, null, null, 0, argsRFunction, ArgumentsSignature.get(nameArgs), null);
+        return argsPackage;
+    }
+
     public static String getSourceCode(RFunction function) {
         String source = null;
         if (function.getRBuiltin() != null) {
