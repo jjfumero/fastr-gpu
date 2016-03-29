@@ -146,12 +146,9 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
 
         if (outputType == Type.INT) {
             return getIntVector(output);
-        } else if (outputType == Type.DOUBLE) {
-            return getDoubleVector(output);
         } else {
-            // This case never happens
-            System.out.println("Data type not supported: ");
-            return null;
+            // if (outputType == Type.DOUBLE)
+            return getDoubleVector(output);
         }
 
         // NOTE: force the compilation with no profiling (the lambda should be different)
