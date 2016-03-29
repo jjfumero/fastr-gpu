@@ -3,9 +3,9 @@ b <- 1:1000000
 
 sumArrays <- function(x) {
 	a <- 0;
-	for (i in seq(1,1000)) {
-		a <- x * 2.0;
-	}
+	#for (i in seq(1,1000)) {
+#		a <- x * 2.0;
+#	}
 	return(a);
 }
 

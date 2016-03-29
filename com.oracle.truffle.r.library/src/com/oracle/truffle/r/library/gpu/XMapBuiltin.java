@@ -28,6 +28,7 @@ import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.TypeFactory;
 import uk.ac.ed.jpai.ArrayFunction;
 
+import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.utils.AcceleratorRUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
@@ -69,11 +70,13 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
                         Object result = callTarget.call(argsPackage);
                         long end = System.nanoTime();
                         if ((end - start) > 100000) {
-                            System.out.println(Thread.currentThread().getName() + ": " + (end - start));
-                        }
+                            // System.out.println(Thread.currentThread().getName() + ": " + (end -
+// start));
 
-                        return result;
-                    });
+                    }
+
+                    return result;
+                });
 
         return function;
     }
@@ -159,21 +162,19 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
         // }
     }
 
-    public static RAbstractVector computeMap(RAbstractVector input, RFunction function, RAbstractVector inputB) {
-        return computeMap(input, function, function.getTarget(), inputB);
-    }
-
     @Override
     public Object call(RArgsValuesAndNames args) {
         // gpu.parallelMap(x, function, ...)
         RAbstractVector input = (RAbstractVector) args.getArgument(0);
         RFunction function = (RFunction) args.getArgument(1);
 
+        RootCallTarget target = RGPUCache.INSTANCE.lookup(function);
+
         RAbstractVector input2 = null;
         if (args.getLength() > 2) {
             input2 = (RAbstractVector) args.getArgument(2);
         }
-        return computeMap(input, function, input2);
+        return computeMap(input, function, target, input2);
     }
 
 }
