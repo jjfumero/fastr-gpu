@@ -168,7 +168,7 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
 
     @Override
     public Object call(RArgsValuesAndNames args) {
-        // flink.map(x, function, ...)
+        // gpu.parallelMap(x, function, ...)
         RAbstractVector input = (RAbstractVector) args.getArgument(0);
         RFunction function = (RFunction) args.getArgument(1);
 
