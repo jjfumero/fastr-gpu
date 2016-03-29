@@ -46,52 +46,46 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
         NULL
     }
 
-    @Override
-    public Object call(RArgsValuesAndNames args) {
-        // flink.map(x, function, ...)
-        RAbstractVector input = (RAbstractVector) args.getArgument(0);
-        RFunction function = (RFunction) args.getArgument(1);
-
-        RAbstractVector input2 = null;
-        if (args.getLength() > 2) {
-            input2 = (RAbstractVector) args.getArgument(2);
-        }
-        return computeMap(input, function, input2);
-    }
-
+    // Unmarshall to RIntVector
     private static RIntVector getIntVector(ArrayList<Object> list) {
         int[] array = list.stream().mapToInt(i -> (Integer) i).toArray();
         return RDataFactory.createIntVector(array, false);
     }
 
+    // Unmarshall to RDoubleVector
     private static RDoubleVector getDoubleVector(ArrayList<Object> list) {
         double[] array = list.stream().mapToDouble(i -> (Double) i).toArray();
         return RDataFactory.createDoubleVector(array, false);
     }
 
     @SuppressWarnings("unchecked")
-    private static <T, R> ArrayFunction<T, R> composeLambda(RootCallTarget callTarget, RFunction f, String[] nameArgs) {
+    private static <T, R> ArrayFunction<T, R> createLambda(RootCallTarget callTarget, RFunction rFunction, String[] nameArgs) {
 
         ArrayFunction<T, R> function = (ArrayFunction<T, R>) uk.ac.ed.jpai.Marawacc.mapJavaThreads(8, x -> {
-            Object[] argsPackage = AcceleratorRUtils.getArgsPackage(1, f, x, nameArgs);
+            Object[] argsPackage = AcceleratorRUtils.getArgsPackage(1, rFunction, x, nameArgs);
 
             long start = System.nanoTime();
-            Object r = callTarget.call(argsPackage);
-            long end = System.nanoTime();
-            if ((end - start) > 100000) {
-                System.out.println(Thread.currentThread().getName() + ": " + (end - start));
-            }
+            // Invoke the R code
+                        Object result = callTarget.call(argsPackage);
+                        long end = System.nanoTime();
+                        if ((end - start) > 100000) {
+                            System.out.println(Thread.currentThread().getName() + ": " + (end - start));
+                        }
 
-            return r;
-        });
+                        return result;
+                    });
 
         return function;
     }
 
-    private static void checkMarawaccAPILambdas(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction f, String[] nameArgs) {
+    private static void checkMarawaccAPILambdas(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs) {
         if (nArgs == 1) {
-            ArrayFunction<Integer, ?> composeLambda = composeLambda(callTarget, f, nameArgs);
-            System.out.println(composeLambda);
+
+            // If nArgs is equal 1, means we need to build the PArray (no tuples).
+            // For the input.
+
+            // NOTE: special case for int for testing
+            ArrayFunction<Integer, ?> composeLambda = createLambda(callTarget, rFunction, nameArgs);
 
             // Use the lambda as an example
             PArray<Integer> i = new PArray<>(input.getLength(), TypeFactory.Integer());
@@ -99,7 +93,6 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
             for (int k = 0; k < i.size(); k++) {
                 i.put(k, (Integer) input.getDataAtAsObject(k));
             }
-
             PArray<?> result = composeLambda.apply(i);
 
 // System.out.println("result -- ");
@@ -126,14 +119,13 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
         Object[] argsPackage = AcceleratorRUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, 0);
         Object value = function.getTarget().call(argsPackage);
 
-        Type t = null;
+        Type outputType = null;
 
         if (value instanceof Integer) {
-            t = Type.INT;
+            outputType = Type.INT;
         } else if (value instanceof Double) {
-            t = Type.DOUBLE;
-        }
-        else {
+            outputType = Type.DOUBLE;
+        } else {
             System.out.println("Data type not supported: " + value.getClass());
             return null;
         }
@@ -152,11 +144,12 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
             output.add(val);
         }
 
-        if (t == Type.INT) {
+        if (outputType == Type.INT) {
             return getIntVector(output);
-        } else if (t == Type.DOUBLE) {
+        } else if (outputType == Type.DOUBLE) {
             return getDoubleVector(output);
         } else {
+            // This case never happens
             System.out.println("Data type not supported: ");
             return null;
         }
@@ -171,6 +164,19 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
 
     public static RAbstractVector computeMap(RAbstractVector input, RFunction function, RAbstractVector inputB) {
         return computeMap(input, function, function.getTarget(), inputB);
+    }
+
+    @Override
+    public Object call(RArgsValuesAndNames args) {
+        // flink.map(x, function, ...)
+        RAbstractVector input = (RAbstractVector) args.getArgument(0);
+        RFunction function = (RFunction) args.getArgument(1);
+
+        RAbstractVector input2 = null;
+        if (args.getLength() > 2) {
+            input2 = (RAbstractVector) args.getArgument(2);
+        }
+        return computeMap(input, function, input2);
     }
 
 }
