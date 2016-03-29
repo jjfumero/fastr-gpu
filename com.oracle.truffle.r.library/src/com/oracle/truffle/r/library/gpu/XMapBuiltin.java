@@ -62,7 +62,7 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
     @SuppressWarnings("unchecked")
     private static <T, R> ArrayFunction<T, R> createLambda(RootCallTarget callTarget, RFunction rFunction, String[] nameArgs) {
 
-        ArrayFunction<T, R> function = (ArrayFunction<T, R>) uk.ac.ed.jpai.Marawacc.mapJavaThreads(8, x -> {
+        ArrayFunction<T, R> function = (ArrayFunction<T, R>) uk.ac.ed.jpai.Marawacc.mapJavaThreads(4, x -> {
             Object[] argsPackage = AcceleratorRUtils.getArgsPackage(1, rFunction, x, nameArgs);
 
             long start = System.nanoTime();
@@ -72,7 +72,6 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
                         if ((end - start) > 100000) {
                             // System.out.println(Thread.currentThread().getName() + ": " + (end -
 // start));
-
                     }
 
                     return result;
