@@ -9,23 +9,13 @@ sumArrays <- function(x) {
 	return(a);
 }
 
-start <- nanotime()
-result <- gpu.parallelMap(a, sumArrays)
-end <- nanotime()
-print(end-start);
 
-print("Second")
-start <- nanotime()
-result <- gpu.parallelMap(a, sumArrays)
-end <- nanotime()
-print(end-start);
-
-print("Three")
-start <- nanotime()
-result <- gpu.parallelMap(a, sumArrays)
-end <- nanotime()
-print(end-start);
-
+for (i in seq(1,10)) {
+	start <- nanotime()
+	result <- gpu.parallelMap(a, sumArrays)
+	end <- nanotime()
+	print(end-start);
+}
 
 sumArrays2 <- function(x) {
 	a <- 0;
@@ -35,23 +25,12 @@ sumArrays2 <- function(x) {
 	return(a);
 }
 
-print("Sapply1")
-start <- nanotime()
-r <- sapply(a, sumArrays2);
-end <- nanotime()
-print(end-start);
-
-
-print("Sapply2")
-start <- nanotime()
-r <- sapply(a, sumArrays2);
-end <- nanotime()
-print(end-start);
-
-print("Sapply3")
-start <- nanotime()
-r <- sapply(a, sumArrays2);
-end <- nanotime()
-print(end-start);
+print("Sapply")
+for (i in seq(1,10)) {
+	start <- nanotime()
+	r <- sapply(a, sumArrays2);
+	end <- nanotime()
+	print(end-start);
+}
 
 #print(result) 

@@ -28,7 +28,6 @@ import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.TypeFactory;
 import uk.ac.ed.jpai.ArrayFunction;
 
-import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.utils.AcceleratorRUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
@@ -62,20 +61,18 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
     @SuppressWarnings("unchecked")
     private static <T, R> ArrayFunction<T, R> createLambda(RootCallTarget callTarget, RFunction rFunction, String[] nameArgs) {
 
-        ArrayFunction<T, R> function = (ArrayFunction<T, R>) uk.ac.ed.jpai.Marawacc.mapJavaThreads(4, x -> {
+        ArrayFunction<T, R> function = (ArrayFunction<T, R>) uk.ac.ed.jpai.Marawacc.mapJavaThreads(2, x -> {
             Object[] argsPackage = AcceleratorRUtils.getArgsPackage(1, rFunction, x, nameArgs);
-
-            long start = System.nanoTime();
-            // Invoke the R code
+// long start = System.nanoTime();
+                        // Invoke the R code
                         Object result = callTarget.call(argsPackage);
-                        long end = System.nanoTime();
-                        if ((end - start) > 100000) {
-                            // System.out.println(Thread.currentThread().getName() + ": " + (end -
-// start));
-                    }
-
-                    return result;
-                });
+// long end = System.nanoTime();
+// if ((end - start) > 100000) {
+// // System.out.println(Thread.currentThread().getName() + ": " + (end -
+// // start));
+// }
+                        return result;
+                    });
 
         return function;
     }
@@ -95,6 +92,7 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
             for (int k = 0; k < i.size(); k++) {
                 i.put(k, (Integer) input.getDataAtAsObject(k));
             }
+            @SuppressWarnings("unused")
             PArray<?> result = composeLambda.apply(i);
 
 // System.out.println("result -- ");
@@ -161,12 +159,24 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
         // }
     }
 
+    /**
+     * Call method with nargs arguments.
+     *
+     * Built-in from R:
+     *
+     * <code>
+     * gpu.parallelMap(x, function, ...)
+     * </code>
+     *
+     * It invokes to Marawacc API for multhread/GPU backend.
+     *
+     */
     @Override
     public Object call(RArgsValuesAndNames args) {
-        // gpu.parallelMap(x, function, ...)
         RAbstractVector input = (RAbstractVector) args.getArgument(0);
         RFunction function = (RFunction) args.getArgument(1);
 
+        // Get the callTarget from the cache
         RootCallTarget target = RGPUCache.INSTANCE.lookup(function);
 
         RAbstractVector input2 = null;

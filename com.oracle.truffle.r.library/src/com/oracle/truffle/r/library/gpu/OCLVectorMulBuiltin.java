@@ -134,6 +134,7 @@ public abstract class OCLVectorMulBuiltin extends RExternalBuiltinNode.Arg2 {
         CL.clReleaseMemObject(srcMemZ);
     }
 
+    @SuppressWarnings("unused")
     private static void saxpyJOCLDouble(int size, double[] x, double[] y, double[] z) {
 
         final Pointer srcX = Pointer.to(x);
