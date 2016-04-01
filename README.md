@@ -14,10 +14,10 @@ and the GPU backend (Marawacc).
 #!R
 
 > marawacc.deviceInfo()
-NAME:         Intel(R) Core(TM) i5-3470 CPU @ 3.20GHz
-VENDOR: Intel(R) Corporation
-TYPE: CPU
-DRIVER: 1.2.0.57
+NAME: Hawaii
+VENDOR: Advanced Micro Devices, Inc.
+TYPE: GPU
+DRIVER: 1598.5 (VM)
 
 > marawacc.parallelMap( 1:100000, function(x, y) x * y, 1:100000) 
 ```
