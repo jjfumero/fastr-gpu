@@ -10,6 +10,7 @@ sumArrays <- function(x) {
         }
         return(a);
 }
+
 sumArrays2 <- function(x) {
         a <- 0;
         for (i in seq(1,1000)) {
