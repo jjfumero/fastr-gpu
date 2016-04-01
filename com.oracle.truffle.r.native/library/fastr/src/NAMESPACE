@@ -29,10 +29,10 @@ export(fastr.throw)
 export(fastr.trace)
 
 # GPU Functions
-export(gpu.init)
-export(gpu.deviceInfo)
-export(gpu.parallelMap)
-export(gpu.vectorMul)
+export(marawacc.init)
+export(marawacc.deviceInfo)
+export(marawacc.parallelMap)
+export(marawacc.vectorMul)
 
 # Utilities
 export(nanotime)
