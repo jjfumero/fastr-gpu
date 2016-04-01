@@ -12,7 +12,7 @@ sumArrays <- function(x) {
 
 for (i in seq(1,10)) {
 	start <- nanotime()
-	result <- gpu.parallelMap(a, sumArrays)
+	result <- marawacc.parallelMap(a, sumArrays)
 	end <- nanotime()
 	print(end-start);
 }

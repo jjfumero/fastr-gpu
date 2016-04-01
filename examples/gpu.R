@@ -1,2 +1,2 @@
 
-gpu.vectorMul(1:100, 1:100)
+marawacc.vectorMul(1:100, 1:100)
