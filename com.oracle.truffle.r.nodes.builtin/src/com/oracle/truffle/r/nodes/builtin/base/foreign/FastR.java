@@ -45,7 +45,7 @@ import com.oracle.truffle.r.library.gpu.MarawaccInitBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.MarawaccOCLInfoBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.OCLVectorMulBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.RNanoTimeBuiltinNodeGen;
-import com.oracle.truffle.r.library.gpu.XMapBuiltin;
+import com.oracle.truffle.r.library.gpu.MarawaccMapBuiltin;
 import com.oracle.truffle.r.nodes.builtin.RBuiltinNode;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.RBuiltin;
@@ -138,16 +138,20 @@ public abstract class FastR extends RBuiltinNode {
             case "fastr.trace":
                 return FastRTraceFactory.TraceNodeGen.create();
 
-                // GPU Builtins
+                /*
+                 * *********************************************
+                 * Marawacc builtins: GPU/CPU parallel execution
+                 * *********************************************
+                 */
             case "builtin.nanotime":
                 return RNanoTimeBuiltinNodeGen.create();
-            case "gpu.deviceInfo":
+            case "marawacc.deviceInfo":
                 return MarawaccOCLInfoBuiltinNodeGen.create();
-            case "gpu.map":
-                return new XMapBuiltin();
-            case "gpu.vectorMul":
+            case "marawacc.map":
+                return new MarawaccMapBuiltin();
+            case "marawacc.vectorMul":
                 return OCLVectorMulBuiltinNodeGen.create();
-            case "gpu.init":
+            case "marawacc.init":
                 return MarawaccInitBuiltinNodeGen.create();
             default:
                 return null;

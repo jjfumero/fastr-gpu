@@ -147,25 +147,25 @@ fastr.trace <- function(what, tracer, exit, at, print, signature, where, edit) {
 }
 
 #  ################################################################
-#	  					GPU Intrinsics 							  #
+#	  		        Marawacc- GPU/CPU Intrinsics 		          #
 #  ################################################################
 nanotime <- function() {
 	.FastR(.NAME="builtin.nanotime")
 }
 
-gpu.init <- function() {
-	.FastR(.NAME="gpu.init")
+marawacc.init <- function() {
+	.FastR(.NAME="marawacc.init")
 }
 
-gpu.deviceInfo <- function() {
-	.FastR(.NAME="gpu.deviceInfo")
+marawacc.deviceInfo <- function() {
+	.FastR(.NAME="marawacc.deviceInfo")
 }
 
-gpu.parallelMap <- function(inputA, userFunction, ...) {		
-	.FastR(.NAME="gpu.map", inputA, userFunction, ...)
+marawacc.parallelMap <- function(inputA, userFunction, ...) {		
+	.FastR(.NAME="marawacc.map", inputA, userFunction, ...)
 }
 
-gpu.vectorMul <- function(a, b) {		
-	.FastR(.NAME="gpu.vectorMul", a, b)
+marawacc.vectorMul <- function(a, b) {		
+	.FastR(.NAME="marawacc.vectorMul", a, b)
 }
 

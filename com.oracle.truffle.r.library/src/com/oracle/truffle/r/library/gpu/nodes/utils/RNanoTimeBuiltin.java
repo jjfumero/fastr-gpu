@@ -1,4 +1,4 @@
-package com.oracle.truffle.r.library.gpu;
+package com.oracle.truffle.r.library.gpu.nodes.utils;
 
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;

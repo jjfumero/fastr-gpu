@@ -40,7 +40,7 @@ import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.RIntVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
-public final class XMapBuiltin extends RExternalBuiltinNode {
+public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
 
     private enum Type {
         INT,
@@ -60,9 +60,9 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
         return RDataFactory.createDoubleVector(array, false);
     }
 
-    @SuppressWarnings("unchecked")
-    private static <T, R> ArrayFunction<T, R> createLambda(RootCallTarget callTarget, RFunction rFunction, String[] nameArgs) {
-        ArrayFunction<T, R> function = (ArrayFunction<T, R>) uk.ac.ed.jpai.Marawacc.mapJavaThreads(2, x -> {
+    private static <T, R> ArrayFunction<T, R> createLambda(RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, int nThreads) {
+        @SuppressWarnings("unchecked")
+        ArrayFunction<T, R> function = (ArrayFunction<T, R>) uk.ac.ed.jpai.Marawacc.mapJavaThreads(nThreads, x -> {
             Object[] argsPackage = ASTxUtils.getArgsPackage(1, rFunction, x, nameArgs);
             Object result = callTarget.call(argsPackage);
             return result;
@@ -78,12 +78,11 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
 
     private static void checkMarawaccAPILambdas(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs) {
         if (nArgs == 1) {
-
             // If nArgs is equal 1, means we need to build the PArray (no tuples).
             // For the input.
 
             // NOTE: special case for int for testing
-            ArrayFunction<Integer, ?> composeLambda = createLambda(callTarget, rFunction, nameArgs);
+            ArrayFunction<Integer, ?> composeLambda = createLambda(callTarget, rFunction, nameArgs, 1);
 
             // Use the lambda as an example
             PArray<Integer> i = new PArray<>(input.getLength(), TypeFactory.Integer());
