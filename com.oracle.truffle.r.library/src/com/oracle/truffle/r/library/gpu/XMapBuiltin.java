@@ -30,6 +30,7 @@ import uk.ac.ed.jpai.ArrayFunction;
 
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
+import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
@@ -70,7 +71,6 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
     }
 
     private static void printPArray(PArray<?> result) {
-        System.out.println("result -- ");
         for (int k = 0; k < result.size(); k++) {
             System.out.println(result.get(k));
         }
@@ -91,9 +91,13 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
             for (int k = 0; k < i.size(); k++) {
                 i.put(k, (Integer) input.getDataAtAsObject(k));
             }
-            @SuppressWarnings("unused")
+
             PArray<?> result = composeLambda.apply(i);
 
+            if (ASTxOptions.printResult) {
+                System.out.println("result -- ");
+                printPArray(result);
+            }
         }
     }
 
