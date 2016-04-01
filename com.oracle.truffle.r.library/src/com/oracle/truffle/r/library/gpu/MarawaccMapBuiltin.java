@@ -35,7 +35,9 @@ import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.library.gpu.utils.FactoryDataUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
+import com.oracle.truffle.r.runtime.data.RDoubleSequence;
 import com.oracle.truffle.r.runtime.data.RFunction;
+import com.oracle.truffle.r.runtime.data.RIntSequence;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
@@ -62,22 +64,28 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         }
     }
 
-    private static PArray<?> runMarawaccThreads(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs) {
+    @SuppressWarnings({"unchecked", "rawtypes", "cast"})
+    private static PArray<?> runMarawaccThreads(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, Type inputType) {
         if (nArgs == 1) {
             // If nArgs is equal 1, means we need to build the PArray (no tuples).
             // For the input.
 
-            // NOTE: special case for int for testing
-            ArrayFunction<Integer, ?> composeLambda = createLambda(callTarget, rFunction, nameArgs, 1);
-
-            // Use the lambda as an example
-            PArray<Integer> i = new PArray<>(input.getLength(), TypeFactory.Integer());
-            // Marshal data
-            for (int k = 0; k < i.size(); k++) {
-                i.put(k, (Integer) input.getDataAtAsObject(k));
+            ArrayFunction composeLambda = createLambda(callTarget, rFunction, nameArgs, 1);
+            PArray pArrayInput = null;
+            if (inputType == Type.INT) {
+                pArrayInput = new PArray<>(input.getLength(), TypeFactory.Integer());
+                for (int k = 0; k < pArrayInput.size(); k++) {
+                    pArrayInput.put(k, (Integer) input.getDataAtAsObject(k));
+                }
+            }
+            if (inputType == Type.DOUBLE) {
+                pArrayInput = new PArray<>(input.getLength(), TypeFactory.Double());
+                for (int k = 0; k < pArrayInput.size(); k++) {
+                    pArrayInput.put(k, (Double) input.getDataAtAsObject(k));
+                }
             }
 
-            PArray<?> result = composeLambda.apply(i);
+            PArray<?> result = composeLambda.apply(pArrayInput);
 
             if (ASTxOptions.printResult) {
                 System.out.println("result -- ");
@@ -136,6 +144,13 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         Object value = function.getTarget().call(argsPackage);
 
         Type outputType = null;
+        Type inputType = null;
+
+        if (input instanceof RIntSequence) {
+            inputType = Type.INT;
+        } else if (input instanceof RDoubleSequence) {
+            inputType = Type.DOUBLE;
+        }
 
         if (value instanceof Integer) {
             outputType = Type.INT;
@@ -148,7 +163,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
 
         if (ASTxOptions.runMarawaccThreads) {
             // Marawacc multithread
-            PArray<?> result = runMarawaccThreads(nArgs, input, target, function, argsName);
+            PArray<?> result = runMarawaccThreads(nArgs, input, target, function, argsName, inputType);
             return unMarshallResultFromPArrays(outputType, result);
         } else {
             // Run sequential
