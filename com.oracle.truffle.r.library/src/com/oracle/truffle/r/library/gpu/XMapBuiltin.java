@@ -29,7 +29,8 @@ import uk.ac.ed.datastructures.common.TypeFactory;
 import uk.ac.ed.jpai.ArrayFunction;
 
 import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.r.library.gpu.utils.AcceleratorRUtils;
+import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
+import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
 import com.oracle.truffle.r.runtime.data.RDataFactory;
@@ -60,21 +61,19 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
 
     @SuppressWarnings("unchecked")
     private static <T, R> ArrayFunction<T, R> createLambda(RootCallTarget callTarget, RFunction rFunction, String[] nameArgs) {
-
         ArrayFunction<T, R> function = (ArrayFunction<T, R>) uk.ac.ed.jpai.Marawacc.mapJavaThreads(2, x -> {
-            Object[] argsPackage = AcceleratorRUtils.getArgsPackage(1, rFunction, x, nameArgs);
-// long start = System.nanoTime();
-                        // Invoke the R code
-                        Object result = callTarget.call(argsPackage);
-// long end = System.nanoTime();
-// if ((end - start) > 100000) {
-// // System.out.println(Thread.currentThread().getName() + ": " + (end -
-// // start));
-// }
-                        return result;
-                    });
-
+            Object[] argsPackage = ASTxUtils.getArgsPackage(1, rFunction, x, nameArgs);
+            Object result = callTarget.call(argsPackage);
+            return result;
+        });
         return function;
+    }
+
+    private static void printPArray(PArray<?> result) {
+        System.out.println("result -- ");
+        for (int k = 0; k < result.size(); k++) {
+            System.out.println(result.get(k));
+        }
     }
 
     private static void checkMarawaccAPILambdas(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs) {
@@ -95,20 +94,16 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
             @SuppressWarnings("unused")
             PArray<?> result = composeLambda.apply(i);
 
-// System.out.println("result -- ");
-// for (int k = 0; k < result.size(); k++) {
-// System.out.println(result.get(k));
-// }
         }
     }
 
     @SuppressWarnings({"unused"})
     public static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector inputB) {
 
-        int nArgs = AcceleratorRUtils.getNumberOfArguments(function);
-        String[] argsName = AcceleratorRUtils.getArgumentsNames(function);
+        int nArgs = ASTxUtils.getNumberOfArguments(function);
+        String[] argsName = ASTxUtils.getArgumentsNames(function);
 
-        String source = AcceleratorRUtils.getSourceCode(function);
+        String source = ASTxUtils.getSourceCode(function);
         StringBuffer rcodeSource = new StringBuffer(source);
 
         RAbstractVector[] additionalArgs = null;
@@ -116,7 +111,7 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
             additionalArgs = new RAbstractVector[]{inputB};
         }
 
-        Object[] argsPackage = AcceleratorRUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, 0);
+        Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, 0);
         Object value = function.getTarget().call(argsPackage);
 
         Type outputType = null;
@@ -139,7 +134,7 @@ public final class XMapBuiltin extends RExternalBuiltinNode {
         checkMarawaccAPILambdas(nArgs, input, callTarget, function, argsName);
 
         for (int i = 1; i < input.getLength(); i++) {
-            argsPackage = AcceleratorRUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
+            argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
             Object val = callTarget.call(argsPackage);
             output.add(val);
         }

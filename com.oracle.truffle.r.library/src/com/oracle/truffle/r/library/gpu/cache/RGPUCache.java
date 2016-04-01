@@ -1,4 +1,4 @@
-package com.oracle.truffle.r.library.gpu;
+package com.oracle.truffle.r.library.gpu.cache;
 
 import java.util.HashMap;
 

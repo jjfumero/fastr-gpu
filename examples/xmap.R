@@ -1,3 +1,4 @@
+
 a <- 1:1000000
 b <- 1:1000000
 
@@ -8,7 +9,6 @@ sumArrays <- function(x) {
 	}
 	return(a);
 }
-
 
 for (i in seq(1,10)) {
 	start <- nanotime()

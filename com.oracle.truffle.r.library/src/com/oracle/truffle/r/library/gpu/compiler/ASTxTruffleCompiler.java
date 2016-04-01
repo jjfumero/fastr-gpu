@@ -9,7 +9,7 @@ import com.oracle.truffle.r.runtime.RRuntime;
 import com.oracle.truffle.r.runtime.Utils;
 import com.oracle.truffle.r.runtime.data.RFunction;
 
-public final class AccTruffleCompiler {
+public final class ASTxTruffleCompiler {
 
     private static final class Compiler {
         private final Class<?> optimizedCallTarget;

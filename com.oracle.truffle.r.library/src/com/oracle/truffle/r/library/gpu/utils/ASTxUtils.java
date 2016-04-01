@@ -9,7 +9,7 @@ import com.oracle.truffle.r.runtime.RArguments;
 import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
-public class AcceleratorRUtils {
+public class ASTxUtils {
 
     public static int getNumberOfArguments(RFunction function) {
         // If function is builtin
@@ -108,7 +108,7 @@ public class AcceleratorRUtils {
         return source;
     }
 
-    private AcceleratorRUtils() {
+    private ASTxUtils() {
     }
 
 }
