@@ -23,19 +23,19 @@ public class FactoryDataUtils {
     }
 
     // Unmarshall to RIntVector
-    public static RIntVector getIntVector(PArray<?> array) {
+    public static RIntVector getIntVector(PArray<Integer> array) {
         int[] output = new int[array.size()];
         for (int i = 0; i < output.length; i++) {
-            output[i] = (int) array.get(i);
+            output[i] = array.get(i);
         }
         return RDataFactory.createIntVector(output, false);
     }
 
     // Unmarshall to RDoubleVector
-    public static RDoubleVector getDoubleVector(PArray<?> array) {
+    public static RDoubleVector getDoubleVector(PArray<Double> array) {
         double[] output = new double[array.size()];
         for (int i = 0; i < output.length; i++) {
-            output[i] = (double) array.get(i);
+            output[i] = array.get(i);
         }
         return RDataFactory.createDoubleVector(output, false);
     }

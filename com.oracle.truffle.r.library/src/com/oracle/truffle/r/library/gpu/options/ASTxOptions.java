@@ -4,4 +4,6 @@ public class ASTxOptions {
 
     public static boolean printResult = false;
 
+    public static boolean runMarawaccThreads = true;
+
 }

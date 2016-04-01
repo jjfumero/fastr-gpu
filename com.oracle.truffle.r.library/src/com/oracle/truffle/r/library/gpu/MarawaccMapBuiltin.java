@@ -62,7 +62,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         }
     }
 
-    private static PArray<?> checkMarawaccAPILambdas(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs) {
+    private static PArray<?> runMarawaccThreads(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs) {
         if (nArgs == 1) {
             // If nArgs is equal 1, means we need to build the PArray (no tuples).
             // For the input.
@@ -86,6 +86,36 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
             return result;
         }
         return null;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static RAbstractVector unMarshallResultFromPArrays(Type type, PArray result) {
+        if (type == Type.INT) {
+            return FactoryDataUtils.getIntVector(result);
+        } else {
+            return FactoryDataUtils.getDoubleVector(result);
+        }
+    }
+
+    private static RAbstractVector unMarshallResultFromList(Type type, ArrayList<Object> result) {
+        if (type == Type.INT) {
+            return FactoryDataUtils.getIntVector(result);
+        } else {
+            return FactoryDataUtils.getDoubleVector(result);
+        }
+    }
+
+    private static ArrayList<Object> runJavaSequential(RAbstractVector input, RootCallTarget target, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
+                    Object firstValue) {
+        // Java sequential
+        ArrayList<Object> output = new ArrayList<>(input.getLength());
+        output.add(firstValue);
+        for (int i = 1; i < input.getLength(); i++) {
+            Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
+            Object val = target.call(argsPackage);
+            output.add(val);
+        }
+        return output;
     }
 
     @SuppressWarnings({"unused"})
@@ -116,22 +146,14 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
             return null;
         }
 
-        ArrayList<Object> output = new ArrayList<>(input.getLength());
-        output.add(value);
-
-        // Just to check the lambda expressions
-        PArray<?> result = checkMarawaccAPILambdas(nArgs, input, target, function, argsName);
-
-// for (int i = 1; i < input.getLength(); i++) {
-// argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
-// Object val = target.call(argsPackage);
-// output.add(val);
-// }
-
-        if (outputType == Type.INT) {
-            return FactoryDataUtils.getIntVector(result);
+        if (ASTxOptions.runMarawaccThreads) {
+            // Marawacc multithread
+            PArray<?> result = runMarawaccThreads(nArgs, input, target, function, argsName);
+            return unMarshallResultFromPArrays(outputType, result);
         } else {
-            return FactoryDataUtils.getDoubleVector(result);
+            // Run sequential
+            ArrayList<Object> result = runJavaSequential(input, target, function, nArgs, additionalArgs, argsName, value);
+            return unMarshallResultFromList(outputType, result);
         }
 
         // NOTE: force the compilation with no profiling (the lambda should be different)
