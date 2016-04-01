@@ -48,7 +48,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         NULL
     }
 
-    private static <T, R> ArrayFunction<T, R> createLambda(RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, int nThreads) {
+    private static <T, R> ArrayFunction<T, R> createMarawaccLambda(RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, int nThreads) {
         @SuppressWarnings("unchecked")
         ArrayFunction<T, R> function = (ArrayFunction<T, R>) uk.ac.ed.jpai.Marawacc.mapJavaThreads(nThreads, x -> {
             Object[] argsPackage = ASTxUtils.getArgsPackage(1, rFunction, x, nameArgs);
@@ -64,27 +64,31 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes", "cast"})
+    @SuppressWarnings({"unchecked", "cast", "rawtypes"})
+    private static PArray<?> marshall(Type type, RAbstractVector input) {
+        PArray parray = null;
+        if (type == Type.INT) {
+            parray = new PArray<>(input.getLength(), TypeFactory.Integer());
+            for (int k = 0; k < parray.size(); k++) {
+                parray.put(k, (Integer) input.getDataAtAsObject(k));
+            }
+        }
+        if (type == Type.DOUBLE) {
+            parray = new PArray<>(input.getLength(), TypeFactory.Double());
+            for (int k = 0; k < parray.size(); k++) {
+                parray.put(k, (Double) input.getDataAtAsObject(k));
+            }
+        }
+        return parray;
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static PArray<?> runMarawaccThreads(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, Type inputType, int nThreads) {
         if (nArgs == 1) {
             // If nArgs is equal 1, means we need to build the PArray (no tuples).
             // For the input.
-
-            ArrayFunction composeLambda = createLambda(callTarget, rFunction, nameArgs, nThreads);
-            PArray pArrayInput = null;
-            if (inputType == Type.INT) {
-                pArrayInput = new PArray<>(input.getLength(), TypeFactory.Integer());
-                for (int k = 0; k < pArrayInput.size(); k++) {
-                    pArrayInput.put(k, (Integer) input.getDataAtAsObject(k));
-                }
-            }
-            if (inputType == Type.DOUBLE) {
-                pArrayInput = new PArray<>(input.getLength(), TypeFactory.Double());
-                for (int k = 0; k < pArrayInput.size(); k++) {
-                    pArrayInput.put(k, (Double) input.getDataAtAsObject(k));
-                }
-            }
-
+            ArrayFunction composeLambda = createMarawaccLambda(callTarget, rFunction, nameArgs, nThreads);
+            PArray pArrayInput = marshall(inputType, input);
             PArray<?> result = composeLambda.apply(pArrayInput);
 
             if (ASTxOptions.printResult) {
@@ -197,9 +201,11 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
 
         // Get the callTarget from the cache
         RootCallTarget target = RGPUCache.INSTANCE.lookup(function);
-
         int nThreads = ((Double) args.getArgument(2)).intValue();
-
-        return computeMap(input, function, target, null, nThreads);
+        RAbstractVector input2 = null;
+        if (args.getLength() > 3) {
+            input2 = (RAbstractVector) args.getArgument(3);
+        }
+        return computeMap(input, function, target, input2, nThreads);
     }
 }
