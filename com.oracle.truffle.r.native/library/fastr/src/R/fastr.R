@@ -161,8 +161,8 @@ marawacc.deviceInfo <- function() {
 	.FastR(.NAME="marawacc.deviceInfo")
 }
 
-marawacc.parallelMap <- function(inputA, userFunction, ...) {		
-	.FastR(.NAME="marawacc.map", inputA, userFunction, ...)
+marawacc.parallelMap <- function(inputA, userFunction, nThreads=1, ...) {		
+	.FastR(.NAME="marawacc.map", inputA, userFunction, nThreads, ...)
 }
 
 marawacc.vectorMul <- function(a, b) {		

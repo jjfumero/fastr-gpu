@@ -24,7 +24,7 @@ r <- sapply(a, sumArrays2);
 
 for (i in seq(1,10)) {
         start <- nanotime()
-        result <- marawacc.parallelMap(a, sumArrays)
+        result <- marawacc.parallelMap(a, sumArrays, nThreads=4)
         end <- nanotime()
     	print(identical(r, result))
         print(end-start);

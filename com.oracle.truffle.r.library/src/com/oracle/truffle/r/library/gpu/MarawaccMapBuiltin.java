@@ -65,12 +65,12 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "cast"})
-    private static PArray<?> runMarawaccThreads(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, Type inputType) {
+    private static PArray<?> runMarawaccThreads(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, Type inputType, int nThreads) {
         if (nArgs == 1) {
             // If nArgs is equal 1, means we need to build the PArray (no tuples).
             // For the input.
 
-            ArrayFunction composeLambda = createLambda(callTarget, rFunction, nameArgs, 1);
+            ArrayFunction composeLambda = createLambda(callTarget, rFunction, nameArgs, nThreads);
             PArray pArrayInput = null;
             if (inputType == Type.INT) {
                 pArrayInput = new PArray<>(input.getLength(), TypeFactory.Integer());
@@ -123,11 +123,17 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
             Object val = target.call(argsPackage);
             output.add(val);
         }
+        // NOTE: force the compilation with no profiling (the lambda should be different)
+        // try {
+        // boolean compileFunction = AccTruffleCompiler.compileFunction(function);
+        // } catch (InvocationTargetException | IllegalAccessException e) {
+        // e.printStackTrace();
+        // }
         return output;
     }
 
     @SuppressWarnings({"unused"})
-    public static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector inputB) {
+    public static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector inputB, int nThreads) {
 
         int nArgs = ASTxUtils.getNumberOfArguments(function);
         String[] argsName = ASTxUtils.getArgumentsNames(function);
@@ -163,20 +169,13 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
 
         if (ASTxOptions.runMarawaccThreads) {
             // Marawacc multithread
-            PArray<?> result = runMarawaccThreads(nArgs, input, target, function, argsName, inputType);
+            PArray<?> result = runMarawaccThreads(nArgs, input, target, function, argsName, inputType, nThreads);
             return unMarshallResultFromPArrays(outputType, result);
         } else {
             // Run sequential
             ArrayList<Object> result = runJavaSequential(input, target, function, nArgs, additionalArgs, argsName, value);
             return unMarshallResultFromList(outputType, result);
         }
-
-        // NOTE: force the compilation with no profiling (the lambda should be different)
-        // try {
-        // boolean compileFunction = AccTruffleCompiler.compileFunction(function);
-        // } catch (InvocationTargetException | IllegalAccessException e) {
-        // e.printStackTrace();
-        // }
     }
 
     /**
@@ -199,11 +198,8 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         // Get the callTarget from the cache
         RootCallTarget target = RGPUCache.INSTANCE.lookup(function);
 
-        RAbstractVector input2 = null;
-        if (args.getLength() > 2) {
-            input2 = (RAbstractVector) args.getArgument(2);
-        }
-        return computeMap(input, function, target, input2);
-    }
+        int nThreads = ((Double) args.getArgument(2)).intValue();
 
+        return computeMap(input, function, target, null, nThreads);
+    }
 }
