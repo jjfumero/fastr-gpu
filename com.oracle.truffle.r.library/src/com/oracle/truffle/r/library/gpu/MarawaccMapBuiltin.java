@@ -32,12 +32,10 @@ import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
+import com.oracle.truffle.r.library.gpu.utils.FactoryDataUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
-import com.oracle.truffle.r.runtime.data.RDataFactory;
-import com.oracle.truffle.r.runtime.data.RDoubleVector;
 import com.oracle.truffle.r.runtime.data.RFunction;
-import com.oracle.truffle.r.runtime.data.RIntVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
@@ -46,18 +44,6 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         INT,
         DOUBLE,
         NULL
-    }
-
-    // Unmarshall to RIntVector
-    private static RIntVector getIntVector(ArrayList<Object> list) {
-        int[] array = list.stream().mapToInt(i -> (Integer) i).toArray();
-        return RDataFactory.createIntVector(array, false);
-    }
-
-    // Unmarshall to RDoubleVector
-    private static RDoubleVector getDoubleVector(ArrayList<Object> list) {
-        double[] array = list.stream().mapToDouble(i -> (Double) i).toArray();
-        return RDataFactory.createDoubleVector(array, false);
     }
 
     private static <T, R> ArrayFunction<T, R> createLambda(RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, int nThreads) {
@@ -76,7 +62,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         }
     }
 
-    private static void checkMarawaccAPILambdas(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs) {
+    private static PArray<?> checkMarawaccAPILambdas(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs) {
         if (nArgs == 1) {
             // If nArgs is equal 1, means we need to build the PArray (no tuples).
             // For the input.
@@ -97,7 +83,9 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
                 System.out.println("result -- ");
                 printPArray(result);
             }
+            return result;
         }
+        return null;
     }
 
     @SuppressWarnings({"unused"})
@@ -131,22 +119,19 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         ArrayList<Object> output = new ArrayList<>(input.getLength());
         output.add(value);
 
-        RootCallTarget callTarget = function.getTarget();
-
         // Just to check the lambda expressions
-        checkMarawaccAPILambdas(nArgs, input, callTarget, function, argsName);
+        PArray<?> result = checkMarawaccAPILambdas(nArgs, input, target, function, argsName);
 
-        for (int i = 1; i < input.getLength(); i++) {
-            argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
-            Object val = callTarget.call(argsPackage);
-            output.add(val);
-        }
+// for (int i = 1; i < input.getLength(); i++) {
+// argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
+// Object val = target.call(argsPackage);
+// output.add(val);
+// }
 
         if (outputType == Type.INT) {
-            return getIntVector(output);
+            return FactoryDataUtils.getIntVector(result);
         } else {
-            // if (outputType == Type.DOUBLE)
-            return getDoubleVector(output);
+            return FactoryDataUtils.getDoubleVector(result);
         }
 
         // NOTE: force the compilation with no profiling (the lambda should be different)
