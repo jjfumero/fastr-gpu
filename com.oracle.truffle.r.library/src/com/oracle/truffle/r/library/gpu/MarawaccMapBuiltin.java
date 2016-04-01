@@ -40,6 +40,15 @@ import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.RIntSequence;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
+/**
+ * Parallel Map implementation corresponding to sapply R Builin. This implementation connects to
+ * Marawacc-API for the Java threads implementation.
+ *
+ * The GPU supports relies on the Partial Evaluation step after Truffle decides to compile the AST
+ * to binary code.
+ *
+ *
+ */
 public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
 
     private enum Type {
