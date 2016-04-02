@@ -38,6 +38,7 @@ import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
 import com.oracle.truffle.r.runtime.data.RDoubleSequence;
 import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.RIntSequence;
+import com.oracle.truffle.r.runtime.data.RLogicalVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 /**
@@ -54,6 +55,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
     private enum Type {
         INT,
         DOUBLE,
+        BOOLEAN,
         NULL
     }
 
@@ -76,17 +78,25 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
     @SuppressWarnings({"unchecked", "cast", "rawtypes"})
     private static PArray<?> marshall(Type type, RAbstractVector input) {
         PArray parray = null;
-        if (type == Type.INT) {
-            parray = new PArray<>(input.getLength(), TypeFactory.Integer());
-            for (int k = 0; k < parray.size(); k++) {
-                parray.put(k, (Integer) input.getDataAtAsObject(k));
-            }
-        }
-        if (type == Type.DOUBLE) {
-            parray = new PArray<>(input.getLength(), TypeFactory.Double());
-            for (int k = 0; k < parray.size(); k++) {
-                parray.put(k, (Double) input.getDataAtAsObject(k));
-            }
+        switch (type) {
+            case INT:
+                parray = new PArray<>(input.getLength(), TypeFactory.Integer());
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, (Integer) input.getDataAtAsObject(k));
+                }
+                break;
+            case DOUBLE:
+                parray = new PArray<>(input.getLength(), TypeFactory.Integer());
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, (Integer) input.getDataAtAsObject(k));
+                }
+            case BOOLEAN:
+                parray = new PArray<>(input.getLength(), TypeFactory.Boolean());
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, (Boolean) input.getDataAtAsObject(k));
+                }
+            default:
+                throw new RuntimeException("Data type not supported");
         }
         return parray;
     }
@@ -145,6 +155,32 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         return output;
     }
 
+    public static Type typeInference(RAbstractVector input) {
+        Type type = null;
+        if (input instanceof RIntSequence) {
+            type = Type.INT;
+        } else if (input instanceof RDoubleSequence) {
+            type = Type.DOUBLE;
+        } else if (input instanceof RLogicalVector) {
+            type = Type.BOOLEAN;
+        }
+        return type;
+    }
+
+    public static Type typeInference(Object value) {
+        Type type = null;
+        if (value instanceof Integer) {
+            type = Type.INT;
+        } else if (value instanceof Double) {
+            type = Type.DOUBLE;
+        } else if (value instanceof Boolean) {
+            type = Type.BOOLEAN;
+        } else {
+            System.out.println("Data type not supported: " + value.getClass());
+        }
+        return type;
+    }
+
     @SuppressWarnings({"unused"})
     public static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector inputB, int nThreads) {
 
@@ -162,23 +198,8 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, 0);
         Object value = function.getTarget().call(argsPackage);
 
-        Type outputType = null;
-        Type inputType = null;
-
-        if (input instanceof RIntSequence) {
-            inputType = Type.INT;
-        } else if (input instanceof RDoubleSequence) {
-            inputType = Type.DOUBLE;
-        }
-
-        if (value instanceof Integer) {
-            outputType = Type.INT;
-        } else if (value instanceof Double) {
-            outputType = Type.DOUBLE;
-        } else {
-            System.out.println("Data type not supported: " + value.getClass());
-            return null;
-        }
+        Type inputType = typeInference(input);
+        Type outputType = typeInference(value);
 
         if (ASTxOptions.runMarawaccThreads) {
             // Marawacc multithread
