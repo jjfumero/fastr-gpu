@@ -8,11 +8,7 @@ public abstract class RNanoTimeBuiltin extends RExternalBuiltinNode.Arg0 {
 
     @Specialization
     public RDouble getTime() {
-        long time = System.nanoTime();
-
         // We need to box the long in an RDouble
-        RDouble value = RDouble.valueOf(time);
-
-        return value;
+        return (RDouble.valueOf(System.nanoTime()));
     }
 }
