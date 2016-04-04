@@ -26,12 +26,16 @@ import java.util.ArrayList;
 
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.TypeFactory;
+import uk.ac.ed.datastructures.tuples.Tuple2;
+import uk.ac.ed.datastructures.tuples.Tuple3;
+import uk.ac.ed.datastructures.tuples.Tuple4;
 import uk.ac.ed.jpai.ArrayFunction;
 
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
-import com.oracle.truffle.r.library.gpu.types.RGPUType;
+import com.oracle.truffle.r.library.gpu.types.TypeInfo;
+import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.library.gpu.utils.FactoryDataUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
@@ -53,10 +57,10 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
  */
 public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
 
-    private static <T, R> ArrayFunction<T, R> createMarawaccLambda(RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, int nThreads) {
+    private static <T, R> ArrayFunction<T, R> createMarawaccLambda(int nArgs, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, int nThreads) {
         @SuppressWarnings("unchecked")
         ArrayFunction<T, R> function = (ArrayFunction<T, R>) uk.ac.ed.jpai.Marawacc.mapJavaThreads(nThreads, x -> {
-            Object[] argsPackage = ASTxUtils.getArgsPackage(1, rFunction, x, nameArgs);
+            Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, rFunction, x, nameArgs);
             Object result = callTarget.call(argsPackage);
             return result;
         });
@@ -70,8 +74,9 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static PArray<?> marshalSimple(RGPUType type, RAbstractVector input) {
+    private static PArray<?> marshalSimple(TypeInfoList infoList, RAbstractVector input) {
         PArray parray = null;
+        TypeInfo type = infoList.get(0);
         switch (type) {
             case INT:
                 parray = new PArray<>(input.getLength(), TypeFactory.Integer());
@@ -95,50 +100,59 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         return parray;
     }
 
-    @SuppressWarnings({"unchecked", "cast", "rawtypes"})
-    private static PArray<?> marshalWithTuples(RGPUType type, RAbstractVector input, RAbstractVector[] additionalArgs) {
-        PArray parray = null;
-        switch (type) {
-            case INT:
-                parray = new PArray<>(input.getLength(), TypeFactory.Integer());
-                for (int k = 0; k < parray.size(); k++) {
-                    parray.put(k, (Integer) input.getDataAtAsObject(k));
-                }
-                break;
-            case DOUBLE:
-                parray = new PArray<>(input.getLength(), TypeFactory.Double());
-                for (int k = 0; k < parray.size(); k++) {
-                    parray.put(k, (Integer) input.getDataAtAsObject(k));
-                }
-            case BOOLEAN:
-                parray = new PArray<>(input.getLength(), TypeFactory.Boolean());
-                for (int k = 0; k < parray.size(); k++) {
-                    parray.put(k, (Boolean) input.getDataAtAsObject(k));
-                }
-            default:
-                throw new RuntimeException("Data type not supported");
+    public static String composeReturnType(TypeInfoList infoList) {
+        StringBuffer returns = new StringBuffer("Tuple" + infoList.size() + "<");
+        returns.append(infoList.get(0).getJavaType());
+        for (int i = 1; i < infoList.size(); i++) {
+            returns.append("," + infoList.get(i).getJavaType());
         }
-        return parray;
+        returns.append(">");
+        return returns.toString();
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static PArray<?> marshalWithTuples(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
+        String returns = composeReturnType(infoList);
+        PArray parray = new PArray<>(input.getLength(), TypeFactory.Tuple(returns));
+        switch (infoList.size()) {
+            case 2:
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, new Tuple2<>(input.getDataAtAsObject(k), additionalArgs[0].getDataAtAsObject(k)));
+                }
+                return parray;
+            case 3:
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, new Tuple3<>(input.getDataAtAsObject(k), additionalArgs[0].getDataAtAsObject(k), additionalArgs[1].getDataAtAsObject(k)));
+                }
+                return parray;
+            case 4:
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, new Tuple4<>(input.getDataAtAsObject(k), additionalArgs[0].getDataAtAsObject(k), additionalArgs[1].getDataAtAsObject(k), additionalArgs[2].getDataAtAsObject(k)));
+                }
+                return parray;
+            default:
+                throw new RuntimeException("Tuple number not supported yet");
+        }
     }
 
     @SuppressWarnings("rawtypes")
-    private static PArray<?> marshall(RGPUType typeFirstInput, RAbstractVector input, RAbstractVector[] additionalArgs) {
+    private static PArray<?> marshall(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
         PArray parray = null;
         if (additionalArgs == null) {
             // Simple PArray
-            parray = marshalSimple(typeFirstInput, input);
+            parray = marshalSimple(infoList, input);
         } else {
             // Tuples
-            parray = marshalWithTuples(typeFirstInput, input, additionalArgs);
+            parray = marshalWithTuples(input, additionalArgs, infoList);
         }
         return parray;
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static PArray<?> runMarawaccThreads(RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, RGPUType inputType, int nThreads,
-                    RAbstractVector[] additionalArgs) {
-        ArrayFunction composeLambda = createMarawaccLambda(callTarget, rFunction, nameArgs, nThreads);
-        PArray pArrayInput = marshall(inputType, input, additionalArgs);
+    private static PArray<?> runMarawaccThreads(RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, int nThreads,
+                    RAbstractVector[] additionalArgs, TypeInfoList infoList) {
+        ArrayFunction composeLambda = createMarawaccLambda(infoList.size(), callTarget, rFunction, nameArgs, nThreads);
+        PArray pArrayInput = marshall(input, additionalArgs, infoList);
         PArray<?> result = composeLambda.apply(pArrayInput);
 
         if (ASTxOptions.printResult) {
@@ -149,16 +163,16 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static RAbstractVector unMarshallResultFromPArrays(RGPUType type, PArray result) {
-        if (type == RGPUType.INT) {
+    private static RAbstractVector unMarshallResultFromPArrays(TypeInfo type, PArray result) {
+        if (type == TypeInfo.INT) {
             return FactoryDataUtils.getIntVector(result);
         } else {
             return FactoryDataUtils.getDoubleVector(result);
         }
     }
 
-    private static RAbstractVector unMarshallResultFromList(RGPUType type, ArrayList<Object> result) {
-        if (type == RGPUType.INT) {
+    private static RAbstractVector unMarshallResultFromList(TypeInfo type, ArrayList<Object> result) {
+        if (type == TypeInfo.INT) {
             return FactoryDataUtils.getIntVector(result);
         } else {
             return FactoryDataUtils.getDoubleVector(result);
@@ -184,26 +198,37 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         return output;
     }
 
-    public static RGPUType typeInference(RAbstractVector input) {
-        RGPUType type = null;
+    public static TypeInfo typeInference(RAbstractVector input) {
+        TypeInfo type = null;
         if (input instanceof RIntSequence) {
-            type = RGPUType.INT;
+            type = TypeInfo.INT;
         } else if (input instanceof RDoubleSequence) {
-            type = RGPUType.DOUBLE;
+            type = TypeInfo.DOUBLE;
         } else if (input instanceof RLogicalVector) {
-            type = RGPUType.BOOLEAN;
+            type = TypeInfo.BOOLEAN;
         }
         return type;
     }
 
-    public static RGPUType typeInference(Object value) {
-        RGPUType type = null;
+    public static TypeInfoList typeInference(RAbstractVector input, RAbstractVector[] additionalArgs) {
+        TypeInfoList list = new TypeInfoList();
+        list.add(typeInference(input));
+        if (additionalArgs != null) {
+            for (int i = 0; i < additionalArgs.length; i++) {
+                list.add(typeInference(additionalArgs[i]));
+            }
+        }
+        return list;
+    }
+
+    public static TypeInfo typeInference(Object value) {
+        TypeInfo type = null;
         if (value instanceof Integer) {
-            type = RGPUType.INT;
+            type = TypeInfo.INT;
         } else if (value instanceof Double) {
-            type = RGPUType.DOUBLE;
+            type = TypeInfo.DOUBLE;
         } else if (value instanceof Boolean) {
-            type = RGPUType.BOOLEAN;
+            type = TypeInfo.BOOLEAN;
         } else {
             System.out.println("Data type not supported: " + value.getClass());
         }
@@ -222,12 +247,12 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, 0);
         Object value = function.getTarget().call(argsPackage);
 
-        RGPUType inputType = typeInference(input);
-        RGPUType outputType = typeInference(value);
+        TypeInfoList inputTypeList = typeInference(input, additionalArgs);
+        TypeInfo outputType = typeInference(value);
 
         if (ASTxOptions.runMarawaccThreads) {
             // Marawacc multithread
-            PArray<?> result = runMarawaccThreads(input, target, function, argsName, inputType, nThreads, additionalArgs);
+            PArray<?> result = runMarawaccThreads(input, target, function, argsName, nThreads, additionalArgs, inputTypeList);
             return unMarshallResultFromPArrays(outputType, result);
         } else {
             // Run sequential

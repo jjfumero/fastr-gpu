@@ -3,6 +3,8 @@ package com.oracle.truffle.r.library.gpu.utils;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import uk.ac.ed.datastructures.tuples.Tuple2;
+
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.r.runtime.ArgumentsSignature;
 import com.oracle.truffle.r.runtime.RArguments;
@@ -87,10 +89,17 @@ public class ASTxUtils {
         return argsPackage;
     }
 
+    @SuppressWarnings("rawtypes")
     public static Object[] getArgsPackage(int nArgs, RFunction function, Object input, String[] nameArgs) {
         // prepare args for the function with varargs
         Object[] argsRFunction = new Object[nArgs];
-        argsRFunction[0] = input;
+
+        if (input instanceof Tuple2) {
+            argsRFunction[0] = ((Tuple2) input)._1();
+            argsRFunction[1] = ((Tuple2) input)._2();
+        } else {
+            argsRFunction[0] = input;
+        }
 
         // Create the package
         Object[] argsPackage = RArguments.create(function, null, null, 0, argsRFunction, ArgumentsSignature.get(nameArgs), null);
