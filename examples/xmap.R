@@ -25,7 +25,7 @@ r <- sapply(a, g);
 
 for (i in seq(1,10)) {
         start <- nanotime()
-        result <- marawacc.parallelMap(a, f, nThreads=4)
+        result <- marawacc.map(a, f, nThreads=4)
         end <- nanotime()
     	print(identical(r, result))
         print(end-start);

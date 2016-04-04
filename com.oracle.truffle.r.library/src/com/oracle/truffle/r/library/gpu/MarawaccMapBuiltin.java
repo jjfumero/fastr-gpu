@@ -262,15 +262,15 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
     }
 
     /**
-     * Call method with nargs arguments.
+     * Call method with variable number of arguments.
      *
      * Built-in from R:
      *
      * <code>
-     * gpu.parallelMap(x, function, ...)
+     * marawacc.map(x, function, ...)
      * </code>
      *
-     * It invokes to Marawacc API for multhread/GPU backend.
+     * It invokes to the Marawacc-API for multiple-threads/GPU backend.
      *
      */
     @Override

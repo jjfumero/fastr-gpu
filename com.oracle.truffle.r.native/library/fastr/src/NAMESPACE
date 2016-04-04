@@ -31,7 +31,7 @@ export(fastr.trace)
 # GPU Functions
 export(marawacc.init)
 export(marawacc.deviceInfo)
-export(marawacc.parallelMap)
+export(marawacc.map)
 export(marawacc.vectorMul)
 
 # Utilities
