@@ -162,6 +162,30 @@ public class ASTxUtils {
         return argsPackage;
     }
 
+    @SuppressWarnings("rawtypes")
+    public static Object[] getArgsPackage(int nArgs, RFunction function, Object acc, Object y, String[] nameArgs) {
+        Object[] argsRFunction = new Object[nArgs];
+        argsRFunction[0] = acc;
+
+        if (!(y instanceof Tuple)) {
+            argsRFunction[1] = y;
+        } else if (y instanceof Tuple2) {
+            argsRFunction[1] = ((Tuple2) y)._1();
+            argsRFunction[2] = ((Tuple2) y)._2();
+        } else if (y instanceof Tuple3) {
+            argsRFunction[1] = ((Tuple3) y)._1();
+            argsRFunction[2] = ((Tuple3) y)._2();
+            argsRFunction[3] = ((Tuple3) y)._3();
+        } else if (y instanceof Tuple4) {
+            argsRFunction[1] = ((Tuple4) y)._1();
+            argsRFunction[2] = ((Tuple4) y)._2();
+            argsRFunction[3] = ((Tuple4) y)._3();
+            argsRFunction[4] = ((Tuple4) y)._4();
+        }
+        Object[] argsPackage = RArguments.create(function, null, null, 0, argsRFunction, ArgumentsSignature.get(nameArgs), null);
+        return argsPackage;
+    }
+
     public static String getSourceCode(RFunction function) {
         String source = null;
         if (function.getRBuiltin() != null) {
