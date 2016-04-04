@@ -44,7 +44,7 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 /**
  * Parallel Map implementation corresponding to sapply R Builin. This implementation connects to
- * Marawacc-API for the Java threads implementation.
+ * Marawacc-API for the Java threads implementation and GPU.
  *
  * The GPU supports relies on the Partial Evaluation step after Truffle decides to compile the AST
  * to binary code.
@@ -69,8 +69,34 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         }
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static PArray<?> marshalSimple(RGPUType type, RAbstractVector input) {
+        PArray parray = null;
+        switch (type) {
+            case INT:
+                parray = new PArray<>(input.getLength(), TypeFactory.Integer());
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, input.getDataAtAsObject(k));
+                }
+                break;
+            case DOUBLE:
+                parray = new PArray<>(input.getLength(), TypeFactory.Double());
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, input.getDataAtAsObject(k));
+                }
+            case BOOLEAN:
+                parray = new PArray<>(input.getLength(), TypeFactory.Boolean());
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, input.getDataAtAsObject(k));
+                }
+            default:
+                throw new RuntimeException("Data type not supported");
+        }
+        return parray;
+    }
+
     @SuppressWarnings({"unchecked", "cast", "rawtypes"})
-    private static PArray<?> marshall(RGPUType type, RAbstractVector input) {
+    private static PArray<?> marshalWithTuples(RGPUType type, RAbstractVector input, RAbstractVector[] additionalArgs) {
         PArray parray = null;
         switch (type) {
             case INT:
@@ -95,22 +121,30 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         return parray;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private static PArray<?> runMarawaccThreads(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, RGPUType inputType, int nThreads) {
-        if (nArgs == 1) {
-            // If nArgs is equal 1, means we need to build the PArray (no tuples).
-            // For the input.
-            ArrayFunction composeLambda = createMarawaccLambda(callTarget, rFunction, nameArgs, nThreads);
-            PArray pArrayInput = marshall(inputType, input);
-            PArray<?> result = composeLambda.apply(pArrayInput);
-
-            if (ASTxOptions.printResult) {
-                System.out.println("result -- ");
-                printPArray(result);
-            }
-            return result;
+    @SuppressWarnings("rawtypes")
+    private static PArray<?> marshall(RGPUType typeFirstInput, RAbstractVector input, RAbstractVector[] additionalArgs) {
+        PArray parray = null;
+        if (additionalArgs == null) {
+            // Simple PArray
+            parray = marshalSimple(typeFirstInput, input);
+        } else {
+            parray = marshalWithTuples(typeFirstInput, input, additionalArgs);
         }
-        return null;
+        return parray;
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static PArray<?> runMarawaccThreads(RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, RGPUType inputType, int nThreads,
+                    RAbstractVector[] additionalArgs) {
+        ArrayFunction composeLambda = createMarawaccLambda(callTarget, rFunction, nameArgs, nThreads);
+        PArray pArrayInput = marshall(inputType, input, additionalArgs);
+        PArray<?> result = composeLambda.apply(pArrayInput);
+
+        if (ASTxOptions.printResult) {
+            System.out.println("result -- ");
+            printPArray(result);
+        }
+        return result;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -176,18 +210,13 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings({"unused"})
-    public static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector inputB, int nThreads) {
+    public static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, int nThreads) {
 
         int nArgs = ASTxUtils.getNumberOfArguments(function);
         String[] argsName = ASTxUtils.getArgumentsNames(function);
 
         String source = ASTxUtils.getSourceCode(function);
         StringBuffer rcodeSource = new StringBuffer(source);
-
-        RAbstractVector[] additionalArgs = null;
-        if (inputB != null) {
-            additionalArgs = new RAbstractVector[]{inputB};
-        }
 
         Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, 0);
         Object value = function.getTarget().call(argsPackage);
@@ -197,7 +226,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
 
         if (ASTxOptions.runMarawaccThreads) {
             // Marawacc multithread
-            PArray<?> result = runMarawaccThreads(nArgs, input, target, function, argsName, inputType, nThreads);
+            PArray<?> result = runMarawaccThreads(input, target, function, argsName, inputType, nThreads, additionalArgs);
             return unMarshallResultFromPArrays(outputType, result);
         } else {
             // Run sequential
@@ -226,10 +255,16 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         // Get the callTarget from the cache
         RootCallTarget target = RGPUCache.INSTANCE.lookup(function);
         int nThreads = ((Double) args.getArgument(2)).intValue();
-        RAbstractVector input2 = null;
+
+        // Prepare all inputs in an array of Objects
+        RAbstractVector[] additionalInputs = null;
         if (args.getLength() > 3) {
-            input2 = (RAbstractVector) args.getArgument(3);
+            additionalInputs = new RAbstractVector[args.getLength() - 3];
+
+            for (int i = 0; i < additionalInputs.length; i++) {
+                additionalInputs[i] = (RAbstractVector) args.getArgument(i + 3);
+            }
         }
-        return computeMap(input, function, target, input2, nThreads);
+        return computeMap(input, function, target, additionalInputs, nThreads);
     }
 }

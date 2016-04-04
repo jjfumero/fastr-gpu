@@ -1,7 +1,7 @@
 a <- 1:1000000
 b <- 1:1000000
 
-sumArrays <- function(x) {
+f <- function(x) {
         a <- 0;
         for (i in seq(1,1000)) {
        		a <- x * 2.0;
@@ -11,7 +11,7 @@ sumArrays <- function(x) {
         return(a);
 }
 
-sumArrays2 <- function(x) {
+g <- function(x) {
         a <- 0;
         for (i in seq(1,1000)) {
             a <- x * 2.0;
@@ -21,11 +21,11 @@ sumArrays2 <- function(x) {
         return(a);
 }
 
-r <- sapply(a, sumArrays2);
+r <- sapply(a, g);
 
 for (i in seq(1,10)) {
         start <- nanotime()
-        result <- marawacc.parallelMap(a, sumArrays, nThreads=4)
+        result <- marawacc.parallelMap(a, f, nThreads=4)
         end <- nanotime()
     	print(identical(r, result))
         print(end-start);
@@ -35,7 +35,7 @@ for (i in seq(1,10)) {
 print("Sapply")
 for (i in seq(1,10)) {
        start <- nanotime()
-       r <- sapply(a, sumArrays2);
+       r <- sapply(a, g);
        end <- nanotime()
        print(end-start);
 }
