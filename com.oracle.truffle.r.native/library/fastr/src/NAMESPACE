@@ -28,10 +28,11 @@ export(fastr.channel.receive)
 export(fastr.throw)
 export(fastr.trace)
 
-# GPU Functions
+# Marawacc-Functions ( GPU and multiple-threads execution)
 export(marawacc.init)
 export(marawacc.deviceInfo)
 export(marawacc.map)
+export(marawacc.reduce)
 export(marawacc.vectorMul)
 
 # Utilities

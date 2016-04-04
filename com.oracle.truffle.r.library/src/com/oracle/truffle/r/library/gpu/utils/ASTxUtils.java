@@ -1,17 +1,24 @@
 package com.oracle.truffle.r.library.gpu.utils;
 
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.tuples.Tuple;
 import uk.ac.ed.datastructures.tuples.Tuple2;
 import uk.ac.ed.datastructures.tuples.Tuple3;
 import uk.ac.ed.datastructures.tuples.Tuple4;
 
 import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.r.library.gpu.types.TypeInfo;
+import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.runtime.ArgumentsSignature;
 import com.oracle.truffle.r.runtime.RArguments;
+import com.oracle.truffle.r.runtime.data.RDoubleSequence;
 import com.oracle.truffle.r.runtime.data.RFunction;
+import com.oracle.truffle.r.runtime.data.RIntSequence;
+import com.oracle.truffle.r.runtime.data.RLogicalVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 public class ASTxUtils {
@@ -80,13 +87,44 @@ public class ASTxUtils {
         // prepare args for the function with varargs
         Object[] argsRFunction = new Object[nArgs];
         argsRFunction[0] = input.getDataAtAsObject(idx);
-
         if (args != null) {
             for (int i = 0; i < args.length; i++) {
                 argsRFunction[i + 1] = args[i].getDataAtAsObject(idx);
             }
         }
+        // Create the package
+        Object[] argsPackage = RArguments.create(function, null, null, 0, argsRFunction, ArgumentsSignature.get(nameArgs), null);
+        return argsPackage;
+    }
 
+    public static Object[] getArgsPackageForReduction(int nArgs, int neutral, RFunction function, RAbstractVector input, RAbstractVector[] args, String[] nameArgs, int idx) {
+        // prepare args for the function with varargs
+        Object[] argsRFunction = new Object[nArgs];
+        // First we insert the neutral element
+        argsRFunction[0] = neutral;
+        argsRFunction[1] = input.getDataAtAsObject(idx);
+        if (args != null) {
+            for (int i = 0; i < args.length; i++) {
+                argsRFunction[i + 2] = args[i].getDataAtAsObject(idx);
+            }
+        }
+        // Create the package
+        Object[] argsPackage = RArguments.create(function, null, null, 0, argsRFunction, ArgumentsSignature.get(nameArgs), null);
+        return argsPackage;
+    }
+
+    public static Object[] getArgsPackageForReduction(int nArgs, Object neutral, RFunction function, RAbstractVector input, RAbstractVector[] args, String[] nameArgs, int idx) {
+        // prepare args for the function with varargs
+        Object[] argsRFunction = new Object[nArgs];
+        // First we insert the neutral element
+        argsRFunction[0] = neutral;
+        argsRFunction[1] = input.getDataAtAsObject(idx);
+
+        if (args != null) {
+            for (int i = 0; i < args.length; i++) {
+                argsRFunction[i + 2] = args[i].getDataAtAsObject(idx);
+            }
+        }
         // Create the package
         Object[] argsPackage = RArguments.create(function, null, null, 0, argsRFunction, ArgumentsSignature.get(nameArgs), null);
         return argsPackage;
@@ -133,6 +171,60 @@ public class ASTxUtils {
             source = sourceSection.toString();
         }
         return source;
+    }
+
+    public static TypeInfo typeInference(RAbstractVector input) {
+        TypeInfo type = null;
+        if (input instanceof RIntSequence) {
+            type = TypeInfo.INT;
+        } else if (input instanceof RDoubleSequence) {
+            type = TypeInfo.DOUBLE;
+        } else if (input instanceof RLogicalVector) {
+            type = TypeInfo.BOOLEAN;
+        }
+        return type;
+    }
+
+    public static TypeInfoList typeInference(RAbstractVector input, RAbstractVector[] additionalArgs) {
+        TypeInfoList list = new TypeInfoList();
+        list.add(typeInference(input));
+        if (additionalArgs != null) {
+            for (int i = 0; i < additionalArgs.length; i++) {
+                list.add(typeInference(additionalArgs[i]));
+            }
+        }
+        return list;
+    }
+
+    public static TypeInfo typeInference(Object value) {
+        TypeInfo type = null;
+        if (value instanceof Integer) {
+            type = TypeInfo.INT;
+        } else if (value instanceof Double) {
+            type = TypeInfo.DOUBLE;
+        } else if (value instanceof Boolean) {
+            type = TypeInfo.BOOLEAN;
+        } else {
+            System.out.println("Data type not supported: " + value.getClass());
+        }
+        return type;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static RAbstractVector unMarshallResultFromPArrays(TypeInfo type, PArray result) {
+        if (type == TypeInfo.INT) {
+            return FactoryDataUtils.getIntVector(result);
+        } else {
+            return FactoryDataUtils.getDoubleVector(result);
+        }
+    }
+
+    public static RAbstractVector unMarshallResultFromList(TypeInfo type, ArrayList<Object> result) {
+        if (type == TypeInfo.INT) {
+            return FactoryDataUtils.getIntVector(result);
+        } else {
+            return FactoryDataUtils.getDoubleVector(result);
+        }
     }
 
     private ASTxUtils() {

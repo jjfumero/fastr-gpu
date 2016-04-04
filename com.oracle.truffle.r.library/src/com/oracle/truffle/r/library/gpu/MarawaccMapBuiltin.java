@@ -162,23 +162,6 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         return result;
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private static RAbstractVector unMarshallResultFromPArrays(TypeInfo type, PArray result) {
-        if (type == TypeInfo.INT) {
-            return FactoryDataUtils.getIntVector(result);
-        } else {
-            return FactoryDataUtils.getDoubleVector(result);
-        }
-    }
-
-    private static RAbstractVector unMarshallResultFromList(TypeInfo type, ArrayList<Object> result) {
-        if (type == TypeInfo.INT) {
-            return FactoryDataUtils.getIntVector(result);
-        } else {
-            return FactoryDataUtils.getDoubleVector(result);
-        }
-    }
-
     private static ArrayList<Object> runJavaSequential(RAbstractVector input, RootCallTarget target, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue) {
         // Java sequential
@@ -198,66 +181,24 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         return output;
     }
 
-    public static TypeInfo typeInference(RAbstractVector input) {
-        TypeInfo type = null;
-        if (input instanceof RIntSequence) {
-            type = TypeInfo.INT;
-        } else if (input instanceof RDoubleSequence) {
-            type = TypeInfo.DOUBLE;
-        } else if (input instanceof RLogicalVector) {
-            type = TypeInfo.BOOLEAN;
-        }
-        return type;
-    }
-
-    public static TypeInfoList typeInference(RAbstractVector input, RAbstractVector[] additionalArgs) {
-        TypeInfoList list = new TypeInfoList();
-        list.add(typeInference(input));
-        if (additionalArgs != null) {
-            for (int i = 0; i < additionalArgs.length; i++) {
-                list.add(typeInference(additionalArgs[i]));
-            }
-        }
-        return list;
-    }
-
-    public static TypeInfo typeInference(Object value) {
-        TypeInfo type = null;
-        if (value instanceof Integer) {
-            type = TypeInfo.INT;
-        } else if (value instanceof Double) {
-            type = TypeInfo.DOUBLE;
-        } else if (value instanceof Boolean) {
-            type = TypeInfo.BOOLEAN;
-        } else {
-            System.out.println("Data type not supported: " + value.getClass());
-        }
-        return type;
-    }
-
-    @SuppressWarnings({"unused"})
     public static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, int nThreads) {
 
         int nArgs = ASTxUtils.getNumberOfArguments(function);
         String[] argsName = ASTxUtils.getArgumentsNames(function);
-
-        String source = ASTxUtils.getSourceCode(function);
-        StringBuffer rcodeSource = new StringBuffer(source);
-
         Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, 0);
         Object value = function.getTarget().call(argsPackage);
 
-        TypeInfoList inputTypeList = typeInference(input, additionalArgs);
-        TypeInfo outputType = typeInference(value);
+        TypeInfoList inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
+        TypeInfo outputType = ASTxUtils.typeInference(value);
 
         if (ASTxOptions.runMarawaccThreads) {
             // Marawacc multithread
             PArray<?> result = runMarawaccThreads(input, target, function, argsName, nThreads, additionalArgs, inputTypeList);
-            return unMarshallResultFromPArrays(outputType, result);
+            return ASTxUtils.unMarshallResultFromPArrays(outputType, result);
         } else {
             // Run sequential
             ArrayList<Object> result = runJavaSequential(input, target, function, nArgs, additionalArgs, argsName, value);
-            return unMarshallResultFromList(outputType, result);
+            return ASTxUtils.unMarshallResultFromList(outputType, result);
         }
     }
 
