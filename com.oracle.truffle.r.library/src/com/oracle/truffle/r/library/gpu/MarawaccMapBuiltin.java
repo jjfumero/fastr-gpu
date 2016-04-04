@@ -106,7 +106,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
                 }
                 break;
             case DOUBLE:
-                parray = new PArray<>(input.getLength(), TypeFactory.Integer());
+                parray = new PArray<>(input.getLength(), TypeFactory.Double());
                 for (int k = 0; k < parray.size(); k++) {
                     parray.put(k, (Integer) input.getDataAtAsObject(k));
                 }
@@ -128,6 +128,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
             // Simple PArray
             parray = marshalSimple(typeFirstInput, input);
         } else {
+            // Tuples
             parray = marshalWithTuples(typeFirstInput, input, additionalArgs);
         }
         return parray;
