@@ -31,6 +31,7 @@ import uk.ac.ed.jpai.ArrayFunction;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
+import com.oracle.truffle.r.library.gpu.types.RGPUType;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.library.gpu.utils.FactoryDataUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
@@ -52,13 +53,6 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
  */
 public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
 
-    private enum Type {
-        INT,
-        DOUBLE,
-        BOOLEAN,
-        NULL
-    }
-
     private static <T, R> ArrayFunction<T, R> createMarawaccLambda(RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, int nThreads) {
         @SuppressWarnings("unchecked")
         ArrayFunction<T, R> function = (ArrayFunction<T, R>) uk.ac.ed.jpai.Marawacc.mapJavaThreads(nThreads, x -> {
@@ -76,7 +70,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings({"unchecked", "cast", "rawtypes"})
-    private static PArray<?> marshall(Type type, RAbstractVector input) {
+    private static PArray<?> marshall(RGPUType type, RAbstractVector input) {
         PArray parray = null;
         switch (type) {
             case INT:
@@ -102,7 +96,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static PArray<?> runMarawaccThreads(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, Type inputType, int nThreads) {
+    private static PArray<?> runMarawaccThreads(int nArgs, RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, RGPUType inputType, int nThreads) {
         if (nArgs == 1) {
             // If nArgs is equal 1, means we need to build the PArray (no tuples).
             // For the input.
@@ -120,16 +114,16 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static RAbstractVector unMarshallResultFromPArrays(Type type, PArray result) {
-        if (type == Type.INT) {
+    private static RAbstractVector unMarshallResultFromPArrays(RGPUType type, PArray result) {
+        if (type == RGPUType.INT) {
             return FactoryDataUtils.getIntVector(result);
         } else {
             return FactoryDataUtils.getDoubleVector(result);
         }
     }
 
-    private static RAbstractVector unMarshallResultFromList(Type type, ArrayList<Object> result) {
-        if (type == Type.INT) {
+    private static RAbstractVector unMarshallResultFromList(RGPUType type, ArrayList<Object> result) {
+        if (type == RGPUType.INT) {
             return FactoryDataUtils.getIntVector(result);
         } else {
             return FactoryDataUtils.getDoubleVector(result);
@@ -155,26 +149,26 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         return output;
     }
 
-    public static Type typeInference(RAbstractVector input) {
-        Type type = null;
+    public static RGPUType typeInference(RAbstractVector input) {
+        RGPUType type = null;
         if (input instanceof RIntSequence) {
-            type = Type.INT;
+            type = RGPUType.INT;
         } else if (input instanceof RDoubleSequence) {
-            type = Type.DOUBLE;
+            type = RGPUType.DOUBLE;
         } else if (input instanceof RLogicalVector) {
-            type = Type.BOOLEAN;
+            type = RGPUType.BOOLEAN;
         }
         return type;
     }
 
-    public static Type typeInference(Object value) {
-        Type type = null;
+    public static RGPUType typeInference(Object value) {
+        RGPUType type = null;
         if (value instanceof Integer) {
-            type = Type.INT;
+            type = RGPUType.INT;
         } else if (value instanceof Double) {
-            type = Type.DOUBLE;
+            type = RGPUType.DOUBLE;
         } else if (value instanceof Boolean) {
-            type = Type.BOOLEAN;
+            type = RGPUType.BOOLEAN;
         } else {
             System.out.println("Data type not supported: " + value.getClass());
         }
@@ -198,8 +192,8 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, 0);
         Object value = function.getTarget().call(argsPackage);
 
-        Type inputType = typeInference(input);
-        Type outputType = typeInference(value);
+        RGPUType inputType = typeInference(input);
+        RGPUType outputType = typeInference(value);
 
         if (ASTxOptions.runMarawaccThreads) {
             // Marawacc multithread
