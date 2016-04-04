@@ -82,21 +82,22 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
                 for (int k = 0; k < parray.size(); k++) {
                     parray.put(k, input.getDataAtAsObject(k));
                 }
-                break;
+                return parray;
             case DOUBLE:
                 parray = new PArray<>(input.getLength(), TypeFactory.Double());
                 for (int k = 0; k < parray.size(); k++) {
                     parray.put(k, input.getDataAtAsObject(k));
                 }
+                return parray;
             case BOOLEAN:
                 parray = new PArray<>(input.getLength(), TypeFactory.Boolean());
                 for (int k = 0; k < parray.size(); k++) {
                     parray.put(k, input.getDataAtAsObject(k));
                 }
+                return parray;
             default:
                 throw new RuntimeException("Data type not supported");
         }
-        return parray;
     }
 
     public static String composeReturnType(TypeInfoList infoList) {
