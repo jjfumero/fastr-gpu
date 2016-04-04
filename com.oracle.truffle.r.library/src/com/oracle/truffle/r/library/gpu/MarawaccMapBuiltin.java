@@ -53,7 +53,6 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
  * The GPU supports relies on the Partial Evaluation step after Truffle decides to compile the AST
  * to binary code.
  *
- *
  */
 public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
 
