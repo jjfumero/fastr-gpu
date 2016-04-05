@@ -12,21 +12,22 @@ import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 
 public abstract class MarawaccExecuteNode extends RExternalBuiltinNode.Arg1 {
 
-    @SuppressWarnings({"rawtypes", "unchecked", "unused"})
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Specialization
     public Object executeMarawacc(ArrayFunction<?, ?> marawaccFunction) {
 
-        MarawaccPackage last = RMarawaccPromises.INSTANCE.getLast();
-        ArrayFunction<?, ?> arrayFunction = last.getArrayFunction();
+        MarawaccPackage marawaccPackage = RMarawaccPromises.INSTANCE.getPackageForArrayFunction(marawaccFunction);
+
         MarawaccPackage first = RMarawaccPromises.INSTANCE.getPackage(0);
         PArray data = (PArray) first.getList().get(0);
 
-        PArray result = arrayFunction.apply(data);
-        TypeInfo outTypeInfo = (TypeInfo) last.get(1);
+        PArray result = marawaccFunction.apply(data);
+        TypeInfo outTypeInfo = (TypeInfo) marawaccPackage.get(1);
 
         // Clean promises for the next execution
         RMarawaccPromises.INSTANCE.clean();
 
+        // Do the unmarshalling
         return ASTxUtils.unMarshallResultFromPArrays(outTypeInfo, result);
     }
 }
