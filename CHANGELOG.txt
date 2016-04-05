@@ -1,0 +1,6 @@
+astx-0.1
+	* Support for map/reduce with Marawacc threads backend. 
+	* Support for Integer, Boolean and Double arrays
+	* Function composition from R.
+
+
