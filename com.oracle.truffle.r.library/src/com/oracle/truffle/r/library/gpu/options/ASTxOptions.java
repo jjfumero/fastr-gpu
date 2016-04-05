@@ -22,10 +22,20 @@
  */
 package com.oracle.truffle.r.library.gpu.options;
 
+/**
+ * ASTx runtime options.
+ *
+ */
 public class ASTxOptions {
 
+    /**
+     * Print internal results. Debugging purposes
+     */
     public static boolean printResult = false;
 
+    /**
+     * Execute the parallel operations with Marawacc.
+     */
     public static boolean runMarawaccThreads = true;
 
 }

@@ -38,9 +38,12 @@ import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.runtime.ArgumentsSignature;
 import com.oracle.truffle.r.runtime.RArguments;
+import com.oracle.truffle.r.runtime.data.RDataFactory;
 import com.oracle.truffle.r.runtime.data.RDoubleSequence;
+import com.oracle.truffle.r.runtime.data.RDoubleVector;
 import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.RIntSequence;
+import com.oracle.truffle.r.runtime.data.RIntVector;
 import com.oracle.truffle.r.runtime.data.RLogicalVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
@@ -286,20 +289,50 @@ public class ASTxUtils {
         return type;
     }
 
+    // Unmarshall to RIntVector
+    public static RIntVector getIntVector(ArrayList<Object> list) {
+        int[] array = list.stream().mapToInt(i -> (Integer) i).toArray();
+        return RDataFactory.createIntVector(array, false);
+    }
+
+    // Unmarshall to RDoubleVector
+    public static RDoubleVector getDoubleVector(ArrayList<Object> list) {
+        double[] array = list.stream().mapToDouble(i -> (Double) i).toArray();
+        return RDataFactory.createDoubleVector(array, false);
+    }
+
+    // Unmarshall to RIntVector
+    public static RIntVector getIntVector(PArray<Integer> array) {
+        int[] output = new int[array.size()];
+        for (int i = 0; i < output.length; i++) {
+            output[i] = array.get(i);
+        }
+        return RDataFactory.createIntVector(output, false);
+    }
+
+    // Unmarshall to RDoubleVector
+    public static RDoubleVector getDoubleVector(PArray<Double> array) {
+        double[] output = new double[array.size()];
+        for (int i = 0; i < output.length; i++) {
+            output[i] = array.get(i);
+        }
+        return RDataFactory.createDoubleVector(output, false);
+    }
+
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static RAbstractVector unMarshallResultFromPArrays(TypeInfo type, PArray result) {
         if (type == TypeInfo.INT) {
-            return FactoryDataUtils.getIntVector(result);
+            return getIntVector(result);
         } else {
-            return FactoryDataUtils.getDoubleVector(result);
+            return getDoubleVector(result);
         }
     }
 
     public static RAbstractVector unMarshallResultFromList(TypeInfo type, ArrayList<Object> result) {
         if (type == TypeInfo.INT) {
-            return FactoryDataUtils.getIntVector(result);
+            return getIntVector(result);
         } else {
-            return FactoryDataUtils.getDoubleVector(result);
+            return getDoubleVector(result);
         }
     }
 

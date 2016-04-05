@@ -25,10 +25,6 @@ package com.oracle.truffle.r.library.gpu;
 import java.util.ArrayList;
 
 import uk.ac.ed.datastructures.common.PArray;
-import uk.ac.ed.datastructures.common.TypeFactory;
-import uk.ac.ed.datastructures.tuples.Tuple2;
-import uk.ac.ed.datastructures.tuples.Tuple3;
-import uk.ac.ed.datastructures.tuples.Tuple4;
 import uk.ac.ed.jpai.ArrayFunction;
 import uk.ac.ed.jpai.Marawacc;
 

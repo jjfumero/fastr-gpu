@@ -76,7 +76,6 @@ public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
 
     @SuppressWarnings("rawtypes")
     public static ArrayFunction composeReduceExpression(RAbstractVector input, RFunction rFunction, RootCallTarget callTarget, RAbstractVector[] additionalArgs, int neutral) {
-
         int nArgs = ASTxUtils.getNumberOfArguments(rFunction);
         String[] argsName = ASTxUtils.getArgumentsNames(rFunction);
 
@@ -163,6 +162,7 @@ public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
                 additionalInputs[i] = (RAbstractVector) args.getArgument(i + 3);
             }
         }
+
         if (input != null) {
             return composeReduceExpression(input, rFunction, callTarget, additionalInputs, neutral);
         } else if (marawaccFunction != null) {
