@@ -67,6 +67,17 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         return function;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static <T, R> ArrayFunction<T, R> createMarawaccLambda(int nArgs, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, @SuppressWarnings("unused") int nThreads,
+                    ArrayFunction prev) {
+        ArrayFunction<T, R> function = prev.mapJavaThreads(dataItem -> {
+            Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, rFunction, dataItem, nameArgs);
+            Object result = callTarget.call(argsPackage);
+            return result;
+        });
+        return function;
+    }
+
     @SuppressWarnings("rawtypes")
     private static PArray<?> marshall(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
         PArray parray = null;
@@ -94,8 +105,31 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
 
         // Create package and annotate in the promises
         MarawaccPackage marawaccPackage = new MarawaccPackage(composeLambda);
-        marawaccPackage.add(pArrayInput);
-        marawaccPackage.add(outputType);
+        marawaccPackage.setpArray(pArrayInput);
+        marawaccPackage.setTypeInfo(outputType);
+        marawaccPackage.setRVector(value);
+        RMarawaccPromises.INSTANCE.addPromise(marawaccPackage);
+        return composeLambda;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static ArrayFunction composeExpression(ArrayFunction marawaccFunction, RFunction rFunction, RootCallTarget callTarget, RAbstractVector[] additionalArgs, int nThreads) {
+
+        int nArgs = ASTxUtils.getNumberOfArguments(rFunction);
+        String[] argsName = ASTxUtils.getArgumentsNames(rFunction);
+        ArrayFunction composeLambda = createMarawaccLambda(nArgs, callTarget, rFunction, argsName, nThreads, marawaccFunction);
+
+        // Get the package from the Promises
+        MarawaccPackage packageForArrayFunction = RMarawaccPromises.INSTANCE.getPackageForArrayFunction(marawaccFunction);
+        Object output = packageForArrayFunction.getRVector();
+
+        Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, rFunction, output, additionalArgs, argsName, 0);
+        Object value = callTarget.call(argsPackage);
+        TypeInfo outputType = ASTxUtils.typeInference(value);
+
+        // Create package and annotate in the promises
+        MarawaccPackage marawaccPackage = new MarawaccPackage(composeLambda);
+        marawaccPackage.setTypeInfo(outputType);
         RMarawaccPromises.INSTANCE.addPromise(marawaccPackage);
         return composeLambda;
     }
@@ -142,6 +176,13 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
                 additionalInputs[i] = (RAbstractVector) args.getArgument(i + 3);
             }
         }
-        return composeExpression(input, rFunction, target, additionalInputs, nThreads);
+
+        if (input != null) {
+            return composeExpression(input, rFunction, target, additionalInputs, nThreads);
+        } else if (marawaccFunction != null) {
+            return composeExpression(marawaccFunction, rFunction, target, additionalInputs, nThreads);
+        } else {
+            throw new RuntimeException("Data type not supported yet");
+        }
     }
 }

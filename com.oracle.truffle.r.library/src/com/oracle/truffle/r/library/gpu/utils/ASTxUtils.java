@@ -120,6 +120,20 @@ public class ASTxUtils {
         return argsPackage;
     }
 
+    public static Object[] getArgsPackage(int nArgs, RFunction function, Object input, RAbstractVector[] args, String[] nameArgs, int idx) {
+        // prepare args for the function with varargs
+        Object[] argsRFunction = new Object[nArgs];
+        argsRFunction[0] = input;
+        if (args != null) {
+            for (int i = 0; i < args.length; i++) {
+                argsRFunction[i + 1] = args[i].getDataAtAsObject(idx);
+            }
+        }
+        // Create the package
+        Object[] argsPackage = RArguments.create(function, null, null, 0, argsRFunction, ArgumentsSignature.get(nameArgs), null);
+        return argsPackage;
+    }
+
     public static Object[] getArgsPackageForReduction(int nArgs, int neutral, RFunction function, RAbstractVector input, RAbstractVector[] args, String[] nameArgs, int idx) {
         // prepare args for the function with varargs
         Object[] argsRFunction = new Object[nArgs];

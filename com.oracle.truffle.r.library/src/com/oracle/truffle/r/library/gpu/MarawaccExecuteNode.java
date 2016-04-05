@@ -15,14 +15,13 @@ public abstract class MarawaccExecuteNode extends RExternalBuiltinNode.Arg1 {
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Specialization
     public Object executeMarawacc(ArrayFunction<?, ?> marawaccFunction) {
-
         MarawaccPackage marawaccPackage = RMarawaccPromises.INSTANCE.getPackageForArrayFunction(marawaccFunction);
 
         MarawaccPackage first = RMarawaccPromises.INSTANCE.getPackage(0);
-        PArray data = (PArray) first.getList().get(0);
+        PArray data = first.getpArray();
 
         PArray result = marawaccFunction.apply(data);
-        TypeInfo outTypeInfo = (TypeInfo) marawaccPackage.get(1);
+        TypeInfo outTypeInfo = marawaccPackage.getTypeInfo();
 
         // Clean promises for the next execution
         RMarawaccPromises.INSTANCE.clean();
