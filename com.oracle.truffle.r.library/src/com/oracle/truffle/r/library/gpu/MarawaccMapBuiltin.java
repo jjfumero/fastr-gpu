@@ -22,14 +22,13 @@
  */
 package com.oracle.truffle.r.library.gpu;
 
-import java.util.ArrayList;
-
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.jpai.ArrayFunction;
 
 import com.oracle.truffle.api.RootCallTarget;
+import com.oracle.truffle.r.library.gpu.cache.MarawaccPackage;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
-import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
+import com.oracle.truffle.r.library.gpu.cache.RMarawaccPromises;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
@@ -46,7 +45,7 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
  * to binary code.
  *
  */
-public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
+public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
 
     /**
      * Create the lambda for Marawacc threads API.
@@ -81,58 +80,24 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
         return parray;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private static PArray<?> runMarawaccThreads(RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, int nThreads,
-                    RAbstractVector[] additionalArgs, TypeInfoList infoList) {
-        ArrayFunction composeLambda = createMarawaccLambda(infoList.size(), callTarget, rFunction, nameArgs, nThreads);
-        PArray pArrayInput = marshall(input, additionalArgs, infoList);
-        PArray<?> result = composeLambda.apply(pArrayInput);
-
-        if (ASTxOptions.printResult) {
-            System.out.println("result -- ");
-            ASTxUtils.printPArray(result);
-        }
-        return result;
-    }
-
-    private static ArrayList<Object> runJavaSequential(RAbstractVector input, RootCallTarget target, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
-                    Object firstValue) {
-        // Java sequential
-        ArrayList<Object> output = new ArrayList<>(input.getLength());
-        output.add(firstValue);
-        for (int i = 1; i < input.getLength(); i++) {
-            Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
-            Object val = target.call(argsPackage);
-            output.add(val);
-        }
-        // NOTE: force the compilation with no profiling (the lambda should be different)
-        // try {
-        // boolean compileFunction = AccTruffleCompiler.compileFunction(function);
-        // } catch (InvocationTargetException | IllegalAccessException e) {
-        // e.printStackTrace();
-        // }
-        return output;
-    }
-
-    public static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, int nThreads) {
-
-        int nArgs = ASTxUtils.getNumberOfArguments(function);
-        String[] argsName = ASTxUtils.getArgumentsNames(function);
-        Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, 0);
-        Object value = function.getTarget().call(argsPackage);
-
+    @SuppressWarnings("rawtypes")
+    public static ArrayFunction composeExpression(RAbstractVector input, RFunction rFunction, RootCallTarget callTarget, RAbstractVector[] additionalArgs, int nThreads) {
+        String[] argsName = ASTxUtils.getArgumentsNames(rFunction);
         TypeInfoList inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
+        ArrayFunction composeLambda = createMarawaccLambda(inputTypeList.size(), callTarget, rFunction, argsName, nThreads);
+        PArray<?> pArrayInput = marshall(input, additionalArgs, inputTypeList);
+
+        int nArgs = ASTxUtils.getNumberOfArguments(rFunction);
+        Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, rFunction, input, additionalArgs, argsName, 0);
+        Object value = callTarget.call(argsPackage);
         TypeInfo outputType = ASTxUtils.typeInference(value);
 
-        if (ASTxOptions.runMarawaccThreads) {
-            // Marawacc multiple-thread
-            PArray<?> result = runMarawaccThreads(input, target, function, argsName, nThreads, additionalArgs, inputTypeList);
-            return ASTxUtils.unMarshallResultFromPArrays(outputType, result);
-        } else {
-            // Run sequential
-            ArrayList<Object> result = runJavaSequential(input, target, function, nArgs, additionalArgs, argsName, value);
-            return ASTxUtils.unMarshallResultFromList(outputType, result);
-        }
+        // Create package and annotate in the promises
+        MarawaccPackage marawaccPackage = new MarawaccPackage(composeLambda);
+        marawaccPackage.add(pArrayInput);
+        marawaccPackage.add(outputType);
+        RMarawaccPromises.INSTANCE.addPromise(marawaccPackage);
+        return composeLambda;
     }
 
     /**
@@ -141,20 +106,32 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
      * Built-in from R:
      *
      * <code>
-     * marawacc.sapply(x, function, ...)
+     * marawacc.map(x, function, ...)
      * </code>
      *
-     * This is a blocking operation. Therefore the return Object will contain the result. It invokes
-     * to the Marawacc-API for multiple-threads/GPU backend.
+     * It invokes to the Marawacc-API for multiple-threads/GPU backend.
+     *
+     * It returns an ArrayFunction.
      *
      */
     @Override
     public Object call(RArgsValuesAndNames args) {
-        RAbstractVector input = (RAbstractVector) args.getArgument(0);
-        RFunction function = (RFunction) args.getArgument(1);
+
+        // The first argument could be either an ArrayFunction
+        // or input data (RAbstractVector)
+        Object firstArgument = args.getArgument(0);
+        RAbstractVector input = null;
+        ArrayFunction<?, ?> marawaccFunction = null;
+        if (firstArgument instanceof RAbstractVector) {
+            // It is the initial operation
+            input = (RAbstractVector) firstArgument;
+        } else if (firstArgument instanceof ArrayFunction) {
+            marawaccFunction = (ArrayFunction<?, ?>) firstArgument;
+        }
+        RFunction rFunction = (RFunction) args.getArgument(1);
 
         // Get the callTarget from the cache
-        RootCallTarget target = RGPUCache.INSTANCE.lookup(function);
+        RootCallTarget target = RGPUCache.INSTANCE.lookup(rFunction);
         int nThreads = ((Double) args.getArgument(2)).intValue();
 
         // Prepare all inputs in an array of Objects
@@ -165,6 +142,6 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
                 additionalInputs[i] = (RAbstractVector) args.getArgument(i + 3);
             }
         }
-        return computeMap(input, function, target, additionalInputs, nThreads);
+        return composeExpression(input, rFunction, target, additionalInputs, nThreads);
     }
 }

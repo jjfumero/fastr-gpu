@@ -31,7 +31,7 @@ public class RGPUCache {
 
     private HashMap<RFunction, RootCallTarget> cache;
 
-    public static RGPUCache INSTANCE = new RGPUCache();
+    public static final RGPUCache INSTANCE = new RGPUCache();
 
     private RGPUCache() {
         cache = new HashMap<>();
@@ -45,7 +45,6 @@ public class RGPUCache {
 
     public RootCallTarget lookup(RFunction function) {
         if (!cache.containsKey(function)) {
-            System.out.println("Registering a new function");
             cache.put(function, function.getTarget());
         }
         return cache.get(function);

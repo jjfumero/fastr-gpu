@@ -31,22 +31,28 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 
 /**
- * Node builtin for communication with Marawacc (GPU Backend for Graal).
+ * Node built-in for communication with Marawacc (GPU Backend for Graal).
  *
  */
 public abstract class MarawaccOCLInfoBuiltin extends RExternalBuiltinNode.Arg0 {
+
+    private static void printInfo(OCLDeviceInfo deviceInfo) {
+        System.out.println("NAME             : " + deviceInfo.getDeviceName().replaceAll("^[ ]+", ""));
+        System.out.println("VENDOR           : " + deviceInfo.getVendorName());
+        System.out.println("TYPE             : " + deviceInfo.getDeviceType());
+        System.out.println("DRIVER           : " + deviceInfo.getDriverVersion());
+        System.out.println("MAX COMPUTE UNITS: " + deviceInfo.getMaxComputeUnits());
+        System.out.println("GLOBAL MEMORY    : " + deviceInfo.getGlobalMemSize());
+        System.out.println("LOCAL  MEMORY    : " + deviceInfo.getLocalMemSize());
+    }
 
     @Specialization
     protected String clInfo() {
         MarawaccInitBuiltinNodeGen.marawaccInitialization();
         GraalAcceleratorPlatform platform = GraalAcceleratorSystem.getInstance().getPlatform();
         GraalAcceleratorDevice device = platform.getDevice();
-        // System.out.println(device.toString());
         OCLDeviceInfo deviceInfo = (OCLDeviceInfo) device.getDeviceInfo();
-        System.out.println("NAME: " + deviceInfo.getDeviceName());
-        System.out.println("VENDOR: " + deviceInfo.getVendorName());
-        System.out.println("TYPE: " + deviceInfo.getDeviceType());
-        System.out.println("DRIVER: " + deviceInfo.getDriverVersion());
+        printInfo(deviceInfo);
         return "";
     }
 }

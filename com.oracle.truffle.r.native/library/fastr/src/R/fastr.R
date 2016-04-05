@@ -165,9 +165,13 @@ marawacc.sapply <- function(input, userFunction, nThreads=1, ...) {
 	.FastR(.NAME="marawacc.sapply", input, userFunction, nThreads, ...)
 }
 
-#marawacc.map <- function(input, userFunction, nThreads=1, ...) {		
-#	.FastR(.NAME="marawacc.map", input, userFunction, nThreads, ...)
-#}
+marawacc.map <- function(input, userFunction, nThreads=1, ...) {		
+	.FastR(.NAME="marawacc.map", input, userFunction, nThreads, ...)
+}
+
+marawacc.execute <- function(arrayFunction) {		
+	.FastR(.NAME="marawacc.execute", arrayFunction)
+}
 
 marawacc.reduce <- function(input, userFunction, neutral=0, ...) {		
 	.FastR(.NAME="marawacc.reduce", input, userFunction, neutral, ...)

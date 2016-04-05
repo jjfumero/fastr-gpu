@@ -32,7 +32,8 @@ export(fastr.trace)
 export(marawacc.init)
 export(marawacc.deviceInfo)
 export(marawacc.sapply) 	# Blocking operation
-#export(marawacc.map) 		# Non-blocking operation
+export(marawacc.map) 		# Non-blocking operation
+export(marawacc.execute) 
 export(marawacc.reduce)	
 export(marawacc.vectorMul)
 

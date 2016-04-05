@@ -164,7 +164,6 @@ public class ASTxUtils {
      */
     @SuppressWarnings("rawtypes")
     public static Object[] getArgsPackage(int nArgs, RFunction function, Object input, String[] nameArgs) {
-
         Object[] argsRFunction = new Object[nArgs];
         if (!(input instanceof Tuple)) {
             argsRFunction[0] = input;
