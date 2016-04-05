@@ -57,24 +57,11 @@ public final class MarawaccTerminalReduceBuiltin extends RExternalBuiltinNode {
         }
     }
 
-    @SuppressWarnings("rawtypes")
-    private static PArray<?> marshall(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
-        PArray parray = null;
-        if (additionalArgs == null) {
-            // Simple PArray
-            parray = ASTxUtils.marshalSimple(infoList, input);
-        } else {
-            // Tuples
-            parray = ASTxUtils.marshalWithTuples(input, additionalArgs, infoList);
-        }
-        return parray;
-    }
-
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static PArray<?> runMarawaccThreads(RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, int nThreads,
                     RAbstractVector[] additionalArgs, TypeInfoList infoList) {
         ArrayFunction composeLambda = createMarawaccLambda(infoList.size() + 1, callTarget, rFunction, nameArgs, nThreads);
-        PArray pArrayInput = marshall(input, additionalArgs, infoList);
+        PArray pArrayInput = ASTxUtils.marshall(input, additionalArgs, infoList);
         PArray<?> result = composeLambda.apply(pArrayInput);
 
         if (ASTxOptions.printResult) {

@@ -79,24 +79,11 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings("rawtypes")
-    private static PArray<?> marshall(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
-        PArray parray = null;
-        if (additionalArgs == null) {
-            // Simple PArray
-            parray = ASTxUtils.marshalSimple(infoList, input);
-        } else {
-            // Tuples
-            parray = ASTxUtils.marshalWithTuples(input, additionalArgs, infoList);
-        }
-        return parray;
-    }
-
-    @SuppressWarnings("rawtypes")
     public static ArrayFunction composeExpression(RAbstractVector input, RFunction rFunction, RootCallTarget callTarget, RAbstractVector[] additionalArgs, int nThreads) {
         String[] argsName = ASTxUtils.getArgumentsNames(rFunction);
         TypeInfoList inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
         ArrayFunction composeLambda = createMarawaccLambda(inputTypeList.size(), callTarget, rFunction, argsName, nThreads);
-        PArray<?> pArrayInput = marshall(input, additionalArgs, inputTypeList);
+        PArray<?> pArrayInput = ASTxUtils.marshall(input, additionalArgs, inputTypeList);
 
         int nArgs = ASTxUtils.getNumberOfArguments(rFunction);
         Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, rFunction, input, additionalArgs, argsName, 0);

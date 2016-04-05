@@ -405,6 +405,19 @@ public class ASTxUtils {
         }
     }
 
+    @SuppressWarnings("rawtypes")
+    public static PArray<?> marshall(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
+        PArray parray = null;
+        if (additionalArgs == null) {
+            // Simple PArray
+            parray = ASTxUtils.marshalSimple(infoList, input);
+        } else {
+            // Tuples
+            parray = ASTxUtils.marshalWithTuples(input, additionalArgs, infoList);
+        }
+        return parray;
+    }
+
     private ASTxUtils() {
     }
 

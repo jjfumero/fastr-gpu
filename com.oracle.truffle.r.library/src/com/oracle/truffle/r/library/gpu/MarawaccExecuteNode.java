@@ -9,24 +9,30 @@ import com.oracle.truffle.r.library.gpu.cache.RMarawaccPromises;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
+import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 public abstract class MarawaccExecuteNode extends RExternalBuiltinNode.Arg1 {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    @Specialization
-    public Object executeMarawacc(ArrayFunction<?, ?> marawaccFunction) {
-        MarawaccPackage marawaccPackage = RMarawaccPromises.INSTANCE.getPackageForArrayFunction(marawaccFunction);
-
+    private static PArray executeFunction(ArrayFunction<?, ?> marawaccFunction) {
         MarawaccPackage first = RMarawaccPromises.INSTANCE.getPackage(0);
         PArray data = first.getpArray();
+        PArray<?> result = marawaccFunction.apply(data);
+        return result;
+    }
 
-        PArray result = marawaccFunction.apply(data);
+    @SuppressWarnings("rawtypes")
+    private static RAbstractVector unmarshall(PArray result, ArrayFunction<?, ?> marawaccFunction) {
+        MarawaccPackage marawaccPackage = RMarawaccPromises.INSTANCE.getPackageForArrayFunction(marawaccFunction);
         TypeInfo outTypeInfo = marawaccPackage.getTypeInfo();
-
-        // Clean promises for the next execution
-        RMarawaccPromises.INSTANCE.clean();
-
-        // Do the unmarshalling
         return ASTxUtils.unMarshallResultFromPArrays(outTypeInfo, result);
+    }
+
+    @Specialization
+    public RAbstractVector executeMarawacc(ArrayFunction<?, ?> marawaccFunction) {
+        PArray<?> result = executeFunction(marawaccFunction);
+        RAbstractVector rResult = unmarshall(result, marawaccFunction);
+        RMarawaccPromises.INSTANCE.clean();
+        return rResult;
     }
 }

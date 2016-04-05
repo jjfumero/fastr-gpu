@@ -62,19 +62,6 @@ public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings("rawtypes")
-    private static PArray<?> marshall(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
-        PArray parray = null;
-        if (additionalArgs == null) {
-            // Simple PArray
-            parray = ASTxUtils.marshalSimple(infoList, input);
-        } else {
-            // Tuples
-            parray = ASTxUtils.marshalWithTuples(input, additionalArgs, infoList);
-        }
-        return parray;
-    }
-
-    @SuppressWarnings("rawtypes")
     public static ArrayFunction composeReduceExpression(RAbstractVector input, RFunction rFunction, RootCallTarget callTarget, RAbstractVector[] additionalArgs, int neutral) {
         int nArgs = ASTxUtils.getNumberOfArguments(rFunction);
         String[] argsName = ASTxUtils.getArgumentsNames(rFunction);
@@ -86,7 +73,7 @@ public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
         TypeInfo outputType = ASTxUtils.typeInference(value);
 
         ArrayFunction composeLambda = createMarawaccLambda(inputTypeList.size() + 1, callTarget, rFunction, argsName, neutral);
-        PArray pArrayInput = marshall(input, additionalArgs, inputTypeList);
+        PArray pArrayInput = ASTxUtils.marshall(input, additionalArgs, inputTypeList);
 
         // Create package and annotate in the promises
         MarawaccPackage marawaccPackage = new MarawaccPackage(composeLambda);
