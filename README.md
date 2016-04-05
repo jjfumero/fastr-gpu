@@ -14,10 +14,14 @@ and the GPU backend (Marawacc).
 #!R
 
 > marawacc.deviceInfo()
-NAME: Hawaii
-VENDOR: Advanced Micro Devices, Inc.
-TYPE: GPU
-DRIVER: 1598.5 (VM)
+NAME             : Hawaii
+VENDOR           : Advanced Micro Devices, Inc.
+TYPE             : GPU
+DRIVER           : 1598.5 (VM)
+MAX COMPUTE UNITS: 44
+GLOBAL MEMORY    : 3221225472
+LOCAL  MEMORY    : 32768
+
 
 > marawacc.parallelMap( 1:100000, function(x, y) x * y, 1:100000) 
 ```
