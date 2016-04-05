@@ -18,7 +18,7 @@ r <- mapply(vectorMultFastR, a, b, c);
 
 for (i in seq(1,10)) {
         start <- nanotime()
-        result <- marawacc.map(a, vectorMult, b, c, nThreads=4)
+        result <- marawacc.sapply(a, vectorMult, b, c, nThreads=4)
         end <- nanotime()
     	print(identical(r, result))
         print(end-start);

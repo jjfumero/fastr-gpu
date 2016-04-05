@@ -54,7 +54,7 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
  * to binary code.
  *
  */
-public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
+public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
 
     private static <T, R> ArrayFunction<T, R> createMarawaccLambda(int nArgs, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, int nThreads) {
         @SuppressWarnings("unchecked")

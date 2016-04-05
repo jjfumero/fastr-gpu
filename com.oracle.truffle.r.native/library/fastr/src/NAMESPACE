@@ -31,8 +31,9 @@ export(fastr.trace)
 # Marawacc-Functions ( GPU and multiple-threads execution)
 export(marawacc.init)
 export(marawacc.deviceInfo)
-export(marawacc.map)
-export(marawacc.reduce)
+export(marawacc.sapply) 	# Blocking operation
+#export(marawacc.map) 		# Non-blocking operation
+export(marawacc.reduce)	
 export(marawacc.vectorMul)
 
 # Utilities
