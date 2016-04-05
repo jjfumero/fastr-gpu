@@ -23,7 +23,7 @@ GLOBAL MEMORY    : 3221225472
 LOCAL  MEMORY    : 32768
 
 
-> marawacc.parallelMap( 1:100000, function(x, y) x * y, 1:100000) 
+> marawacc.map( 1:100000, function(x, y) x * y, 1:100000) 
 ```
 
 # Installation
