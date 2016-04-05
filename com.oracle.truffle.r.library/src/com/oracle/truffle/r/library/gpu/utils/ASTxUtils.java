@@ -27,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import uk.ac.ed.datastructures.common.PArray;
+import uk.ac.ed.datastructures.common.TypeFactory;
 import uk.ac.ed.datastructures.tuples.Tuple;
 import uk.ac.ed.datastructures.tuples.Tuple2;
 import uk.ac.ed.datastructures.tuples.Tuple3;
@@ -270,6 +271,75 @@ public class ASTxUtils {
             return FactoryDataUtils.getIntVector(result);
         } else {
             return FactoryDataUtils.getDoubleVector(result);
+        }
+    }
+
+    public static void printPArray(PArray<?> result) {
+        for (int k = 0; k < result.size(); k++) {
+            System.out.println(result.get(k));
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static PArray<?> marshalSimple(TypeInfoList infoList, RAbstractVector input) {
+        PArray parray = null;
+        TypeInfo type = infoList.get(0);
+        switch (type) {
+            case INT:
+                parray = new PArray<>(input.getLength(), TypeFactory.Integer());
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, input.getDataAtAsObject(k));
+                }
+                return parray;
+            case DOUBLE:
+                parray = new PArray<>(input.getLength(), TypeFactory.Double());
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, input.getDataAtAsObject(k));
+                }
+                return parray;
+            case BOOLEAN:
+                parray = new PArray<>(input.getLength(), TypeFactory.Boolean());
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, input.getDataAtAsObject(k));
+                }
+                return parray;
+            default:
+                throw new RuntimeException("Data type not supported");
+        }
+    }
+
+    public static String composeReturnType(TypeInfoList infoList) {
+        StringBuffer returns = new StringBuffer("Tuple" + infoList.size() + "<");
+        returns.append(infoList.get(0).getJavaType());
+        for (int i = 1; i < infoList.size(); i++) {
+            returns.append("," + infoList.get(i).getJavaType());
+        }
+        returns.append(">");
+        return returns.toString();
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static PArray<?> marshalWithTuples(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
+        String returns = composeReturnType(infoList);
+        PArray parray = new PArray<>(input.getLength(), TypeFactory.Tuple(returns));
+        switch (infoList.size()) {
+            case 2:
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, new Tuple2<>(input.getDataAtAsObject(k), additionalArgs[0].getDataAtAsObject(k)));
+                }
+                return parray;
+            case 3:
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, new Tuple3<>(input.getDataAtAsObject(k), additionalArgs[0].getDataAtAsObject(k), additionalArgs[1].getDataAtAsObject(k)));
+                }
+                return parray;
+            case 4:
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, new Tuple4<>(input.getDataAtAsObject(k), additionalArgs[0].getDataAtAsObject(k), additionalArgs[1].getDataAtAsObject(k), additionalArgs[2].getDataAtAsObject(k)));
+                }
+                return parray;
+            default:
+                throw new RuntimeException("Tuple number not supported yet");
         }
     }
 
