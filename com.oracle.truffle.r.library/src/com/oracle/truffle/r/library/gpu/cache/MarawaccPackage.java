@@ -10,7 +10,7 @@ public class MarawaccPackage {
     private ArrayFunction<?, ?> arrayFunction;
     private TypeInfo type;
     @SuppressWarnings("rawtypes") private PArray pArray;
-    private Object vector;
+    private Object output;
 
     public MarawaccPackage(ArrayFunction<?, ?> function) {
         this.arrayFunction = function;
@@ -38,11 +38,11 @@ public class MarawaccPackage {
         return this.arrayFunction;
     }
 
-    public void setRVector(Object value) {
-        this.vector = value;
+    public void setOutput(Object value) {
+        this.output = value;
     }
 
     public Object getRVector() {
-        return this.vector;
+        return this.output;
     }
 }

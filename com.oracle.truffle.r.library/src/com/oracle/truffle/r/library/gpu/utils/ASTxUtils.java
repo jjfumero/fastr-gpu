@@ -150,6 +150,22 @@ public class ASTxUtils {
         return argsPackage;
     }
 
+    public static Object[] getArgsPackageForReduction(int nArgs, int neutral, RFunction function, Object input, RAbstractVector[] args, String[] nameArgs, int idx) {
+        // prepare args for the function with varargs
+        Object[] argsRFunction = new Object[nArgs];
+        // First we insert the neutral element
+        argsRFunction[0] = neutral;
+        argsRFunction[1] = input;
+        if (args != null) {
+            for (int i = 0; i < args.length; i++) {
+                argsRFunction[i + 2] = args[i].getDataAtAsObject(idx);
+            }
+        }
+        // Create the package
+        Object[] argsPackage = RArguments.create(function, null, null, 0, argsRFunction, ArgumentsSignature.get(nameArgs), null);
+        return argsPackage;
+    }
+
     public static Object[] getArgsPackageForReduction(int nArgs, Object neutral, RFunction function, RAbstractVector input, RAbstractVector[] args, String[] nameArgs, int idx) {
         // prepare args for the function with varargs
         Object[] argsRFunction = new Object[nArgs];

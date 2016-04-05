@@ -107,7 +107,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         MarawaccPackage marawaccPackage = new MarawaccPackage(composeLambda);
         marawaccPackage.setpArray(pArrayInput);
         marawaccPackage.setTypeInfo(outputType);
-        marawaccPackage.setRVector(value);
+        marawaccPackage.setOutput(value);
         RMarawaccPromises.INSTANCE.addPromise(marawaccPackage);
         return composeLambda;
     }
@@ -130,6 +130,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         // Create package and annotate in the promises
         MarawaccPackage marawaccPackage = new MarawaccPackage(composeLambda);
         marawaccPackage.setTypeInfo(outputType);
+        marawaccPackage.setOutput(value);
         RMarawaccPromises.INSTANCE.addPromise(marawaccPackage);
         return composeLambda;
     }
