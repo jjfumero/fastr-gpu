@@ -28,7 +28,9 @@ import uk.ac.ed.jpai.ArrayFunction;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.cache.MarawaccPackage;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
+import com.oracle.truffle.r.library.gpu.cache.RMarawaccFutures;
 import com.oracle.truffle.r.library.gpu.cache.RMarawaccPromises;
+import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
@@ -95,7 +97,13 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         marawaccPackage.setpArray(pArrayInput);
         marawaccPackage.setTypeInfo(outputType);
         marawaccPackage.setOutput(value);
-        RMarawaccPromises.INSTANCE.addPromise(marawaccPackage);
+
+        if (ASTxOptions.useAsyncComputation) {
+            RMarawaccFutures.INSTANCE.addFuture(marawaccPackage);
+        } else {
+            RMarawaccPromises.INSTANCE.addPromise(marawaccPackage);
+        }
+
         return composeLambda;
     }
 
@@ -118,7 +126,12 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         MarawaccPackage marawaccPackage = new MarawaccPackage(composeLambda);
         marawaccPackage.setTypeInfo(outputType);
         marawaccPackage.setOutput(value);
-        RMarawaccPromises.INSTANCE.addPromise(marawaccPackage);
+
+        if (ASTxOptions.useAsyncComputation) {
+            RMarawaccFutures.INSTANCE.addFuture(marawaccPackage);
+        } else {
+            RMarawaccPromises.INSTANCE.addPromise(marawaccPackage);
+        }
         return composeLambda;
     }
 

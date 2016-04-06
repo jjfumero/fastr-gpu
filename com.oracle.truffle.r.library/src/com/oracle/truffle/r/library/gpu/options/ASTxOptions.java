@@ -38,4 +38,9 @@ public class ASTxOptions {
      */
     public static boolean runMarawaccThreads = true;
 
+    /**
+     * Use Java futures for aync computation when pattern composition is presented.
+     */
+    public static boolean useAsyncComputation = true;
+
 }

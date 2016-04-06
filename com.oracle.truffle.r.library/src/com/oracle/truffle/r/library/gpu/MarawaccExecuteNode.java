@@ -27,7 +27,9 @@ import uk.ac.ed.jpai.ArrayFunction;
 
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.r.library.gpu.cache.MarawaccPackage;
+import com.oracle.truffle.r.library.gpu.cache.RMarawaccFutures;
 import com.oracle.truffle.r.library.gpu.cache.RMarawaccPromises;
+import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
@@ -37,15 +39,25 @@ public abstract class MarawaccExecuteNode extends RExternalBuiltinNode.Arg1 {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static PArray executeFunction(ArrayFunction<?, ?> marawaccFunction) {
-        MarawaccPackage first = RMarawaccPromises.INSTANCE.getPackage(0);
-        PArray data = first.getpArray();
-        PArray<?> result = marawaccFunction.apply(data);
-        return result;
+        if (ASTxOptions.useAsyncComputation) {
+            PArray pArray = RMarawaccFutures.INSTANCE.getPArray(marawaccFunction);
+            return pArray;
+        } else {
+            MarawaccPackage first = RMarawaccPromises.INSTANCE.getPackage(0);
+            PArray data = first.getpArray();
+            PArray<?> result = marawaccFunction.apply(data);
+            return result;
+        }
     }
 
     @SuppressWarnings("rawtypes")
     private static RAbstractVector unmarshall(PArray result, ArrayFunction<?, ?> marawaccFunction) {
-        MarawaccPackage marawaccPackage = RMarawaccPromises.INSTANCE.getPackageForArrayFunction(marawaccFunction);
+        MarawaccPackage marawaccPackage = null;
+        if (ASTxOptions.useAsyncComputation) {
+            marawaccPackage = RMarawaccFutures.INSTANCE.getPackageForArrayFunction(marawaccFunction);
+        } else {
+            marawaccPackage = RMarawaccPromises.INSTANCE.getPackageForArrayFunction(marawaccFunction);
+        }
         TypeInfo outTypeInfo = marawaccPackage.getTypeInfo();
         return ASTxUtils.unMarshallResultFromPArrays(outTypeInfo, result);
     }
@@ -54,7 +66,13 @@ public abstract class MarawaccExecuteNode extends RExternalBuiltinNode.Arg1 {
     public RAbstractVector executeMarawacc(ArrayFunction<?, ?> marawaccFunction) {
         PArray<?> result = executeFunction(marawaccFunction);
         RAbstractVector rResult = unmarshall(result, marawaccFunction);
-        RMarawaccPromises.INSTANCE.clean();
+
+        if (ASTxOptions.useAsyncComputation) {
+            RMarawaccFutures.INSTANCE.clean();
+        } else {
+            RMarawaccPromises.INSTANCE.clean();
+        }
+
         return rResult;
     }
 }
