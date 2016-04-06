@@ -41,6 +41,7 @@ public abstract class MarawaccExecuteNode extends RExternalBuiltinNode.Arg1 {
     private static PArray executeFunction(ArrayFunction<?, ?> marawaccFunction) {
         if (ASTxOptions.useAsyncComputation) {
             PArray pArray = RMarawaccFutures.INSTANCE.getPArray(marawaccFunction);
+            System.out.println("PArray: " + pArray);
             return pArray;
         } else {
             MarawaccPackage first = RMarawaccPromises.INSTANCE.getPackage(0);
