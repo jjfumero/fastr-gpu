@@ -209,6 +209,7 @@ public abstract class OCLVectorMulBuiltin extends RExternalBuiltinNode.Arg2 {
             return null;
         }
 
+        // Data preparation (marshalling)
         int[] a = new int[v1.getLength()];
         int[] b = new int[v1.getLength()];
         for (int i = 0; i < v1.getLength(); i++) {
@@ -216,7 +217,11 @@ public abstract class OCLVectorMulBuiltin extends RExternalBuiltinNode.Arg2 {
             b[i] = (int) v2.getDataAtAsObject(i);
         }
         int[] c = new int[v1.getLength()];
+
+        // Computation
         saxpyJOCLInteger(c.length, a, b, c);
+
+        // Return the result
         return RDataFactory.createIntVector(c, false);
 
     }

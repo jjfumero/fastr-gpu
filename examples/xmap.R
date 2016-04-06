@@ -31,7 +31,6 @@ for (i in seq(1,10)) {
         print(end-start);
 }
 
-
 print("Sapply")
 for (i in seq(1,10)) {
        start <- nanotime()
