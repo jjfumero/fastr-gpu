@@ -40,9 +40,7 @@ public abstract class MarawaccExecuteNode extends RExternalBuiltinNode.Arg1 {
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static PArray executeFunction(ArrayFunction<?, ?> marawaccFunction) {
         if (ASTxOptions.useAsyncComputation) {
-            PArray pArray = RMarawaccFutures.INSTANCE.getPArray(marawaccFunction);
-            System.out.println("PArray: " + pArray);
-            return pArray;
+            return RMarawaccFutures.INSTANCE.getPArray(marawaccFunction);
         } else {
             MarawaccPackage first = RMarawaccPromises.INSTANCE.getPackage(0);
             PArray data = first.getpArray();

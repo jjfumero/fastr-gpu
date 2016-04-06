@@ -42,6 +42,7 @@ import com.oracle.truffle.r.library.fastr.FastRTypeofNodeGen;
 import com.oracle.truffle.r.library.fastr.InteropExportNodeGen;
 import com.oracle.truffle.r.library.fastr.InteropImportNodeGen;
 import com.oracle.truffle.r.library.gpu.MarawaccExecuteNodeGen;
+import com.oracle.truffle.r.library.gpu.MarawaccGetNodeGen;
 import com.oracle.truffle.r.library.gpu.MarawaccInitBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.MarawaccMapBuiltin;
 import com.oracle.truffle.r.library.gpu.MarawaccOCLInfoBuiltinNodeGen;
@@ -155,6 +156,8 @@ public abstract class FastR extends RBuiltinNode {
                 return new MarawaccSapplyBuiltin();
             case "marawacc.execute":
                 return MarawaccExecuteNodeGen.create();
+            case "marawacc.get":
+                return MarawaccGetNodeGen.create();
             case "marawacc.map":
                 return new MarawaccMapBuiltin();
             case "marawacc.reduce":

@@ -30,7 +30,7 @@ for (i in seq(1,10)) {
         start <- nanotime()
         m1 <- marawacc.map(a, f, nThreads=4)
 		m2 <- marawacc.map(m1, f2);
-		result <- marawacc.execute(m2) 
+		result <- marawacc.get(m2) 
         end <- nanotime()
     	print(identical(r2, result))
         print(end-start);

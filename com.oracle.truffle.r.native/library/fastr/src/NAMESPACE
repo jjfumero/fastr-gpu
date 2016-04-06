@@ -34,6 +34,7 @@ export(marawacc.deviceInfo)
 export(marawacc.sapply) 	# Blocking operation
 export(marawacc.map) 		# Non-blocking operation
 export(marawacc.execute) 
+export(marawacc.get) 		# For async operations
 export(marawacc.reduce)	
 export(marawacc.vectorMul)
 

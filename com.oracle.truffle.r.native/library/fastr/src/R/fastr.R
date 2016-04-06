@@ -173,6 +173,10 @@ marawacc.execute <- function(arrayFunction) {
 	.FastR(.NAME="marawacc.execute", arrayFunction)
 }
 
+marawacc.get <- function(arrayFunction) {
+	.FastR(.NAME="marawacc.get", arrayFunction)
+}
+
 marawacc.reduce <- function(input, userFunction, neutral=0, ...) {
 	.FastR(.NAME="marawacc.reduce", input, userFunction, neutral, ...)
 }
