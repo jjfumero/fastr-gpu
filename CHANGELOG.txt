@@ -1,5 +1,8 @@
 astx-0.2
-	* Support for async operations get((map(map(map))))
+	* Support async for map operations : get((map(map(map))))
+	* Support async for reduction operations
+	* Get node added
+	* Futures added for async support
 	* Change number of threads per expression
 
 
