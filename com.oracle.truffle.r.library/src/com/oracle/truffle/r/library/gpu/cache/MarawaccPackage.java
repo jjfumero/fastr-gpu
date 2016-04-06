@@ -64,7 +64,7 @@ public class MarawaccPackage {
         this.output = value;
     }
 
-    public Object getRVector() {
+    public Object getExecutionValue() {
         return this.output;
     }
 }

@@ -113,22 +113,16 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         int nArgs = ASTxUtils.getNumberOfArguments(rFunction);
         String[] argsName = ASTxUtils.getArgumentsNames(rFunction);
         ArrayFunction composeLambda = null;
+        MarawaccPackage packageForArrayFunction = null;
         if (!ASTxOptions.useAsyncComputation) {
             composeLambda = createMarawaccLambda(nArgs, callTarget, rFunction, argsName, nThreads, marawaccFunction);
+            packageForArrayFunction = RMarawaccPromises.INSTANCE.getPackageForArrayFunction(marawaccFunction);
         } else {
             composeLambda = createMarawaccLambda(nArgs, callTarget, rFunction, argsName, nThreads);
-        }
-
-        // Get the package from the Promises
-        MarawaccPackage packageForArrayFunction = null;
-        if (ASTxOptions.useAsyncComputation) {
             packageForArrayFunction = RMarawaccFutures.INSTANCE.getPackageForArrayFunction(marawaccFunction);
-        } else {
-            packageForArrayFunction = RMarawaccPromises.INSTANCE.getPackageForArrayFunction(marawaccFunction);
         }
 
-        Object output = packageForArrayFunction.getRVector();
-
+        Object output = packageForArrayFunction.getExecutionValue();
         Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, rFunction, output, additionalArgs, argsName, 0);
         Object value = callTarget.call(argsPackage);
         TypeInfo outputType = ASTxUtils.typeInference(value);

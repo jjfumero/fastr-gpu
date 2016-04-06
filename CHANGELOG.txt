@@ -1,3 +1,8 @@
+astx-0.2
+	* Support for async operations get((map(map(map))))
+	* Change number of threads per expression
+
+
 astx-0.1
 	* Support for map/reduce with Marawacc threads backend. 
 	* Support for Integer, Boolean and Double arrays

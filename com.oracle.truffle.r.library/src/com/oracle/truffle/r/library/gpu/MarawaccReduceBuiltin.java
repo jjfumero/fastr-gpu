@@ -22,14 +22,18 @@
  */
 package com.oracle.truffle.r.library.gpu;
 
+import java.util.function.BiFunction;
+
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.jpai.ArrayFunction;
-import uk.ac.ed.jpai.Marawacc;
+import uk.ac.ed.jpai.Identity;
 
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.cache.MarawaccPackage;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
+import com.oracle.truffle.r.library.gpu.cache.RMarawaccFutures;
 import com.oracle.truffle.r.library.gpu.cache.RMarawaccPromises;
+import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
@@ -40,12 +44,12 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static <T, R> ArrayFunction<T, R> createMarawaccLambda(int nArgs, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, int neutral) {
-        @SuppressWarnings("unchecked")
-        ArrayFunction<T, R> function = (ArrayFunction<T, R>) Marawacc.reduce((x, y) -> {
+        Identity identity = new Identity<>();
+        ArrayFunction<T, R> function = identity.reduce((BiFunction) (x, y) -> {
             Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, rFunction, x, y, nameArgs);
-            Object result = callTarget.call(argsPackage);
-            return (Integer) result;
+            return callTarget.call(argsPackage);
         }, neutral);
         return function;
     }
@@ -80,7 +84,12 @@ public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
         marawaccPackage.setpArray(pArrayInput);
         marawaccPackage.setTypeInfo(outputType);
         marawaccPackage.setOutput(value);
-        RMarawaccPromises.INSTANCE.addPromise(marawaccPackage);
+
+        if (ASTxOptions.useAsyncComputation) {
+            RMarawaccFutures.INSTANCE.addFuture(marawaccPackage);
+        } else {
+            RMarawaccPromises.INSTANCE.addPromise(marawaccPackage);
+        }
         return composeLambda;
     }
 
@@ -90,22 +99,31 @@ public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
         int nArgs = ASTxUtils.getNumberOfArguments(rFunction);
         String[] argsName = ASTxUtils.getArgumentsNames(rFunction);
 
-        // Get the package from the Promises
-        MarawaccPackage packageForArrayFunction = RMarawaccPromises.INSTANCE.getPackageForArrayFunction(marawaccFunction);
-        Object output = packageForArrayFunction.getRVector();
+        MarawaccPackage packageForArrayFunction = null;
+        ArrayFunction composeLambda = null;
+        if (ASTxOptions.useAsyncComputation) {
+            composeLambda = createMarawaccLambda(nArgs, callTarget, rFunction, argsName, neutral);
+            packageForArrayFunction = RMarawaccFutures.INSTANCE.getPackageForArrayFunction(marawaccFunction);
+        } else {
+            composeLambda = createMarawaccLambda(nArgs, callTarget, rFunction, argsName, neutral, marawaccFunction);
+            packageForArrayFunction = RMarawaccPromises.INSTANCE.getPackageForArrayFunction(marawaccFunction);
+        }
 
+        Object output = packageForArrayFunction.getExecutionValue();
         Object[] argsPackage = ASTxUtils.getArgsPackageForReduction(nArgs, neutral, rFunction, output, additionalArgs, argsName, 0);
         Object value = rFunction.getTarget().call(argsPackage);
-
         TypeInfo outputType = ASTxUtils.typeInference(value);
 
-        ArrayFunction composeLambda = createMarawaccLambda(nArgs, callTarget, rFunction, argsName, neutral, marawaccFunction);
-
-        // Create package and annotate in the promises
+        // Create package and annotate in the promises/future
         MarawaccPackage marawaccPackage = new MarawaccPackage(composeLambda);
         marawaccPackage.setTypeInfo(outputType);
         marawaccPackage.setOutput(value);
-        RMarawaccPromises.INSTANCE.addPromise(marawaccPackage);
+
+        if (ASTxOptions.useAsyncComputation) {
+            RMarawaccFutures.INSTANCE.addFuture(marawaccPackage);
+        } else {
+            RMarawaccPromises.INSTANCE.addPromise(marawaccPackage);
+        }
         return composeLambda;
     }
 
