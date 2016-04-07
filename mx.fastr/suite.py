@@ -27,7 +27,7 @@ suite = {
     "suites" : [
             {
                "name" : "marawacc",
-               "version" : "bec1db9bdfb00675ec70d6907354c5268ca52e83",
+               "version" : "05a90b1af3c201118d4e52d884d45bbcf5d9930b",
                "urls" : [{"url" : "ssh://hg@bitbucket.org/juanfumero/newgraal", "kind" : "hg"}]
             },
         ],
