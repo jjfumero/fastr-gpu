@@ -284,7 +284,9 @@ public class ASTxUtils {
         } else if (value instanceof Boolean) {
             type = TypeInfo.BOOLEAN;
         } else {
+            // DEOPT
             System.out.println("Data type not supported: " + value.getClass());
+            System.out.println(__LINE__.print());
         }
         return type;
     }
