@@ -6,6 +6,7 @@ import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
+import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
@@ -39,7 +40,13 @@ public final class GPUTestNode extends RExternalBuiltinNode {
         String[] argsName = ASTxUtils.getArgumentsNames(function);
         Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, 0);
         Object value = function.getTarget().call(argsPackage);
-        TypeInfo outputType = ASTxUtils.typeInference(value);
+        TypeInfo outputType = null;
+        try {
+            outputType = ASTxUtils.typeInference(value);
+        } catch (MarawaccTypeException e) {
+            // DEPTIOMIZE
+            e.printStackTrace();
+        }
 
         ArrayList<Object> result = runJavaSequential(input, target, function, nArgs, additionalArgs, argsName, value);
         return ASTxUtils.unMarshallResultFromList(outputType, result);

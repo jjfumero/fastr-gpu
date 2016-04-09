@@ -30,6 +30,7 @@ import com.oracle.truffle.r.library.gpu.cache.MarawaccPackage;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.cache.RMarawaccFutures;
 import com.oracle.truffle.r.library.gpu.cache.RMarawaccPromises;
+import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
@@ -83,14 +84,26 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
     @SuppressWarnings("rawtypes")
     public static ArrayFunction composeExpression(RAbstractVector input, RFunction rFunction, RootCallTarget callTarget, RAbstractVector[] additionalArgs, int nThreads) {
         String[] argsName = ASTxUtils.getArgumentsNames(rFunction);
-        TypeInfoList inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
+        TypeInfoList inputTypeList = null;
+        try {
+            inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
+        } catch (MarawaccTypeException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         ArrayFunction composeLambda = createMarawaccLambda(inputTypeList.size(), callTarget, rFunction, argsName, nThreads);
         PArray<?> pArrayInput = ASTxUtils.marshall(input, additionalArgs, inputTypeList);
 
         int nArgs = ASTxUtils.getNumberOfArguments(rFunction);
         Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, rFunction, input, additionalArgs, argsName, 0);
         Object value = callTarget.call(argsPackage);
-        TypeInfo outputType = ASTxUtils.typeInference(value);
+        TypeInfo outputType = null;
+        try {
+            outputType = ASTxUtils.typeInference(value);
+        } catch (MarawaccTypeException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         // Create package and annotate in the promises
         MarawaccPackage marawaccPackage = new MarawaccPackage(composeLambda);
@@ -125,7 +138,13 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         Object output = packageForArrayFunction.getExecutionValue();
         Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, rFunction, output, additionalArgs, argsName, 0);
         Object value = callTarget.call(argsPackage);
-        TypeInfo outputType = ASTxUtils.typeInference(value);
+        TypeInfo outputType = null;
+        try {
+            outputType = ASTxUtils.typeInference(value);
+        } catch (MarawaccTypeException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         // Create package and annotate in the promises
         MarawaccPackage marawaccPackage = new MarawaccPackage(composeLambda);

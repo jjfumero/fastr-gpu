@@ -33,6 +33,7 @@ import com.oracle.truffle.r.library.gpu.cache.MarawaccPackage;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.cache.RMarawaccFutures;
 import com.oracle.truffle.r.library.gpu.cache.RMarawaccPromises;
+import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
@@ -73,8 +74,20 @@ public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
         Object[] argsPackage = ASTxUtils.getArgsPackageForReduction(nArgs, neutral, rFunction, input, additionalArgs, argsName, 0);
         Object value = rFunction.getTarget().call(argsPackage);
 
-        TypeInfoList inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
-        TypeInfo outputType = ASTxUtils.typeInference(value);
+        TypeInfoList inputTypeList = null;
+        try {
+            inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
+        } catch (MarawaccTypeException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        TypeInfo outputType = null;
+        try {
+            outputType = ASTxUtils.typeInference(value);
+        } catch (MarawaccTypeException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         ArrayFunction composeLambda = createMarawaccLambda(inputTypeList.size() + 1, callTarget, rFunction, argsName, neutral);
         PArray pArrayInput = ASTxUtils.marshall(input, additionalArgs, inputTypeList);
@@ -112,7 +125,13 @@ public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
         Object output = packageForArrayFunction.getExecutionValue();
         Object[] argsPackage = ASTxUtils.getArgsPackageForReduction(nArgs, neutral, rFunction, output, additionalArgs, argsName, 0);
         Object value = rFunction.getTarget().call(argsPackage);
-        TypeInfo outputType = ASTxUtils.typeInference(value);
+        TypeInfo outputType = null;
+        try {
+            outputType = ASTxUtils.typeInference(value);
+        } catch (MarawaccTypeException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         // Create package and annotate in the promises/future
         MarawaccPackage marawaccPackage = new MarawaccPackage(composeLambda);

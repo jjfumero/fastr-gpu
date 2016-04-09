@@ -34,6 +34,7 @@ import uk.ac.ed.datastructures.tuples.Tuple3;
 import uk.ac.ed.datastructures.tuples.Tuple4;
 
 import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.runtime.ArgumentsSignature;
@@ -252,7 +253,7 @@ public class ASTxUtils {
         return source;
     }
 
-    public static TypeInfo typeInference(RAbstractVector input) {
+    public static TypeInfo typeInference(RAbstractVector input) throws MarawaccTypeException {
         TypeInfo type = null;
         if (input instanceof RIntSequence) {
             type = TypeInfo.INT;
@@ -260,11 +261,13 @@ public class ASTxUtils {
             type = TypeInfo.DOUBLE;
         } else if (input instanceof RLogicalVector) {
             type = TypeInfo.BOOLEAN;
+        } else {
+            throw new MarawaccTypeException("Data type not supported: " + input.getClass());
         }
         return type;
     }
 
-    public static TypeInfoList typeInference(RAbstractVector input, RAbstractVector[] additionalArgs) {
+    public static TypeInfoList typeInference(RAbstractVector input, RAbstractVector[] additionalArgs) throws MarawaccTypeException {
         TypeInfoList list = new TypeInfoList();
         list.add(typeInference(input));
         if (additionalArgs != null) {
@@ -275,7 +278,7 @@ public class ASTxUtils {
         return list;
     }
 
-    public static TypeInfo typeInference(Object value) {
+    public static TypeInfo typeInference(Object value) throws MarawaccTypeException {
         TypeInfo type = null;
         if (value instanceof Integer) {
             type = TypeInfo.INT;
@@ -284,9 +287,7 @@ public class ASTxUtils {
         } else if (value instanceof Boolean) {
             type = TypeInfo.BOOLEAN;
         } else {
-            // DEOPT
-            System.out.println("Data type not supported: " + value.getClass());
-            System.out.println(__LINE__.print());
+            throw new MarawaccTypeException("Data type not supported: " + value.getClass());
         }
         return type;
     }

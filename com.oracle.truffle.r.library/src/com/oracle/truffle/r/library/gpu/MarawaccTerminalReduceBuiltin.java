@@ -30,6 +30,7 @@ import uk.ac.ed.jpai.Marawacc;
 
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
+import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
@@ -90,9 +91,14 @@ public final class MarawaccTerminalReduceBuiltin extends RExternalBuiltinNode {
 
         Object[] argsPackage = ASTxUtils.getArgsPackageForReduction(nArgs, neutral, function, input, additionalArgs, argsName, 0);
         Object value = function.getTarget().call(argsPackage);
-
-        TypeInfoList inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
-        TypeInfo outputType = ASTxUtils.typeInference(value);
+        TypeInfoList inputTypeList = null;
+        TypeInfo outputType = null;
+        try {
+            inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
+            outputType = ASTxUtils.typeInference(value);
+        } catch (MarawaccTypeException e) {
+            e.printStackTrace();
+        }
 
         if (!ASTxOptions.runMarawaccThreads) {
             // Run sequential
