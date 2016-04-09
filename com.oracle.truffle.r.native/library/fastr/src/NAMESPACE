@@ -37,6 +37,7 @@ export(marawacc.execute)
 export(marawacc.get) 		# For async operations
 export(marawacc.reduce)	
 export(marawacc.vectorMul)
+export(marawacc.testGPU)
 
 # Utilities
 export(nanotime)

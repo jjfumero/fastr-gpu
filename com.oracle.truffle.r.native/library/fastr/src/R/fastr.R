@@ -165,6 +165,10 @@ marawacc.sapply <- function(input, userFunction, nThreads=1, ...) {
 	.FastR(.NAME="marawacc.sapply", input, userFunction, nThreads, ...)
 }
 
+marawacc.testGPU <- function(input, userFunction, nThreads=1, ...) {
+	.FastR(.NAME="marawacc.testGPU", input, userFunction, nThreads, ...)
+}
+
 marawacc.map <- function(input, userFunction, nThreads=1, ...) {
 	.FastR(.NAME="marawacc.map", input, userFunction, nThreads, ...)
 }
