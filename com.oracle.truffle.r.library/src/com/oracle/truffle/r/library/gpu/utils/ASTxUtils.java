@@ -257,7 +257,11 @@ public class ASTxUtils {
         TypeInfo type = null;
         if (input instanceof RIntSequence) {
             type = TypeInfo.INT;
+        } else if (input instanceof RIntVector) {
+            type = TypeInfo.INT;
         } else if (input instanceof RDoubleSequence) {
+            type = TypeInfo.DOUBLE;
+        } else if (input instanceof RDoubleVector) {
             type = TypeInfo.DOUBLE;
         } else if (input instanceof RLogicalVector) {
             type = TypeInfo.BOOLEAN;

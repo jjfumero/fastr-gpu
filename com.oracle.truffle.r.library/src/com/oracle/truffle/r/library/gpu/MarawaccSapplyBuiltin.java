@@ -173,6 +173,7 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
      */
     @Override
     public Object call(RArgsValuesAndNames args) {
+
         RAbstractVector input = (RAbstractVector) args.getArgument(0);
         RFunction function = (RFunction) args.getArgument(1);
 
