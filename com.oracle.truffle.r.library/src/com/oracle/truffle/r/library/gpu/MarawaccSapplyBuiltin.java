@@ -28,20 +28,17 @@ import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.jpai.ArrayFunction;
 
 import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
+import com.oracle.truffle.r.library.gpu.deoptimization.MarawaccDeopt;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
-import com.oracle.truffle.r.runtime.context.Engine.ParseException;
-import com.oracle.truffle.r.runtime.context.RContext;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
-import com.oracle.truffle.r.runtime.data.RDoubleSequence;
+import com.oracle.truffle.r.runtime.data.RDoubleVector;
 import com.oracle.truffle.r.runtime.data.RFunction;
-import com.oracle.truffle.r.runtime.data.RIntSequence;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 /**
@@ -125,26 +122,7 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
             outputType = ASTxUtils.typeInference(value);
         } catch (MarawaccTypeException e) {
             // deopt to LApply
-            System.out.println("DEOPTIMIZING");
-            StringBuffer buffer = new StringBuffer("sapply(");
-            if (input instanceof RIntSequence) {
-                RIntSequence ref = (RIntSequence) input;
-                buffer.append(ref.getStart() + ":");
-                buffer.append(ref.getEnd() + " ,");
-            } else if (input instanceof RDoubleSequence) {
-                RDoubleSequence ref = (RDoubleSequence) input;
-                buffer.append(ref.getStart() + ":");
-                buffer.append(ref.getEnd() + " ,");
-            }
-            buffer.append(function.getRootNode().getSourceSection().getCode() + ")");
-            System.out.println(buffer.toString());
-
-            Source source = Source.fromText(buffer.toString(), "<eval>").withMimeType("application/x-r");
-            try {
-                return (RAbstractVector) RContext.getEngine().parseAndEval(source, false);
-            } catch (ParseException e1) {
-                System.out.println("Parse error");
-            }
+            return MarawaccDeopt.deoptToLApply(input, function);
         }
 
         if (ASTxOptions.runMarawaccThreads) {

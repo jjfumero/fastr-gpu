@@ -30,6 +30,7 @@ import uk.ac.ed.jpai.Marawacc;
 
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
+import com.oracle.truffle.r.library.gpu.exceptions.MarawaccRuntimeDeoptException;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
@@ -97,7 +98,7 @@ public final class MarawaccTerminalReduceBuiltin extends RExternalBuiltinNode {
             inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
             outputType = ASTxUtils.typeInference(value);
         } catch (MarawaccTypeException e) {
-            e.printStackTrace();
+            throw new MarawaccRuntimeDeoptException("Input types not supported");
         }
 
         if (!ASTxOptions.runMarawaccThreads) {

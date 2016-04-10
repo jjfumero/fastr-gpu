@@ -30,6 +30,7 @@ import com.oracle.truffle.r.library.gpu.cache.MarawaccPackage;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.cache.RMarawaccFutures;
 import com.oracle.truffle.r.library.gpu.cache.RMarawaccPromises;
+import com.oracle.truffle.r.library.gpu.exceptions.MarawaccRuntimeDeoptException;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
@@ -88,8 +89,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         try {
             inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
         } catch (MarawaccTypeException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new MarawaccRuntimeDeoptException("Input types not supported");
         }
         ArrayFunction composeLambda = createMarawaccLambda(inputTypeList.size(), callTarget, rFunction, argsName, nThreads);
         PArray<?> pArrayInput = ASTxUtils.marshall(input, additionalArgs, inputTypeList);
@@ -101,8 +101,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         try {
             outputType = ASTxUtils.typeInference(value);
         } catch (MarawaccTypeException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new MarawaccRuntimeDeoptException("Input types not supported");
         }
 
         // Create package and annotate in the promises
@@ -127,6 +126,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         String[] argsName = ASTxUtils.getArgumentsNames(rFunction);
         ArrayFunction composeLambda = null;
         MarawaccPackage packageForArrayFunction = null;
+
         if (!ASTxOptions.useAsyncComputation) {
             composeLambda = createMarawaccLambda(nArgs, callTarget, rFunction, argsName, nThreads, marawaccFunction);
             packageForArrayFunction = RMarawaccPromises.INSTANCE.getPackageForArrayFunction(marawaccFunction);
@@ -142,8 +142,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         try {
             outputType = ASTxUtils.typeInference(value);
         } catch (MarawaccTypeException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new MarawaccRuntimeDeoptException("Input types not supported");
         }
 
         // Create package and annotate in the promises

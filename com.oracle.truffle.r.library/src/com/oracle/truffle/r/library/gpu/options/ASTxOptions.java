@@ -43,4 +43,8 @@ public class ASTxOptions {
      */
     public static boolean useAsyncComputation = true;
 
+    /**
+     * Print internal messages such as deoptimizations, data types and so on for debugging.
+     */
+    public static boolean debug = true;
 }

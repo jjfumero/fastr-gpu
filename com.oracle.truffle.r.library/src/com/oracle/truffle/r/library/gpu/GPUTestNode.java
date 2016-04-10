@@ -38,6 +38,7 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 public final class GPUTestNode extends RExternalBuiltinNode {
 
+    @SuppressWarnings("unused")
     private static ArrayList<Object> runJavaSequential(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue) {
         ArrayList<Object> output = new ArrayList<>(input.getLength());
@@ -50,13 +51,13 @@ public final class GPUTestNode extends RExternalBuiltinNode {
         for (int i = 1; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
             Object val = newCallTarget.call(argsPackage);
-// Object val = callTarget.call(argsPackage);
+            // Object val = callTarget.call(argsPackage);
             output.add(val);
         }
         return output;
     }
 
-    public static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) {
+    private static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) {
 
         int nArgs = ASTxUtils.getNumberOfArguments(function);
         String[] argsName = ASTxUtils.getArgumentsNames(function);

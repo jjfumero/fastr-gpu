@@ -33,6 +33,7 @@ import com.oracle.truffle.r.library.gpu.cache.MarawaccPackage;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.cache.RMarawaccFutures;
 import com.oracle.truffle.r.library.gpu.cache.RMarawaccPromises;
+import com.oracle.truffle.r.library.gpu.exceptions.MarawaccRuntimeDeoptException;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
@@ -78,15 +79,13 @@ public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
         try {
             inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
         } catch (MarawaccTypeException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new MarawaccRuntimeDeoptException("Input types not supported");
         }
         TypeInfo outputType = null;
         try {
             outputType = ASTxUtils.typeInference(value);
         } catch (MarawaccTypeException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new MarawaccRuntimeDeoptException("Input types not supported");
         }
 
         ArrayFunction composeLambda = createMarawaccLambda(inputTypeList.size() + 1, callTarget, rFunction, argsName, neutral);
@@ -129,8 +128,7 @@ public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
         try {
             outputType = ASTxUtils.typeInference(value);
         } catch (MarawaccTypeException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new MarawaccRuntimeDeoptException("Input types not supported");
         }
 
         // Create package and annotate in the promises/future
