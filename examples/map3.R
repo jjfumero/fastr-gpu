@@ -35,8 +35,10 @@ for (i in seq(1,10)) {
 		m2 <- marawacc.map(m1, f2, nThreads=2);
 		m3 <- marawacc.map(m2, f3, nThreads=8);
 		result <- marawacc.execute(m3) 
+		result2 <- marawacc.execute(m2) 
         end <- nanotime()
     	print(identical(r3, result))
+    	print(identical(r2, result2))
         print(end-start);
 }
 

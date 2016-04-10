@@ -44,7 +44,13 @@ public class ASTxOptions {
     public static boolean useAsyncComputation = true;
 
     /**
+     * Dont clean the cache for async functions. It uses the result stored in the array of Futures.
+     */
+    public static boolean useAsyncMemoisation = true;
+
+    /**
      * Print internal messages such as deoptimizations, data types and so on for debugging.
      */
     public static boolean debug = true;
+
 }

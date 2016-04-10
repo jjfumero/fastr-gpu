@@ -3,7 +3,6 @@ package com.oracle.truffle.r.library.gpu.cache;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -12,6 +11,8 @@ import java.util.concurrent.Future;
 
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.jpai.ArrayFunction;
+
+import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 
 public class RMarawaccFutures {
 
@@ -80,8 +81,10 @@ public class RMarawaccFutures {
 
     public void clean() {
         executionQueue.clear();
-        futuresList.clear();
-        index.clear();
+        if (!ASTxOptions.useAsyncMemoisation) {
+            futuresList.clear();
+            index.clear();
+        }
         position = 0;
     }
 }
