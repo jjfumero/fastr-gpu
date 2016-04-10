@@ -22,11 +22,11 @@
  */
 package com.oracle.truffle.r.library.gpu.exceptions;
 
-public class MarawaccTypeException extends Exception {
+public class MarawaccRuntimeTypeException extends RuntimeException {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 8690111374810191110L;
 
-    public MarawaccTypeException(String message) {
+    public MarawaccRuntimeTypeException(String message) {
         super(message);
     }
 

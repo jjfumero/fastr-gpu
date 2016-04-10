@@ -34,6 +34,7 @@ import uk.ac.ed.datastructures.tuples.Tuple3;
 import uk.ac.ed.datastructures.tuples.Tuple4;
 
 import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.r.library.gpu.exceptions.MarawaccRuntimeTypeException;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
@@ -291,7 +292,7 @@ public class ASTxUtils {
         } else if (value instanceof Boolean) {
             type = TypeInfo.BOOLEAN;
         } else {
-            throw new MarawaccTypeException("Data type not supported: " + value.getClass());
+            throw new MarawaccTypeException("Data type not supported: " + value.getClass() + " [ " + __LINE__.print() + "]");
         }
         return type;
     }
@@ -373,7 +374,7 @@ public class ASTxUtils {
                 }
                 return parray;
             default:
-                throw new RuntimeException("Data type not supported");
+                throw new MarawaccRuntimeTypeException("Data type not supported: " + input.getClass() + " [ " + __LINE__.print() + "]");
         }
     }
 
@@ -408,7 +409,7 @@ public class ASTxUtils {
                 }
                 return parray;
             default:
-                throw new RuntimeException("Tuple number not supported yet");
+                throw new MarawaccRuntimeTypeException("Tuple not supported yet: " + infoList.size() + " [ " + __LINE__.print() + "]");
         }
     }
 
