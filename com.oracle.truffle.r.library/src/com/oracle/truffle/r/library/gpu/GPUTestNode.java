@@ -25,7 +25,6 @@ package com.oracle.truffle.r.library.gpu;
 import java.util.ArrayList;
 
 import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
@@ -46,12 +45,12 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
         // Try to create a new root node
         RootNode rootNode = function.getRootNode();
-        RootCallTarget newCallTarget = Truffle.getRuntime().createCallTarget(rootNode);
+        // RootCallTarget newCallTarget = Truffle.getRuntime().createCallTarget(rootNode);
 
         for (int i = 1; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
-            Object val = newCallTarget.call(argsPackage);
-            // Object val = callTarget.call(argsPackage);
+            // Object val = newCallTarget.call(argsPackage);
+            Object val = callTarget.call(argsPackage);
             output.add(val);
         }
         return output;
