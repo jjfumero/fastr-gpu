@@ -1,6 +1,7 @@
 #! /usr/bin/Python
 
-import os 
+import os
+import sys 
 
 def inspectCurrentVersion():
 	command = "cat mx.fastr/suite.py | grep -A1  marawacc | grep version > tmp_marawacc_version"
@@ -14,7 +15,8 @@ def compareVersions():
 	current = fCurrent.read()
 
 	if (last != current):
-		print "Update repository: make update"
+		print "\n\nUpdate repository: make update\n\n"
+		sys.exit(-1)
 
 def removeTempFile():
 	command = "rm tmp_marawacc_version"
