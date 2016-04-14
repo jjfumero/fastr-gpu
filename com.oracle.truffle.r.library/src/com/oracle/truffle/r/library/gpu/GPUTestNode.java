@@ -25,8 +25,6 @@ package com.oracle.truffle.r.library.gpu;
 import java.util.ArrayList;
 
 import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.api.Truffle;
-import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
@@ -38,20 +36,21 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 public final class GPUTestNode extends RExternalBuiltinNode {
 
-    @SuppressWarnings("unused")
     private static ArrayList<Object> runJavaSequential(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue) {
         ArrayList<Object> output = new ArrayList<>(input.getLength());
         output.add(firstValue);
 
-        // Try to create a new root node
-        RootNode rootNode = function.getRootNode();
-        RootCallTarget newCallTarget = Truffle.getRuntime().createCallTarget(rootNode);
+        // Create a new root node
+        // RootNode rootNode = function.getRootNode();
+        // RootCallTarget newCallTarget = Truffle.getRuntime().createCallTarget(rootNode);
+
+        // Sequential computation -> waste time to call the PE
 
         for (int i = 1; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
-            Object val = newCallTarget.call(argsPackage);
-            // Object val = callTarget.call(argsPackage);
+            // Object val = newCallTarget.call(argsPackage);
+            Object val = callTarget.call(argsPackage);
             output.add(val);
         }
         return output;
