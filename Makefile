@@ -5,11 +5,12 @@ all:
 	mx build 
 
 parallel:
-	python scripts/diffUpdate.py  || (echo "mycommand failed $$?"; exit 1)
+	mx sforceimports
+	#python scripts/diffUpdate.py  || (echo "mycommand failed $$?"; exit 1)
 	mx build -p
 
 update:
-	python scripts/marawaccUpdate.py
+	#python scripts/marawaccUpdate.py
 	mx sforceimports
 
 eclipse:
