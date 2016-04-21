@@ -40,6 +40,22 @@ $ make
 ```
 
 
+### Eclipse 
+
+```
+#!bash
+
+$ make eclipse 
+
+```
+
+Then import the projects into eclipse 
+
+# Note
+
+This compiler has been tested on Linux Fedora 21/22/23 with OpenJDK >= 1.8_61.
+
+
 # FastR
 
 FastR is an implementation of the [R Language](http://www.r-project.org/) in Java atop [Truffle and Graal](http://openjdk.java.net/projects/graal/).
