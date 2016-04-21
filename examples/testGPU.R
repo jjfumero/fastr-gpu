@@ -4,7 +4,7 @@ f <- function(x) {
 	return (x * 2.0)
 }
 
-for (i in seq(1,1)) {
+for (i in seq(1,10)) {
         start <- nanotime()
         result <- marawacc.testGPU(a, f, nThreads=4)
         end <- nanotime()

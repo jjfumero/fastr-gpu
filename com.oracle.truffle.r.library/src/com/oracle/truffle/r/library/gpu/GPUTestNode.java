@@ -45,7 +45,8 @@ public final class GPUTestNode extends RExternalBuiltinNode {
         // RootNode rootNode = function.getRootNode();
         // RootCallTarget newCallTarget = Truffle.getRuntime().createCallTarget(rootNode);
 
-        // Sequential computation -> waste time to call the PE
+        System.out.println("[CLASS OF CALLTARGET]: " + callTarget.getClass());
+        callTarget.generateIDForGPU();
 
         for (int i = 1; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
