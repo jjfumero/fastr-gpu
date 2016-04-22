@@ -26,6 +26,7 @@ import java.util.ArrayList;
 
 import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
 
+import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
@@ -55,7 +56,9 @@ public final class GPUTestNode extends RExternalBuiltinNode {
             while (MarawaccGraalIR.INSTANCE.getCompiledGraph(callTarget.getIDForGPU()) == null) {
                 // wait
             }
-            System.out.println("COMPILE TO GPU");
+            StructuredGraph graphToCompile = MarawaccGraalIR.INSTANCE.getCompiledGraph(callTarget.getIDForGPU());
+            MarawaccGraalIR.INSTANCE.clean();
+            System.out.println("COMPILE TO GPU: " + graphToCompile.toString());
         };
 
         Thread t = new Thread(r);
