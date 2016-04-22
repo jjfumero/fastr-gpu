@@ -5,7 +5,6 @@ all:
 	mx build 
 
 parallel:
-	mx sforceimports
 	mx build -p
 
 update:
