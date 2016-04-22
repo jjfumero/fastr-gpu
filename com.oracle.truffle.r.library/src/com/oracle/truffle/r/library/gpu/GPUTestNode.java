@@ -24,6 +24,12 @@ package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
 
+import uk.ac.ed.datastructures.common.AcceleratorPArray;
+import uk.ac.ed.datastructures.common.PArray;
+import uk.ac.ed.datastructures.tuples.Tuple2;
+import uk.ac.ed.jpai.graal.GraalGPUCompilationUnit;
+import uk.ac.ed.jpai.graal.GraalGPUCompiler;
+import uk.ac.ed.jpai.graal.GraalGPUExecutor;
 import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
 
 import com.oracle.graal.nodes.StructuredGraph;
@@ -58,7 +64,21 @@ public final class GPUTestNode extends RExternalBuiltinNode {
             }
             StructuredGraph graphToCompile = MarawaccGraalIR.INSTANCE.getCompiledGraph(callTarget.getIDForGPU());
             MarawaccGraalIR.INSTANCE.clean();
-            System.out.println("COMPILE TO GPU: " + graphToCompile.toString());
+
+// System.out.println("COMPILE TO GPU: " + graphToCompile.toString());
+//
+// // Compilation
+// GraalGPUCompilationUnit compileGraphToGPU = GraalGPUCompiler.compileGraphToGPU(input,
+// graphToCompile);
+//
+// // Execution
+// AcceleratorPArray<Tuple2<Double, Double>> copyToDevice = GraalGPUExecutor.copyToDevice(input,
+// compileGraphToGPU.getInputType());
+// AcceleratorPArray<Double> executeOnTheDevice = GraalGPUExecutor.<Tuple2<Double, Double>, Double>
+// executeOnTheDevice(graphToCompile, copyToDevice, compileGraphToGPU.getOuputType());
+// PArray<Double> result = GraalGPUExecutor.copyToHost(executeOnTheDevice,
+// compileGraphToGPU.getOuputType());
+
         };
 
         Thread t = new Thread(r);
