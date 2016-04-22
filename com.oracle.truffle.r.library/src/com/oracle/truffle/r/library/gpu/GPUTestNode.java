@@ -28,7 +28,6 @@ import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.datastructures.common.AcceleratorPArray;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.tuples.Tuple2;
-import uk.ac.ed.jpai.ArrayFunction;
 import uk.ac.ed.jpai.graal.GraalGPUCompilationUnit;
 import uk.ac.ed.jpai.graal.GraalGPUCompiler;
 import uk.ac.ed.jpai.graal.GraalGPUExecutor;
@@ -38,7 +37,6 @@ import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
-import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
@@ -58,17 +56,19 @@ public final class GPUTestNode extends RExternalBuiltinNode {
         // Create a new root node
         // RootNode rootNode = function.getRootNode();
         // RootCallTarget newCallTarget = Truffle.getRuntime().createCallTarget(rootNode);
-        MarawaccGraalIR.getInstance();
 
         callTarget.generateIDForGPU();
 
-        Runnable r = () -> {
-            System.out.println("!!!LAMBDA GPU Compilation thread: " + callTarget.getIDForGPU());
+        for (int i = 1; i < input.getLength(); i++) {
+            Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
+            // Object val = newCallTarget.call(argsPackage);
+            Object val = callTarget.call(argsPackage);
+            output.add(val);
 
-            if (MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU()) == null) {
+            StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
 
-                StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
-                System.out.println("COMPILE TO GPU: " + graphToCompile);
+            if (graphToCompile != null) {
+                System.out.println(">>>>>>>>>>>>!!!COMPILE TO GPU: " + graphToCompile);
 
                 // Force OpenCL kernel visualisation
                 GraalAcceleratorOptions.printOffloadKernel = true;
@@ -84,16 +84,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
                                 compileGraphToGPU.getOuputType());
 
             }
-        };
 
-        Thread t = new Thread(r);
-        t.start();
-
-        for (int i = 1; i < input.getLength(); i++) {
-            Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
-            // Object val = newCallTarget.call(argsPackage);
-            Object val = callTarget.call(argsPackage);
-            output.add(val);
         }
 
         return output;
