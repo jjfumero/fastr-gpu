@@ -24,9 +24,11 @@ package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
 
+import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.datastructures.common.AcceleratorPArray;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.tuples.Tuple2;
+import uk.ac.ed.jpai.ArrayFunction;
 import uk.ac.ed.jpai.graal.GraalGPUCompilationUnit;
 import uk.ac.ed.jpai.graal.GraalGPUCompiler;
 import uk.ac.ed.jpai.graal.GraalGPUExecutor;
@@ -36,7 +38,9 @@ import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
+import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
+import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
@@ -45,40 +49,41 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 public final class GPUTestNode extends RExternalBuiltinNode {
 
+    @SuppressWarnings({"unchecked", "unused", "rawtypes"})
     private static ArrayList<Object> runJavaSequential(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
-                    Object firstValue) {
+                    Object firstValue, PArray<?> inputPArray) {
         ArrayList<Object> output = new ArrayList<>(input.getLength());
         output.add(firstValue);
 
         // Create a new root node
         // RootNode rootNode = function.getRootNode();
         // RootCallTarget newCallTarget = Truffle.getRuntime().createCallTarget(rootNode);
+        MarawaccGraalIR.getInstance();
 
-        System.out.println("[CLASS OF CALLTARGET]: " + callTarget.getClass());
         callTarget.generateIDForGPU();
 
         Runnable r = () -> {
-            System.out.println("Inspect GPU Compilation thread");
-            while (MarawaccGraalIR.INSTANCE.getCompiledGraph(callTarget.getIDForGPU()) == null) {
-                // wait
+            System.out.println("!!!LAMBDA GPU Compilation thread: " + callTarget.getIDForGPU());
+
+            if (MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU()) == null) {
+
+                StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
+                System.out.println("COMPILE TO GPU: " + graphToCompile);
+
+                // Force OpenCL kernel visualisation
+                GraalAcceleratorOptions.printOffloadKernel = true;
+
+                // Compilation
+                GraalGPUCompilationUnit compileGraphToGPU = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile);
+
+                // Execution
+                AcceleratorPArray copyToDevice = GraalGPUExecutor.copyToDevice(inputPArray, compileGraphToGPU.getInputType());
+                AcceleratorPArray<Double> executeOnTheDevice = GraalGPUExecutor.<Tuple2<Double, Double>, Double>
+                                executeOnTheDevice(graphToCompile, copyToDevice, compileGraphToGPU.getOuputType());
+                PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice,
+                                compileGraphToGPU.getOuputType());
+
             }
-            StructuredGraph graphToCompile = MarawaccGraalIR.INSTANCE.getCompiledGraph(callTarget.getIDForGPU());
-            MarawaccGraalIR.INSTANCE.clean();
-
-// System.out.println("COMPILE TO GPU: " + graphToCompile.toString());
-//
-// // Compilation
-// GraalGPUCompilationUnit compileGraphToGPU = GraalGPUCompiler.compileGraphToGPU(input,
-// graphToCompile);
-//
-// // Execution
-// AcceleratorPArray<Tuple2<Double, Double>> copyToDevice = GraalGPUExecutor.copyToDevice(input,
-// compileGraphToGPU.getInputType());
-// AcceleratorPArray<Double> executeOnTheDevice = GraalGPUExecutor.<Tuple2<Double, Double>, Double>
-// executeOnTheDevice(graphToCompile, copyToDevice, compileGraphToGPU.getOuputType());
-// PArray<Double> result = GraalGPUExecutor.copyToHost(executeOnTheDevice,
-// compileGraphToGPU.getOuputType());
-
         };
 
         Thread t = new Thread(r);
@@ -90,6 +95,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
             Object val = callTarget.call(argsPackage);
             output.add(val);
         }
+
         return output;
     }
 
@@ -107,7 +113,17 @@ public final class GPUTestNode extends RExternalBuiltinNode {
             e.printStackTrace();
         }
 
-        ArrayList<Object> result = runJavaSequential(input, target, function, nArgs, additionalArgs, argsName, value);
+        TypeInfoList inputTypeList = null;
+        try {
+            inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
+        } catch (MarawaccTypeException e1) {
+            e1.printStackTrace();
+        }
+
+        // Create PArrays
+        PArray<?> inputPArrayFormat = ASTxUtils.marshall(input, additionalArgs, inputTypeList);
+
+        ArrayList<Object> result = runJavaSequential(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat);
         return ASTxUtils.unMarshallResultFromList(outputType, result);
     }
 
