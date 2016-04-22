@@ -24,6 +24,8 @@ package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
 
+import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
+
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
@@ -47,6 +49,17 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
         System.out.println("[CLASS OF CALLTARGET]: " + callTarget.getClass());
         callTarget.generateIDForGPU();
+
+        Runnable r = () -> {
+            System.out.println("Inspect GPU Compilation thread");
+            while (MarawaccGraalIR.INSTANCE.getCompiledGraph(callTarget.getIDForGPU()) == null) {
+                // wait
+            }
+            System.out.println("COMPILE TO GPU");
+        };
+
+        Thread t = new Thread(r);
+        t.start();
 
         for (int i = 1; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
