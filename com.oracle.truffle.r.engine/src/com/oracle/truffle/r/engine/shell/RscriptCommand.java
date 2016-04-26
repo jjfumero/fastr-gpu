@@ -22,12 +22,26 @@
  */
 package com.oracle.truffle.r.engine.shell;
 
-import static com.oracle.truffle.r.runtime.RCmdOptions.RCmdOption.*;
+import static com.oracle.truffle.r.runtime.RCmdOptions.RCmdOption.EXPR;
+import static com.oracle.truffle.r.runtime.RCmdOptions.RCmdOption.FILE;
+import static com.oracle.truffle.r.runtime.RCmdOptions.RCmdOption.HELP;
+import static com.oracle.truffle.r.runtime.RCmdOptions.RCmdOption.NO_RESTORE;
+import static com.oracle.truffle.r.runtime.RCmdOptions.RCmdOption.SLAVE;
+import static com.oracle.truffle.r.runtime.RCmdOptions.RCmdOption.VERSION;
 
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
 
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.context.*;
+import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
+
+import com.oracle.truffle.r.runtime.RCmdOptions;
+import com.oracle.truffle.r.runtime.RInternalError;
+import com.oracle.truffle.r.runtime.RVersionNumber;
+import com.oracle.truffle.r.runtime.context.ContextInfo;
 
 /**
  * Emulates the (Gnu)Rscript command as precisely as possible. in GnuR, Rscript is a genuine wrapper
@@ -89,9 +103,16 @@ public class RscriptCommand {
         options.setArguments(adjArgs.toArray(new String[adjArgs.size()]));
     }
 
+    public static void preloadSingleton() {
+        ClassLoader classLoader = MarawaccGraalIR.getInstance().getClass().getClassLoader();
+    }
+
     public static void main(String[] args) {
         // Since many of the options are shared parse them from an RSCRIPT perspective.
         // Handle --help and --version specially, as they exit.
+
+        preloadSingleton();
+
         RCmdOptions options = RCmdOptions.parseArguments(RCmdOptions.Client.RSCRIPT, args);
         preprocessRScriptOptions(options);
         ContextInfo info = RCommand.createContextInfoFromCommandLine(options);
