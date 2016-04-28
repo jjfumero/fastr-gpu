@@ -1,1 +1,2 @@
-mx Rscript --J @'-DR:+IgnoreVisibility -G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilation' $* 
+#mx Rscript --J @'-DR:+IgnoreVisibility -G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilation -XX:+TraceClassLoading -XX:+TraceClassUnloading -XX:-UseJVMCIClassLoader' $* 
+mx Rscript --J @'-DR:+IgnoreVisibility -G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilation  -XX:-UseJVMCIClassLoader ' $* 

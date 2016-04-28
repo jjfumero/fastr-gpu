@@ -22,6 +22,8 @@
  */
 package com.oracle.truffle.r.library.gpu;
 
+import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
@@ -49,7 +51,8 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
     @SuppressWarnings({"unchecked", "unused", "rawtypes"})
     private static ArrayList<Object> runJavaSequential(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
-                    Object firstValue, PArray<?> inputPArray) {
+                    Object firstValue, PArray<?> inputPArray) throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
+                    SecurityException, MalformedURLException {
         ArrayList<Object> output = new ArrayList<>(input.getLength());
         output.add(firstValue);
 
@@ -68,7 +71,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
             StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
 
             if (graphToCompile != null) {
-                System.out.println(">>>>>>>>>>>>!!!COMPILE TO GPU: " + graphToCompile);
+                System.out.println("[MARAWACC] >>>>>>>>>>>>!!!COMPILE TO GPU: " + graphToCompile);
 
                 // Force OpenCL kernel visualisation
                 GraalAcceleratorOptions.printOffloadKernel = true;
@@ -78,19 +81,16 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
                 // Execution
                 AcceleratorPArray copyToDevice = GraalGPUExecutor.copyToDevice(inputPArray, compileGraphToGPU.getInputType());
-                AcceleratorPArray<Double> executeOnTheDevice = GraalGPUExecutor.<Tuple2<Double, Double>, Double>
-                                executeOnTheDevice(graphToCompile, copyToDevice, compileGraphToGPU.getOuputType());
-                PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice,
-                                compileGraphToGPU.getOuputType());
-
+                AcceleratorPArray<Double> executeOnTheDevice = GraalGPUExecutor.<Tuple2<Double, Double>, Double> executeOnTheDevice(graphToCompile, copyToDevice, compileGraphToGPU.getOuputType());
+                PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice, compileGraphToGPU.getOuputType());
             }
-
         }
 
         return output;
     }
 
-    private static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) {
+    private static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) throws ClassNotFoundException,
+                    IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, MalformedURLException {
 
         int nArgs = ASTxUtils.getNumberOfArguments(function);
         String[] argsName = ASTxUtils.getArgumentsNames(function);
@@ -120,6 +120,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
     @Override
     public Object call(RArgsValuesAndNames args) {
+
         RAbstractVector input = (RAbstractVector) args.getArgument(0);
         RFunction function = (RFunction) args.getArgument(1);
 
@@ -134,6 +135,12 @@ public final class GPUTestNode extends RExternalBuiltinNode {
                 additionalInputs[i] = (RAbstractVector) args.getArgument(i + 3);
             }
         }
-        return computeMap(input, function, target, additionalInputs);
+        try {
+            return computeMap(input, function, target, additionalInputs);
+        } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | MalformedURLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
     }
 }
