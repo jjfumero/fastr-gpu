@@ -35,7 +35,6 @@ import uk.ac.ed.jpai.graal.GraalGPUCompiler;
 import uk.ac.ed.jpai.graal.GraalGPUExecutor;
 import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
 
-import com.oracle.graal.compiler.common.type.ArithmeticOpTable.Op;
 import com.oracle.graal.graph.Node;
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.truffle.OptimizedCallTarget;
@@ -51,6 +50,8 @@ import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 public final class GPUTestNode extends RExternalBuiltinNode {
+
+    private static boolean gpuExecution = false;
 
     @SuppressWarnings({"unchecked", "unused", "rawtypes"})
     private static ArrayList<Object> runJavaSequential(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
@@ -90,6 +91,10 @@ public final class GPUTestNode extends RExternalBuiltinNode {
                 AcceleratorPArray copyToDevice = GraalGPUExecutor.copyToDevice(inputPArray, compileGraphToGPU.getInputType());
                 AcceleratorPArray<Double> executeOnTheDevice = GraalGPUExecutor.<Tuple2<Double, Double>, Double> executeOnTheDevice(graphToCompile, copyToDevice, compileGraphToGPU.getOuputType());
                 PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice, compileGraphToGPU.getOuputType());
+                ArrayList<Object> arrayList = new ArrayList<Object>();
+                arrayList.add(result);
+                gpuExecution = true;
+                return arrayList;
             }
         }
 
@@ -122,7 +127,11 @@ public final class GPUTestNode extends RExternalBuiltinNode {
         PArray<?> inputPArrayFormat = ASTxUtils.marshall(input, additionalArgs, inputTypeList);
 
         ArrayList<Object> result = runJavaSequential(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat);
-        return ASTxUtils.unMarshallResultFromList(outputType, result);
+        if (!gpuExecution) {
+            return ASTxUtils.unMarshallResultFromList(outputType, result);
+        } else {
+            return ASTxUtils.unMarshallResultFromPArrays(outputType, (PArray) result.get(0));
+        }
     }
 
     @Override
