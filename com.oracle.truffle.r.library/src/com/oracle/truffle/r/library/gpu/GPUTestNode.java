@@ -35,7 +35,10 @@ import uk.ac.ed.jpai.graal.GraalGPUCompiler;
 import uk.ac.ed.jpai.graal.GraalGPUExecutor;
 import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
 
+import com.oracle.graal.compiler.common.type.ArithmeticOpTable.Op;
+import com.oracle.graal.graph.Node;
 import com.oracle.graal.nodes.StructuredGraph;
+import com.oracle.graal.truffle.OptimizedCallTarget;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
@@ -73,11 +76,15 @@ public final class GPUTestNode extends RExternalBuiltinNode {
             if (graphToCompile != null) {
                 System.out.println("[MARAWACC] >>>>>>>>>>>>!!!COMPILE TO GPU: " + graphToCompile);
 
+                for (Node node : graphToCompile.getNodes()) {
+                    System.out.println(node);
+                }
+
                 // Force OpenCL kernel visualisation
                 GraalAcceleratorOptions.printOffloadKernel = true;
 
                 // Compilation
-                GraalGPUCompilationUnit compileGraphToGPU = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile);
+                GraalGPUCompilationUnit compileGraphToGPU = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, false, (OptimizedCallTarget) callTarget);
 
                 // Execution
                 AcceleratorPArray copyToDevice = GraalGPUExecutor.copyToDevice(inputPArray, compileGraphToGPU.getInputType());
