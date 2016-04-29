@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.datastructures.common.AcceleratorPArray;
 import uk.ac.ed.datastructures.common.PArray;
-import uk.ac.ed.datastructures.tuples.Tuple2;
 import uk.ac.ed.jpai.graal.GraalGPUCompilationUnit;
 import uk.ac.ed.jpai.graal.GraalGPUCompiler;
 import uk.ac.ed.jpai.graal.GraalGPUExecutor;
@@ -92,7 +91,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
                 // Execution
                 AcceleratorPArray copyToDevice = GraalGPUExecutor.copyToDevice(inputPArray, compileGraphToGPU.getInputType());
-                AcceleratorPArray<Double> executeOnTheDevice = GraalGPUExecutor.<Tuple2<Double, Double>, Double> executeOnTheDevice(graphToCompile, copyToDevice, compileGraphToGPU.getOuputType());
+                AcceleratorPArray executeOnTheDevice = GraalGPUExecutor.executeOnTheDevice(graphToCompile, copyToDevice, compileGraphToGPU.getOuputType());
                 PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice, compileGraphToGPU.getOuputType());
                 ArrayList<Object> arrayList = new ArrayList<Object>();
                 arrayList.add(result);
@@ -107,7 +106,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
                 // Execution
                 AcceleratorPArray copyToDevice = GraalGPUExecutor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
-                AcceleratorPArray<Double> executeOnTheDevice = GraalGPUExecutor.<Tuple2<Double, Double>, Double> executeOnTheDevice(graphToCompile, copyToDevice, gpuCompilationUnit.getOuputType());
+                AcceleratorPArray executeOnTheDevice = GraalGPUExecutor.executeOnTheDevice(graphToCompile, copyToDevice, gpuCompilationUnit.getOuputType());
                 PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
                 ArrayList<Object> arrayList = new ArrayList<Object>();
                 arrayList.add(result);
@@ -118,6 +117,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
         return output;
     }
 
+    @SuppressWarnings("rawtypes")
     private static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) throws ClassNotFoundException,
                     IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, MalformedURLException {
 
