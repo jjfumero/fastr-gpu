@@ -39,6 +39,7 @@ import com.oracle.graal.graph.Node;
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.truffle.OptimizedCallTarget;
 import com.oracle.truffle.api.RootCallTarget;
+import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
@@ -74,7 +75,9 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
             StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
 
-            if (graphToCompile != null) {
+            GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
+
+            if (graphToCompile != null && gpuCompilationUnit == null) {
                 System.out.println("[MARAWACC] >>>>>>>>>>>>!!!COMPILE TO GPU: " + graphToCompile);
 
                 for (Node node : graphToCompile.getNodes()) {
@@ -93,7 +96,21 @@ public final class GPUTestNode extends RExternalBuiltinNode {
                 PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice, compileGraphToGPU.getOuputType());
                 ArrayList<Object> arrayList = new ArrayList<Object>();
                 arrayList.add(result);
+
+                InternalGraphCache.INSTANCE.insertGPUBinary(graphToCompile, compileGraphToGPU);
+
                 gpuExecution = true;
+                return arrayList;
+            } else if (graphToCompile != null && gpuCompilationUnit != null) {
+
+                System.out.println("GETTING FROM THE CACHE");
+
+                // Execution
+                AcceleratorPArray copyToDevice = GraalGPUExecutor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
+                AcceleratorPArray<Double> executeOnTheDevice = GraalGPUExecutor.<Tuple2<Double, Double>, Double> executeOnTheDevice(graphToCompile, copyToDevice, gpuCompilationUnit.getOuputType());
+                PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
+                ArrayList<Object> arrayList = new ArrayList<Object>();
+                arrayList.add(result);
                 return arrayList;
             }
         }
