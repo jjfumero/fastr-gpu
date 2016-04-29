@@ -22,8 +22,6 @@
  */
 package com.oracle.truffle.r.library.gpu;
 
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
@@ -55,8 +53,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
     @SuppressWarnings({"unchecked", "unused", "rawtypes"})
     private static ArrayList<Object> runJavaSequential(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
-                    Object firstValue, PArray<?> inputPArray) throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
-                    SecurityException, MalformedURLException {
+                    Object firstValue, PArray<?> inputPArray) {
         ArrayList<Object> output = new ArrayList<>(input.getLength());
         output.add(firstValue);
 
@@ -118,8 +115,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings("rawtypes")
-    private static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) throws ClassNotFoundException,
-                    IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, MalformedURLException {
+    private static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) {
 
         int nArgs = ASTxUtils.getNumberOfArguments(function);
         String[] argsName = ASTxUtils.getArgumentsNames(function);
@@ -168,12 +164,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
                 additionalInputs[i] = (RAbstractVector) args.getArgument(i + 3);
             }
         }
-        try {
-            return computeMap(input, function, target, additionalInputs);
-        } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | MalformedURLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
+
+        return computeMap(input, function, target, additionalInputs);
     }
 }
