@@ -56,7 +56,44 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
     private static boolean gpuExecution = false;
 
-    @SuppressWarnings({"unchecked", "unused", "rawtypes"})
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static ArrayList<Object> compileAndRunWithMarawacc(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile) {
+        System.out.println("[MARAWACC] >>>>>>>>>>>>!!!COMPILE TO GPU: " + graphToCompile);
+        for (Node node : graphToCompile.getNodes()) {
+            System.out.println(node);
+        }
+
+        // Force OpenCL kernel visualisation
+        GraalAcceleratorOptions.printOffloadKernel = true;
+
+        // Compilation
+        GraalGPUCompilationUnit compileGraphToGPU = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, false, callTarget);
+
+        // Execution
+        AcceleratorPArray copyToDevice = GraalGPUExecutor.copyToDevice(inputPArray, compileGraphToGPU.getInputType());
+        AcceleratorPArray executeOnTheDevice = GraalGPUExecutor.executeOnTheDevice(graphToCompile, copyToDevice, compileGraphToGPU.getOuputType());
+        PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice, compileGraphToGPU.getOuputType());
+        ArrayList<Object> arrayList = new ArrayList<>();
+        arrayList.add(result);
+
+        InternalGraphCache.INSTANCE.insertGPUBinary(graphToCompile, compileGraphToGPU);
+
+        gpuExecution = true;
+        return arrayList;
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static ArrayList<Object> runWithMarawacc(PArray<?> inputPArray, StructuredGraph graphToCompile, GraalGPUCompilationUnit gpuCompilationUnit) {
+        System.out.println("GETTING FROM THE CACHE");
+        // Execution
+        AcceleratorPArray copyToDevice = GraalGPUExecutor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
+        AcceleratorPArray executeOnTheDevice = GraalGPUExecutor.executeOnTheDevice(graphToCompile, copyToDevice, gpuCompilationUnit.getOuputType());
+        PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
+        ArrayList<Object> arrayList = new ArrayList<>();
+        arrayList.add(result);
+        return arrayList;
+    }
+
     private static ArrayList<Object> runJavaSequential(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray) {
         ArrayList<Object> output = new ArrayList<>(input.getLength());
@@ -72,14 +109,8 @@ public final class GPUTestNode extends RExternalBuiltinNode {
         GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
         if (graphToCompile != null && gpuCompilationUnit != null) {
-            System.out.println("GETTING FROM THE CACHE");
-            // Execution
-            AcceleratorPArray copyToDevice = GraalGPUExecutor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
-            AcceleratorPArray executeOnTheDevice = GraalGPUExecutor.executeOnTheDevice(graphToCompile, copyToDevice, gpuCompilationUnit.getOuputType());
-            PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
-            ArrayList<Object> arrayList = new ArrayList<Object>();
-            arrayList.add(result);
-            return arrayList;
+            // Get the compiled code from the cache
+            return runWithMarawacc(inputPArray, graphToCompile, gpuCompilationUnit);
         }
 
         for (int i = 1; i < input.getLength(); i++) {
@@ -89,28 +120,8 @@ public final class GPUTestNode extends RExternalBuiltinNode {
             output.add(val);
 
             if (graphToCompile != null && gpuCompilationUnit == null) {
-                System.out.println("[MARAWACC] >>>>>>>>>>>>!!!COMPILE TO GPU: " + graphToCompile);
-                for (Node node : graphToCompile.getNodes()) {
-                    System.out.println(node);
-                }
-
-                // Force OpenCL kernel visualisation
-                GraalAcceleratorOptions.printOffloadKernel = true;
-
-                // Compilation
-                GraalGPUCompilationUnit compileGraphToGPU = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, false, (OptimizedCallTarget) callTarget);
-
-                // Execution
-                AcceleratorPArray copyToDevice = GraalGPUExecutor.copyToDevice(inputPArray, compileGraphToGPU.getInputType());
-                AcceleratorPArray executeOnTheDevice = GraalGPUExecutor.executeOnTheDevice(graphToCompile, copyToDevice, compileGraphToGPU.getOuputType());
-                PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice, compileGraphToGPU.getOuputType());
-                ArrayList<Object> arrayList = new ArrayList<Object>();
-                arrayList.add(result);
-
-                InternalGraphCache.INSTANCE.insertGPUBinary(graphToCompile, compileGraphToGPU);
-
-                gpuExecution = true;
-                return arrayList;
+                // Get the Structured Graph and compile it for GPU
+                return compileAndRunWithMarawacc(inputPArray, (OptimizedCallTarget) callTarget, graphToCompile);
             }
         }
 
