@@ -47,6 +47,11 @@ import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
 import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
+/**
+ * AST Node to check the connection with Marawacc. This is just a proof of concept.
+ *
+ *
+ */
 public final class GPUTestNode extends RExternalBuiltinNode {
 
     private static boolean gpuExecution = false;
@@ -63,19 +68,28 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
         callTarget.generateIDForGPU();
 
+        StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
+        GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
+
+        if (graphToCompile != null && gpuCompilationUnit != null) {
+            System.out.println("GETTING FROM THE CACHE");
+            // Execution
+            AcceleratorPArray copyToDevice = GraalGPUExecutor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
+            AcceleratorPArray executeOnTheDevice = GraalGPUExecutor.executeOnTheDevice(graphToCompile, copyToDevice, gpuCompilationUnit.getOuputType());
+            PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
+            ArrayList<Object> arrayList = new ArrayList<Object>();
+            arrayList.add(result);
+            return arrayList;
+        }
+
         for (int i = 1; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
             // Object val = newCallTarget.call(argsPackage);
             Object val = callTarget.call(argsPackage);
             output.add(val);
 
-            StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
-
-            GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
-
             if (graphToCompile != null && gpuCompilationUnit == null) {
                 System.out.println("[MARAWACC] >>>>>>>>>>>>!!!COMPILE TO GPU: " + graphToCompile);
-
                 for (Node node : graphToCompile.getNodes()) {
                     System.out.println(node);
                 }
@@ -96,17 +110,6 @@ public final class GPUTestNode extends RExternalBuiltinNode {
                 InternalGraphCache.INSTANCE.insertGPUBinary(graphToCompile, compileGraphToGPU);
 
                 gpuExecution = true;
-                return arrayList;
-            } else if (graphToCompile != null && gpuCompilationUnit != null) {
-
-                System.out.println("GETTING FROM THE CACHE");
-
-                // Execution
-                AcceleratorPArray copyToDevice = GraalGPUExecutor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
-                AcceleratorPArray executeOnTheDevice = GraalGPUExecutor.executeOnTheDevice(graphToCompile, copyToDevice, gpuCompilationUnit.getOuputType());
-                PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
-                ArrayList<Object> arrayList = new ArrayList<Object>();
-                arrayList.add(result);
                 return arrayList;
             }
         }
