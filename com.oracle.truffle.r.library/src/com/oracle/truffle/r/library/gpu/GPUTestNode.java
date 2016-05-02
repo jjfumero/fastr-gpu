@@ -39,6 +39,7 @@ import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
+import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
@@ -57,9 +58,12 @@ public final class GPUTestNode extends RExternalBuiltinNode {
     private static boolean gpuExecution = false;
 
     private static GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile) {
-        System.out.println("[MARAWACC] >>>>>>>>>>>>!!!COMPILE TO GPU: " + graphToCompile);
-        for (Node node : graphToCompile.getNodes()) {
-            System.out.println(node);
+
+        if (ASTxOptions.debug) {
+            System.out.println("[MARAWACC] Compiling graph to GPU: " + graphToCompile);
+            for (Node node : graphToCompile.getNodes()) {
+                System.out.println(node);
+            }
         }
 
         // Force OpenCL kernel visualisation
@@ -87,6 +91,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
     private static ArrayList<Object> runJavaSequential(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray) {
+
         ArrayList<Object> output = new ArrayList<>(input.getLength());
         output.add(firstValue);
 
