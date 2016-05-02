@@ -64,15 +64,14 @@ public final class GPUTestNode extends RExternalBuiltinNode {
             for (Node node : graphToCompile.getNodes()) {
                 System.out.println(node);
             }
+            // Force OpenCL kernel visualisation
+            GraalAcceleratorOptions.printOffloadKernel = true;
         }
-
-        // Force OpenCL kernel visualisation
-        GraalAcceleratorOptions.printOffloadKernel = true;
 
         // Compilation
         GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, false, callTarget);
 
-        // Insert into cache
+        // Insert into caches
         InternalGraphCache.INSTANCE.insertGPUBinary(graphToCompile, gpuCompilationUnit);
 
         gpuExecution = true;
