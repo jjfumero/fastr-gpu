@@ -57,7 +57,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
     private static boolean gpuExecution = false;
 
-    private static GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile) {
+    private static GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue) {
 
         if (ASTxOptions.debug) {
             System.out.println("[MARAWACC] Compiling graph to GPU: " + graphToCompile);
@@ -69,7 +69,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
         }
 
         // Compilation
-        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, false, callTarget);
+        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, false, callTarget, firstValue);
 
         // Insert into caches
         InternalGraphCache.INSTANCE.insertGPUBinary(graphToCompile, gpuCompilationUnit);
@@ -116,7 +116,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
             if (graphToCompile != null && gpuCompilationUnit == null) {
                 // Get the Structured Graph and compile it for GPU
-                gpuCompilationUnit = compileForMarawaccBackend(inputPArray, (OptimizedCallTarget) callTarget, graphToCompile);
+                gpuCompilationUnit = compileForMarawaccBackend(inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, firstValue);
                 return runWithMarawacc(inputPArray, graphToCompile, gpuCompilationUnit);
             }
         }
