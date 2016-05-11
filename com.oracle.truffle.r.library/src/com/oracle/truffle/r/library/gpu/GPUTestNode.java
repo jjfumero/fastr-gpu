@@ -72,7 +72,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
         GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, false, callTarget, firstValue);
 
         // Insert into caches
-        InternalGraphCache.INSTANCE.insertGPUBinary(graphToCompile, gpuCompilationUnit);
+        InternalGraphCache.INSTANCE.installGPUBinary(graphToCompile, gpuCompilationUnit);
 
         gpuExecution = true;
         return gpuCompilationUnit;
