@@ -1,3 +1,9 @@
+astx-0.21
+	* Basic support for kernel generation (simple expressions) and non-generic.
+      This is a proof of concept.
+	* Interception from the Partial Evaluator to the GPU backend
+	* Mechanism to identify a potencial R callTarget for GPU compilation
+
 astx-0.2
 	* Support async for map operations : get((map(map(map))))
 	* Support async for reduction operations
