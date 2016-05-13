@@ -40,6 +40,7 @@ import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
+import com.oracle.truffle.r.library.gpu.phases.GPUCleanPhase;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
@@ -58,6 +59,8 @@ public final class GPUTestNode extends RExternalBuiltinNode {
     private static boolean gpuExecution = false;
 
     private static GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue) {
+
+        new GPUCleanPhase().apply(graphToCompile);
 
         if (ASTxOptions.debug) {
             System.out.println("[MARAWACC] Compiling graph to GPU: " + graphToCompile);
