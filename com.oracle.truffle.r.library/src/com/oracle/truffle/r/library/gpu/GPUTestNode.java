@@ -32,7 +32,6 @@ import uk.ac.ed.jpai.graal.GraalGPUCompiler;
 import uk.ac.ed.jpai.graal.GraalGPUExecutor;
 import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
 
-import com.oracle.graal.graph.Node;
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.truffle.OptimizedCallTarget;
 import com.oracle.truffle.api.RootCallTarget;
@@ -64,9 +63,9 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
         if (ASTxOptions.debug) {
             System.out.println("[MARAWACC] Compiling graph to GPU: " + graphToCompile);
-            for (Node node : graphToCompile.getNodes()) {
-                System.out.println(node);
-            }
+// for (Node node : graphToCompile.getNodes()) {
+// System.out.println(node);
+// }
             // Force OpenCL kernel visualisation
             GraalAcceleratorOptions.printOffloadKernel = true;
         }
@@ -117,7 +116,9 @@ public final class GPUTestNode extends RExternalBuiltinNode {
             Object val = callTarget.call(argsPackage);
             output.add(val);
 
-            if (graphToCompile != null && gpuCompilationUnit == null) {
+            int counter = MarawaccGraalIR.getInstance().getCounter();
+
+            if ((counter > 3) && graphToCompile != null && gpuCompilationUnit == null) {
                 // Get the Structured Graph and compile it for GPU
                 gpuCompilationUnit = compileForMarawaccBackend(inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, firstValue);
                 return runWithMarawacc(inputPArray, graphToCompile, gpuCompilationUnit);
