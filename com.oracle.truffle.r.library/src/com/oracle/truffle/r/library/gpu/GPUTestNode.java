@@ -41,7 +41,6 @@ import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.phases.GPUFrameStateEliminationPhase;
-import com.oracle.truffle.r.library.gpu.phases.GPURemoveInterpreterPhase;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
