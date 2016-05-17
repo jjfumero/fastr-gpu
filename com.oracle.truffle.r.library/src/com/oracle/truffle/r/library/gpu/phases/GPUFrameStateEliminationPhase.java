@@ -10,7 +10,7 @@ import com.oracle.graal.phases.common.DeadCodeEliminationPhase;
 import com.oracle.graal.phases.tiers.PhaseContext;
 import com.oracle.graal.phases.util.Providers;
 
-public class GPUFrameStateElimination extends Phase {
+public class GPUFrameStateEliminationPhase extends Phase {
 
     @Override
     protected void run(StructuredGraph graph) {
