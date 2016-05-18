@@ -51,7 +51,6 @@ public class RMarawaccFutures {
         futuresList = new ArrayList<>();
         index = new HashMap<>();
         packages = new ArrayList<>();
-
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
