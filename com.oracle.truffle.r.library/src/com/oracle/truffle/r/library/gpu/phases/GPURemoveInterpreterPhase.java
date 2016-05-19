@@ -1,5 +1,6 @@
 package com.oracle.truffle.r.library.gpu.phases;
 
+import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.marawacc.graal.GraalOCLBackendConnector;
 
 import com.oracle.graal.graph.Node;
@@ -15,6 +16,10 @@ public class GPURemoveInterpreterPhase extends Phase {
 
     @Override
     protected void run(StructuredGraph graph) {
+
+        if (GraalAcceleratorOptions.printMessagesFromR) {
+            System.out.println("[ASTx] RemoveInterpreterNode Phase");
+        }
 
         for (Node node : graph.getNodes()) {
             if (node instanceof ReinterpretNode) {

@@ -1,5 +1,6 @@
 package com.oracle.truffle.r.library.gpu.phases;
 
+import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.marawacc.graal.GraalOCLBackendConnector;
 
 import com.oracle.graal.compiler.target.Backend;
@@ -64,7 +65,9 @@ public class GPUBoxingEliminationPhase extends Phase {
     @Override
     protected void run(StructuredGraph graph) {
 
-        System.out.println("GPUBoxingElimination phase");
+        if (GraalAcceleratorOptions.printMessagesFromR) {
+            System.out.println("[ASTx] GPUBoxingElimination phase");
+        }
 
         Backend backend = GraalOCLBackendConnector.getHostBackend();
         Providers providers = backend.getProviders();
