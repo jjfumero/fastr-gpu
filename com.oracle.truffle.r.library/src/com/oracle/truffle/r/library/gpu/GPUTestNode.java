@@ -25,13 +25,13 @@ package com.oracle.truffle.r.library.gpu;
 import java.util.ArrayList;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
-import uk.ac.ed.accelerator.ocl.runtime.GraalIRConversion;
 import uk.ac.ed.datastructures.common.AcceleratorPArray;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.jpai.graal.GraalGPUCompilationUnit;
 import uk.ac.ed.jpai.graal.GraalGPUCompiler;
 import uk.ac.ed.jpai.graal.GraalGPUExecutor;
 import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
+import uk.ac.ed.marawacc.graal.CompilationUtils;
 
 import com.oracle.graal.graph.Node;
 import com.oracle.graal.nodes.StructuredGraph;
@@ -69,13 +69,13 @@ public final class GPUTestNode extends RExternalBuiltinNode {
         new GPUFrameStateEliminationPhase().apply(graphToCompile);
         // new GPURemoveInterpreterPhase().apply(graphToCompile);
 
-        GraalIRConversion.dumpGraph(graphToCompile, "afterGPUFrameState");
+        CompilationUtils.dumpGraph(graphToCompile, "afterGPUFrameState");
 
 // new GPUFixedGuardNodeRemovePhase().apply(graphToCompile);
 // GraalIRConversion.dumpGraph(graphToCompile, "GPUFixedGuardNodeRemovePhase");
 
         new GPUBoxingEliminationPhase().apply(graphToCompile);
-        GraalIRConversion.dumpGraph(graphToCompile, "GPUBoxingEliminationPhase");
+        CompilationUtils.dumpGraph(graphToCompile, "GPUBoxingEliminationPhase");
 
         if (ASTxOptions.debug) {
             System.out.println("[MARAWACC-ASTx] Graph to be compiled to the GPU: " + graphToCompile);
