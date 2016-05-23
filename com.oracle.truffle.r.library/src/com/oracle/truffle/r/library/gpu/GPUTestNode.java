@@ -102,9 +102,9 @@ public final class GPUTestNode extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static ArrayList<Object> runWithMarawacc(PArray<?> inputPArray, StructuredGraph graphToCompile, GraalGPUCompilationUnit gpuCompilationUnit) {
+    private static ArrayList<Object> runWithMarawacc(PArray<?> inputPArray, StructuredGraph graph, GraalGPUCompilationUnit gpuCompilationUnit) {
         AcceleratorPArray copyToDevice = GraalGPUExecutor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
-        AcceleratorPArray executeOnTheDevice = GraalGPUExecutor.executeOnTheDevice(graphToCompile, copyToDevice, gpuCompilationUnit.getOuputType());
+        AcceleratorPArray executeOnTheDevice = GraalGPUExecutor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType());
         PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
         ArrayList<Object> arrayList = new ArrayList<>();
         arrayList.add(result);
@@ -128,6 +128,9 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
         if (graphToCompile != null && gpuCompilationUnit != null) {
             // Get the compiled code from the cache
+            if (ASTxOptions.debug) {
+                System.out.println("[MARAWACC-ASTX] Getting the GPU binary from the cache");
+            }
             return runWithMarawacc(inputPArray, graphToCompile, gpuCompilationUnit);
         }
 
