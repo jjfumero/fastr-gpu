@@ -126,6 +126,9 @@ public final class GPUTestNode extends RExternalBuiltinNode {
             return runWithMarawacc(inputPArray, graphToCompile, gpuCompilationUnit);
         }
 
+        // force compilation
+        ((OptimizedCallTarget) callTarget).compile();
+
         for (int i = 1; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
             // Object val = newCallTarget.call(argsPackage);
