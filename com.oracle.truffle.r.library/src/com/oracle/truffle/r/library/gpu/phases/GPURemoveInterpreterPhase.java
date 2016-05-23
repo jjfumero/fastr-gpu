@@ -17,7 +17,7 @@ public class GPURemoveInterpreterPhase extends Phase {
     @Override
     protected void run(StructuredGraph graph) {
 
-        if (GraalAcceleratorOptions.printMessagesFromR) {
+        if (GraalAcceleratorOptions.printMessagesFromFastR) {
             System.out.println("[ASTx] RemoveInterpreterNode Phase");
         }
 
