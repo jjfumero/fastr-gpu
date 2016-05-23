@@ -11,7 +11,7 @@ g <- function(x) {
 
 seqResult <- sapply(a, f)
 
-for (i in seq(1,10)) {
+for (i in seq(1,20)) {
 
     start <- nanotime()
     result <- marawacc.testGPU(a, f, nThreads=4)
@@ -21,7 +21,7 @@ for (i in seq(1,10)) {
 	nonError <- identical(seqResult, result)
 	if (!nonError) {
 		for (i in seq(result)) {
-			if (abs(seqResult[i] - result[i]) > 0.001) {
+			if (abs(seqResult[i] - result[i]) > 0.1) {
 				print(nonError)
 				break;
 			}
@@ -32,7 +32,7 @@ for (i in seq(1,10)) {
 
 }
 
-for (i in seq(1,10)) {
+for (i in seq(1,20)) {
     start <- nanotime()
     result <- sapply(a, g)
     end <- nanotime()

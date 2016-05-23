@@ -1,2 +1,3 @@
-mx Rscript --J @'-DR:+IgnoreVisibility -G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilation -G:Dump=:1 -G:MethodFilter=Truffle.*' $*
+#! /bin/bash
+mx Rscript --J @'-DR:+IgnoreVisibility -G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilation -G:Dump=:1 -G:MethodFilter=Truffle.* -XX:-UseJVMCIClassLoader ' $*
 
