@@ -1,7 +1,6 @@
 default: parallel
 
 all:
-	python scripts/diffUpdate.py
 	mx build 
 
 parallel:
