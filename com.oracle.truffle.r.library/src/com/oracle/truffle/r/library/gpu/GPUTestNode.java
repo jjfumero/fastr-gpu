@@ -60,22 +60,27 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
     private static boolean gpuExecution = false;
 
+    private static void applyCompilationPhasesForGPU(StructuredGraph graph) {
+        // new GPUCleanPhase().apply(graphToCompile);
+        new GPUFrameStateEliminationPhase().apply(graph);
+        // new GPURemoveInterpreterPhase().apply(graphToCompile);
+
+        CompilationUtils.dumpGraph(graph, "afterGPUFrameState");
+
+        // new GPUFixedGuardNodeRemovePhase().apply(graphToCompile);
+        // GraalIRConversion.dumpGraph(graphToCompile, "GPUFixedGuardNodeRemovePhase");
+
+        new GPUBoxingEliminationPhase().apply(graph);
+        CompilationUtils.dumpGraph(graph, "GPUBoxingEliminationPhase");
+
+    }
+
     private static GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue) {
 
         // Just for debugging
         GraalAcceleratorOptions.generateRKernel_debugging = true;
 
-        // new GPUCleanPhase().apply(graphToCompile);
-        new GPUFrameStateEliminationPhase().apply(graphToCompile);
-        // new GPURemoveInterpreterPhase().apply(graphToCompile);
-
-        CompilationUtils.dumpGraph(graphToCompile, "afterGPUFrameState");
-
-// new GPUFixedGuardNodeRemovePhase().apply(graphToCompile);
-// GraalIRConversion.dumpGraph(graphToCompile, "GPUFixedGuardNodeRemovePhase");
-
-        new GPUBoxingEliminationPhase().apply(graphToCompile);
-        CompilationUtils.dumpGraph(graphToCompile, "GPUBoxingEliminationPhase");
+        applyCompilationPhasesForGPU(graphToCompile);
 
         if (ASTxOptions.debug) {
             System.out.println("[MARAWACC-ASTx] Graph to be compiled to the GPU: " + graphToCompile);
@@ -126,17 +131,17 @@ public final class GPUTestNode extends RExternalBuiltinNode {
             return runWithMarawacc(inputPArray, graphToCompile, gpuCompilationUnit);
         }
 
-        // force compilation
-        ((OptimizedCallTarget) callTarget).compile();
-
         for (int i = 1; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
             // Object val = newCallTarget.call(argsPackage);
             Object val = callTarget.call(argsPackage);
             output.add(val);
 
-            int counter = MarawaccGraalIR.getInstance().getCounter();
+            // int counter = MarawaccGraalIR.getInstance().getCounter();
 
+            /*
+             * Check if the graph is prepared for GPU compilation and invoke the compilation.
+             */
             if (graphToCompile != null && gpuCompilationUnit == null) {
                 // Get the Structured Graph and compile it for GPU
                 gpuCompilationUnit = compileForMarawaccBackend(inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, firstValue);
