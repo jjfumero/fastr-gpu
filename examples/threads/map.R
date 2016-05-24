@@ -1,5 +1,7 @@
+# Author: Juan Fumero 
+# Example multithread using async map operation
+
 a <- 1:1000000
-b <- 1:1000000
 
 f <- function(x) {
         a <- 0;

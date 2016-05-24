@@ -1,5 +1,7 @@
+# Author: Juan Fumero
+# Example of contatenation of two map asynchronous operations
+
 a <- 1:1000000
-b <- 1:1000000
 
 f <- function(x) {
         a <- 0;
