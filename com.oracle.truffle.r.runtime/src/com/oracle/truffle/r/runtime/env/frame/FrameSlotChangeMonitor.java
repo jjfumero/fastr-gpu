@@ -195,7 +195,7 @@ public final class FrameSlotChangeMonitor {
         if (info.needsInvalidation()) {
             info.setValue(newValue);
         }
-        checkAndInvalidate(frame, frameSlot, isNonLocal, invalidateProfile);
+        // checkAndInvalidate(frame, frameSlot, isNonLocal, invalidateProfile);
     }
 
     // update enclosing frames

@@ -78,9 +78,11 @@ public final class GPUTestNode extends RExternalBuiltinNode {
     private static GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue) {
 
         // Just for debugging
-        GraalAcceleratorOptions.generateRKernel_debugging = true;
+        GraalAcceleratorOptions.generateRKernel_debugging = false;
 
         applyCompilationPhasesForGPU(graphToCompile);
+
+        System.out.println("[ASTx] #NODES: " + graphToCompile.getNodeCount());
 
         if (ASTxOptions.debug) {
             System.out.println("[MARAWACC-ASTx] Graph to be compiled to the GPU: " + graphToCompile);
@@ -128,7 +130,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
         if (graphToCompile != null && gpuCompilationUnit != null) {
             // Get the compiled code from the cache
-            if (ASTxOptions.debug) {
+            if (ASTxOptions.debugCache) {
                 System.out.println("[MARAWACC-ASTX] Getting the GPU binary from the cache");
             }
             return runWithMarawacc(inputPArray, graphToCompile, gpuCompilationUnit);

@@ -47,7 +47,7 @@ import com.oracle.truffle.r.runtime.env.frame.*;
  *                            +--------------------+
  * INDEX_CALL_SRC          -> | SourceSection      |
  *                            +--------------------+
- * INDEX_CALLER_FRAME   ->    | MaterializedFrame  |
+ * INDEX_CALLER_FRAME      -> | MaterializedFrame  |
  *                            +--------------------+
  * INDEX_ENCLOSING_FRAME   -> | MaterializedFrame  |
  *                            +--------------------+
