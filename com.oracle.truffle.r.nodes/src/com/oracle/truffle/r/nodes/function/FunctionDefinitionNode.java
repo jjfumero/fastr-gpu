@@ -210,6 +210,7 @@ public final class FunctionDefinitionNode extends RRootNode implements RSyntaxNo
         return argPostProcess;
     }
 
+    @SuppressWarnings("unused")
     private Object cpuExecution(VirtualFrame vf) {
         /*
          * It might be possible to only record this iff a handler is installed, by using the
@@ -291,6 +292,7 @@ public final class FunctionDefinitionNode extends RRootNode implements RSyntaxNo
 
     }
 
+    @SuppressWarnings("unused")
     private Object gpuExecution(VirtualFrame vf) {
         /*
          * It might be possible to only record this iff a handler is installed, by using the
@@ -383,8 +385,8 @@ public final class FunctionDefinitionNode extends RRootNode implements RSyntaxNo
          * It might be possible to only record this iff a handler is installed, by using the
          * RArguments array.
          */
-        Object handlerStack = RErrorHandling.getHandlerStack();
-        Object restartStack = RErrorHandling.getRestartStack();
+// Object handlerStack = RErrorHandling.getHandlerStack();
+// Object restartStack = RErrorHandling.getRestartStack();
         boolean runOnExitHandlers = true;
         try {
             // verifyEnclosingAssumptions(vf);
