@@ -228,13 +228,14 @@ public final class FunctionDefinitionNode extends RRootNode implements RSyntaxNo
             normalExit.enter();
             return result;
         } catch (ReturnException ex) {
-            returnProfile.enter();
-            int depth = ex.getDepth();
-            if (depth != -1 && RArguments.getDepth(vf) != depth) {
-                throw ex;
-            } else {
-                return ex.getResult();
-            }
+// returnProfile.enter();
+// int depth = ex.getDepth();
+// if (depth != -1 && RArguments.getDepth(vf) != depth) {
+// throw ex;
+// } else {
+// return ex.getResult();
+// }
+            return ex.getResult();
         } catch (BreakException e) {
             breakProfile.enter();
             throw e;

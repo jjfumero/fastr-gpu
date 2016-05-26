@@ -193,3 +193,7 @@ marawacc.vectorMul <- function(a, b) {
 	.FastR(.NAME="marawacc.vectorMul", a, b)
 }
 
+astx.thread <- function(userFunction, input) {
+	.FastR(.NAME="astx.thread", userFunction, input)
+}
+
