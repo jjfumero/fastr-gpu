@@ -13,7 +13,7 @@ eclipse:
 	mx eclipseinit 
 
 sample:
-	./run examples/map.R 
+	./run examples/cpu/map.R 
 
 clean:
 	mx clean
