@@ -176,7 +176,7 @@ public abstract class FastR extends RBuiltinNode {
 
                 /*
                  * *********************************************
-                 * ASTx thread model. It manages Java Threads from R
+                 * ASTx thread model. It manages Java Threads from R.
                  * *********************************************
                  */
             case "astx.async":

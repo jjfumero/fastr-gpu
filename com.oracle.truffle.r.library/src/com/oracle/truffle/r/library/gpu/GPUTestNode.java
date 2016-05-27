@@ -42,12 +42,12 @@ import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.phases.GPUBoxingEliminationPhase;
-import com.oracle.truffle.r.library.gpu.phases.GPUCleanPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUFrameStateEliminationPhase;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
+import com.oracle.truffle.r.nodes.function.FunctionDefinitionNode;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
 import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
@@ -90,7 +90,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
     private static GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue) {
 
         // Just for debugging
-        GraalAcceleratorOptions.generateRKernel_debugging = false;
+        GraalAcceleratorOptions.generateRKernel_debugging = true;
 
         applyCompilationPhasesForGPU(graphToCompile);
 
@@ -147,6 +147,8 @@ public final class GPUTestNode extends RExternalBuiltinNode {
         // RootCallTarget newCallTarget = Truffle.getRuntime().createCallTarget(rootNode);
 
         callTarget.generateIDForGPU();
+        // Set the GPU execution to true;
+        ((FunctionDefinitionNode) function.getRootNode()).setGPUFlag(true);
 
         StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
         GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
