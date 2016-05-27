@@ -43,4 +43,5 @@ export(marawacc.testGPU)
 export(nanotime)
 
 # ASTx utilities
-export(astx.thread)
+export(astx.async)
+export(astx.sync)

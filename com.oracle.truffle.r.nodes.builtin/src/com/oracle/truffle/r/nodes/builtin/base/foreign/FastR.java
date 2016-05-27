@@ -26,7 +26,8 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.r.library.astx.threads.RThreadFunctionNodeGen;
+import com.oracle.truffle.r.library.astx.threads.RAsyncFunctionNodeGen;
+import com.oracle.truffle.r.library.astx.threads.RThreadSyncNodeGen;
 import com.oracle.truffle.r.library.fastr.FastRCallCountingFactory;
 import com.oracle.truffle.r.library.fastr.FastRCompileNodeGen;
 import com.oracle.truffle.r.library.fastr.FastRContextFactory;
@@ -178,8 +179,10 @@ public abstract class FastR extends RBuiltinNode {
                  * ASTx thread model. It manages Java Threads from R
                  * *********************************************
                  */
-            case "astx.thread":
-                return RThreadFunctionNodeGen.create();
+            case "astx.async":
+                return RAsyncFunctionNodeGen.create();
+            case "astx.sync":
+                return RThreadSyncNodeGen.create();
 
             default:
                 return null;

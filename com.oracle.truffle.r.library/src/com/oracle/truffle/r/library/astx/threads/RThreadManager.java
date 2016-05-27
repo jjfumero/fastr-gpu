@@ -34,8 +34,10 @@ public class RThreadManager {
         threads = new ArrayList<>();
     }
 
-    public void addThread(Thread thread) {
+    public int addThread(Thread thread) {
+        int idx = threads.size();
         threads.add(thread);
+        return idx;
     }
 
     public Thread getThread(int idx) {
@@ -52,5 +54,13 @@ public class RThreadManager {
 
     public ArrayList<Thread> getAll() {
         return threads;
+    }
+
+    public void join(int idx) {
+        try {
+            threads.get(idx).join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

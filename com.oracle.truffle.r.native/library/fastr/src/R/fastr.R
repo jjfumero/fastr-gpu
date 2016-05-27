@@ -193,7 +193,14 @@ marawacc.vectorMul <- function(a, b) {
 	.FastR(.NAME="marawacc.vectorMul", a, b)
 }
 
-astx.thread <- function(userFunction, input) {
-	.FastR(.NAME="astx.thread", userFunction, input)
+# #########################################################################
+# ASTx Thread model
+# #########################################################################
+astx.async <- function(userFunction, input) {
+	.FastR(.NAME="astx.async", userFunction, input)
+}
+
+astx.sync <- function(arrayThreadsIDs) {
+	.FastR(.NAME="astx.sync", arrayThreadsIDs)
 }
 
