@@ -42,6 +42,7 @@ import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.phases.GPUBoxingEliminationPhase;
+import com.oracle.truffle.r.library.gpu.phases.GPUCleanPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUFrameStateEliminationPhase;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
@@ -75,6 +76,17 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
     }
 
+    /**
+     * Given the {@link StructuredGraph}, this method invokes the OpenCL code generation. We also
+     * need some meta-data to generate the code such as the input array (in {@link PArray} form, and
+     * the first value (runtime object) to generate the output for the kernel template.
+     *
+     * @param inputPArray
+     * @param callTarget
+     * @param graphToCompile
+     * @param firstValue
+     * @return {@link GraalGPUCompilationUnit}
+     */
     private static GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue) {
 
         // Just for debugging
@@ -103,8 +115,19 @@ public final class GPUTestNode extends RExternalBuiltinNode {
         return gpuCompilationUnit;
     }
 
+    /**
+     * Given the {@link GraalGPUCompilationUnit}, this method executes the OpenCL code. It copies
+     * the data to the device, runs the kernel and copies back the result.
+     *
+     * It returns an array list with one element, the result in Object format (PArray).
+     *
+     * @param inputPArray
+     * @param graph
+     * @param gpuCompilationUnit
+     * @return {@link ArrayList}
+     */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static ArrayList<Object> runWithMarawacc(PArray<?> inputPArray, StructuredGraph graph, GraalGPUCompilationUnit gpuCompilationUnit) {
+    private static ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalGPUCompilationUnit gpuCompilationUnit) {
         AcceleratorPArray copyToDevice = GraalGPUExecutor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
         AcceleratorPArray executeOnTheDevice = GraalGPUExecutor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType());
         PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
@@ -133,7 +156,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
             if (ASTxOptions.debugCache) {
                 System.out.println("[MARAWACC-ASTX] Getting the GPU binary from the cache");
             }
-            return runWithMarawacc(inputPArray, graphToCompile, gpuCompilationUnit);
+            return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
         }
 
         for (int i = 1; i < input.getLength(); i++) {
@@ -150,7 +173,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
             if (graphToCompile != null && gpuCompilationUnit == null) {
                 // Get the Structured Graph and compile it for GPU
                 gpuCompilationUnit = compileForMarawaccBackend(inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, firstValue);
-                return runWithMarawacc(inputPArray, graphToCompile, gpuCompilationUnit);
+                return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
             }
         }
 
