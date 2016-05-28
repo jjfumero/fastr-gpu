@@ -90,7 +90,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
     private static GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue) {
 
         // Just for debugging
-        GraalAcceleratorOptions.generateRKernel_debugging = false;
+        GraalAcceleratorOptions.generateRKernel_debugging = true;
 
         applyCompilationPhasesForGPU(graphToCompile);
 
