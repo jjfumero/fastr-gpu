@@ -91,7 +91,7 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
         ArrayList<Object> output = new ArrayList<>(input.getLength());
         output.add(firstValue);
         for (int i = 1; i < input.getLength(); i++) {
-            Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
+            Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             Object val = target.call(argsPackage);
             output.add(val);
         }
@@ -108,7 +108,7 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
 
         int nArgs = ASTxUtils.getNumberOfArguments(function);
         String[] argsName = ASTxUtils.getArgumentsNames(function);
-        Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, 0);
+        Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, 0);
         Object value = function.getTarget().call(argsPackage);
 
         TypeInfoList inputTypeList = null;

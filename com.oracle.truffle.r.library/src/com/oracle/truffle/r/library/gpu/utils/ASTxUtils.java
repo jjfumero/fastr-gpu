@@ -49,8 +49,18 @@ import com.oracle.truffle.r.runtime.data.RIntVector;
 import com.oracle.truffle.r.runtime.data.RLogicalVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
+/**
+ * ASTx utility class. Methods for {@link RFunction} inspection, marshal and un-marshal.
+ *
+ */
 public class ASTxUtils {
 
+    /**
+     * It returns the number of arguments for an {@link RFunction}.
+     *
+     * @param function
+     * @return int
+     */
     public static int getNumberOfArguments(RFunction function) {
         // If function is builtin
         if (function.getRBuiltin() != null) {
@@ -70,6 +80,12 @@ public class ASTxUtils {
         return nArgs;
     }
 
+    /**
+     * It returns the name of the arguments for an {@link RFunction}.
+     *
+     * @param function
+     * @return String[]
+     */
     public static String[] getArgumentsNames(RFunction function) {
 
         String[] args = null;
@@ -95,7 +111,17 @@ public class ASTxUtils {
         return args;
     }
 
-    public static Object[] getArgsPackage(int nArgs, RFunction function, RAbstractVector input, RAbstractVector[] args, String[] nameArgs) {
+    /**
+     * It builds the {@link RArguments} for the function calling.
+     *
+     * @param nArgs
+     * @param function
+     * @param input
+     * @param args
+     * @param nameArgs
+     * @return Object[]
+     */
+    public static Object[] createRArguments(int nArgs, RFunction function, RAbstractVector input, RAbstractVector[] args, String[] nameArgs) {
         // prepare args for the function with varargs
         Object[] argsRFunction = new Object[nArgs];
         argsRFunction[0] = input.getDataAtAsObject(0);
@@ -111,7 +137,7 @@ public class ASTxUtils {
         return argsPackage;
     }
 
-    public static Object[] getArgsPackage(int nArgs, RFunction function, RAbstractVector input, RAbstractVector[] args, String[] nameArgs, int idx) {
+    public static Object[] createRArguments(int nArgs, RFunction function, RAbstractVector input, RAbstractVector[] args, String[] nameArgs, int idx) {
         // prepare args for the function with varargs
         Object[] argsRFunction = new Object[nArgs];
         argsRFunction[0] = input.getDataAtAsObject(idx);
@@ -125,7 +151,7 @@ public class ASTxUtils {
         return argsPackage;
     }
 
-    public static Object[] getArgsPackage(int nArgs, RFunction function, Object input, RAbstractVector[] args, String[] nameArgs, int idx) {
+    public static Object[] createRArguments(int nArgs, RFunction function, Object input, RAbstractVector[] args, String[] nameArgs, int idx) {
         // prepare args for the function with varargs
         Object[] argsRFunction = new Object[nArgs];
         argsRFunction[0] = input;
@@ -139,7 +165,7 @@ public class ASTxUtils {
         return argsPackage;
     }
 
-    public static Object[] getArgsPackageForReduction(int nArgs, int neutral, RFunction function, RAbstractVector input, RAbstractVector[] args, String[] nameArgs, int idx) {
+    public static Object[] createRArgumentsForReduction(int nArgs, int neutral, RFunction function, RAbstractVector input, RAbstractVector[] args, String[] nameArgs, int idx) {
         // prepare args for the function with varargs
         Object[] argsRFunction = new Object[nArgs];
         // First we insert the neutral element
@@ -155,7 +181,7 @@ public class ASTxUtils {
         return argsPackage;
     }
 
-    public static Object[] getArgsPackageForReduction(int nArgs, int neutral, RFunction function, Object input, RAbstractVector[] args, String[] nameArgs, int idx) {
+    public static Object[] createRArgumentsForReduction(int nArgs, int neutral, RFunction function, Object input, RAbstractVector[] args, String[] nameArgs, int idx) {
         // prepare args for the function with varargs
         Object[] argsRFunction = new Object[nArgs];
         // First we insert the neutral element
@@ -171,7 +197,7 @@ public class ASTxUtils {
         return argsPackage;
     }
 
-    public static Object[] getArgsPackageForReduction(int nArgs, Object neutral, RFunction function, RAbstractVector input, RAbstractVector[] args, String[] nameArgs, int idx) {
+    public static Object[] createRArgumentsForReduction(int nArgs, Object neutral, RFunction function, RAbstractVector input, RAbstractVector[] args, String[] nameArgs, int idx) {
         // prepare args for the function with varargs
         Object[] argsRFunction = new Object[nArgs];
         // First we insert the neutral element
@@ -297,19 +323,34 @@ public class ASTxUtils {
         return type;
     }
 
-    // Unmarshall to RIntVector
+    /**
+     * Un-marshal to {@link RIntVector} from {@link ArrayList} of objects.
+     *
+     * @param list
+     * @return {@link RIntVector}
+     */
     public static RIntVector getIntVector(ArrayList<Object> list) {
         int[] array = list.stream().mapToInt(i -> (Integer) i).toArray();
         return RDataFactory.createIntVector(array, false);
     }
 
-    // Unmarshall to RDoubleVector
+    /**
+     * Un-marshal to {@link RDoubleVector} from {@link ArrayList} of objects.
+     *
+     * @param list
+     * @return {@link RDoubleVector}
+     */
     public static RDoubleVector getDoubleVector(ArrayList<Object> list) {
         double[] array = list.stream().mapToDouble(i -> (Double) i).toArray();
         return RDataFactory.createDoubleVector(array, false);
     }
 
-    // Unmarshall to RIntVector
+    /**
+     * Un-marshal to {@link RIntVector} from {@link PArray} of Integers.
+     *
+     * @param array
+     * @return {@link RIntVector}
+     */
     public static RIntVector getIntVector(PArray<Integer> array) {
         int[] output = new int[array.size()];
         for (int i = 0; i < output.length; i++) {
@@ -318,7 +359,12 @@ public class ASTxUtils {
         return RDataFactory.createIntVector(output, false);
     }
 
-    // Unmarshall to RDoubleVector
+    /**
+     * Un-marshal to {@link RDoubleVector} from {@link PArray} of Doubles.
+     *
+     * @param array
+     * @return {@link RDoubleVector}
+     */
     public static RDoubleVector getDoubleVector(PArray<Double> array) {
         double[] output = new double[array.size()];
         for (int i = 0; i < output.length; i++) {
@@ -345,9 +391,7 @@ public class ASTxUtils {
     }
 
     public static void printPArray(PArray<?> result) {
-        for (int k = 0; k < result.size(); k++) {
-            System.out.println(result.get(k));
-        }
+        System.out.println(result);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

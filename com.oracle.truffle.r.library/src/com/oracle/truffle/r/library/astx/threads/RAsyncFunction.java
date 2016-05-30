@@ -35,7 +35,7 @@ public abstract class RAsyncFunction extends RExternalBuiltinNode.Arg2 {
 
         int nArgs = ASTxUtils.getNumberOfArguments(function);
         String[] argsName = ASTxUtils.getArgumentsNames(function);
-        Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, null, argsName, 0);
+        Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, null, argsName, 0);
 
         Thread thread = new Thread(() -> {
             function.getTarget().call(argsPackage);

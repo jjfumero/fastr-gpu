@@ -95,7 +95,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         PArray<?> pArrayInput = ASTxUtils.marshall(input, additionalArgs, inputTypeList);
 
         int nArgs = ASTxUtils.getNumberOfArguments(rFunction);
-        Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, rFunction, input, additionalArgs, argsName, 0);
+        Object[] argsPackage = ASTxUtils.createRArguments(nArgs, rFunction, input, additionalArgs, argsName, 0);
         Object value = callTarget.call(argsPackage);
         TypeInfo outputType = null;
         try {
@@ -136,7 +136,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
         }
 
         Object output = packageForArrayFunction.getExecutionValue();
-        Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, rFunction, output, additionalArgs, argsName, 0);
+        Object[] argsPackage = ASTxUtils.createRArguments(nArgs, rFunction, output, additionalArgs, argsName, 0);
         Object value = callTarget.call(argsPackage);
         TypeInfo outputType = null;
         try {

@@ -72,7 +72,7 @@ public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
         int nArgs = ASTxUtils.getNumberOfArguments(rFunction);
         String[] argsName = ASTxUtils.getArgumentsNames(rFunction);
 
-        Object[] argsPackage = ASTxUtils.getArgsPackageForReduction(nArgs, neutral, rFunction, input, additionalArgs, argsName, 0);
+        Object[] argsPackage = ASTxUtils.createRArgumentsForReduction(nArgs, neutral, rFunction, input, additionalArgs, argsName, 0);
         Object value = rFunction.getTarget().call(argsPackage);
 
         TypeInfoList inputTypeList = null;
@@ -122,7 +122,7 @@ public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
         }
 
         Object output = packageForArrayFunction.getExecutionValue();
-        Object[] argsPackage = ASTxUtils.getArgsPackageForReduction(nArgs, neutral, rFunction, output, additionalArgs, argsName, 0);
+        Object[] argsPackage = ASTxUtils.createRArgumentsForReduction(nArgs, neutral, rFunction, output, additionalArgs, argsName, 0);
         Object value = rFunction.getTarget().call(argsPackage);
         TypeInfo outputType = null;
         try {

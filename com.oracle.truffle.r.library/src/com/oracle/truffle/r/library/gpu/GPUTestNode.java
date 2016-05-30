@@ -162,7 +162,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
         }
 
         for (int i = 1; i < input.getLength(); i++) {
-            Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, i);
+            Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             // Object val = newCallTarget.call(argsPackage);
             Object val = callTarget.call(argsPackage);
             output.add(val);
@@ -187,13 +187,13 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
         int nArgs = ASTxUtils.getNumberOfArguments(function);
         String[] argsName = ASTxUtils.getArgumentsNames(function);
-        Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, function, input, additionalArgs, argsName, 0);
+        Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, 0);
         Object value = function.getTarget().call(argsPackage);
         TypeInfo outputType = null;
         try {
             outputType = ASTxUtils.typeInference(value);
         } catch (MarawaccTypeException e) {
-            // DEPTIOMIZE
+            // TODO: DEPTIOMIZE
             e.printStackTrace();
         }
 

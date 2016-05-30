@@ -77,7 +77,7 @@ public final class MarawaccTerminalReduceBuiltin extends RExternalBuiltinNode {
                     Object firstValue) {
         Object accumulator = firstValue;
         for (int i = 1; i < input.getLength(); i++) {
-            Object[] argsPackage = ASTxUtils.getArgsPackageForReduction(nArgs, accumulator, function, input, additionalArgs, argsName, i);
+            Object[] argsPackage = ASTxUtils.createRArgumentsForReduction(nArgs, accumulator, function, input, additionalArgs, argsName, i);
             accumulator = target.call(argsPackage);
         }
         ArrayList<Object> output = new ArrayList<>();
@@ -90,7 +90,7 @@ public final class MarawaccTerminalReduceBuiltin extends RExternalBuiltinNode {
         int nArgs = ASTxUtils.getNumberOfArguments(function);
         String[] argsName = ASTxUtils.getArgumentsNames(function);
 
-        Object[] argsPackage = ASTxUtils.getArgsPackageForReduction(nArgs, neutral, function, input, additionalArgs, argsName, 0);
+        Object[] argsPackage = ASTxUtils.createRArgumentsForReduction(nArgs, neutral, function, input, additionalArgs, argsName, 0);
         Object value = function.getTarget().call(argsPackage);
         TypeInfoList inputTypeList = null;
         TypeInfo outputType = null;
