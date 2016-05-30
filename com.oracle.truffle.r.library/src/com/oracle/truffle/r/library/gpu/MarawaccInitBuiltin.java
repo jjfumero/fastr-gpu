@@ -26,6 +26,7 @@ import uk.ac.ed.accelerator.ocl.OCLRuntimeUtils;
 
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
+import com.oracle.truffle.r.runtime.data.RNull;
 
 public abstract class MarawaccInitBuiltin extends RExternalBuiltinNode.Arg0 {
 
@@ -47,9 +48,14 @@ public abstract class MarawaccInitBuiltin extends RExternalBuiltinNode.Arg0 {
         }
     }
 
+    /**
+     * Communication via marawac.init()
+     *
+     * @return Object
+     */
     @Specialization
-    public Object doInitialization() {
+    public int doInitialization() {
         marawaccInitialization();
-        return "";
+        return 0;
     }
 }
