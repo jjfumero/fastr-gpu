@@ -42,6 +42,10 @@ import com.oracle.truffle.r.runtime.data.RIntSequence;
 import com.oracle.truffle.r.runtime.data.RIntVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
+/**
+ * This is a proof of concept. It takes two arrays from R and execute it with OpenCL. It computes
+ * the vector multiplication.
+ */
 public abstract class OCLVectorMulBuiltin extends RExternalBuiltinNode.Arg2 {
 
     // @formatter:off

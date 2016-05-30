@@ -42,11 +42,13 @@ import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 /**
- * Parallel Sapply implementation corresponding to sapply R Builin. This implementation connects to
- * Marawacc-API for the Java threads implementation and GPU. This is a blocking operation.
+ * Parallel <code>map</code> implementation corresponding to <code>sapply</code> R Builin. This
+ * implementation connects to Marawacc-API for the Java threads implementation and GPU. This is a
+ * non blocking operation.
  *
  * The GPU supports relies on the Partial Evaluation step after Truffle decides to compile the AST
- * to binary code.
+ * to binary code. If Graal is available, it will go through the Partial Evaluator when the code
+ * becomes hot, otherwise, the code will be executed in the normal C2 compiler.
  *
  */
 public final class MarawaccMapBuiltin extends RExternalBuiltinNode {

@@ -35,6 +35,12 @@ import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
+/**
+ * It will execute an operation and unmarshal the data. It will execute everything in the previous
+ * pipeline to the given operation. This is a blocking operation.
+ *
+ *
+ */
 public abstract class MarawaccExecuteNode extends RExternalBuiltinNode.Arg1 {
 
     @SuppressWarnings({"rawtypes", "unchecked"})

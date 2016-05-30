@@ -33,6 +33,12 @@ import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
+/**
+ * Get result from a specific operation in marawacc. It waits for the operation to finish. It is a
+ * blocking operation.
+ *
+ *
+ */
 public abstract class MarawaccGetNode extends RExternalBuiltinNode.Arg1 {
 
     @SuppressWarnings({"rawtypes"})
