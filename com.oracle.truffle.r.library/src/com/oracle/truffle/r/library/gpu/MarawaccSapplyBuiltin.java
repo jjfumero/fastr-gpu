@@ -64,7 +64,7 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
     @SuppressWarnings("unchecked")
     private static <T, R> ArrayFunction<T, R> createMarawaccLambda(int nArgs, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, int nThreads) {
         ArrayFunction<T, R> function = (ArrayFunction<T, R>) uk.ac.ed.jpai.Marawacc.mapJavaThreads(nThreads, dataItem -> {
-            Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, rFunction, dataItem, nameArgs);
+            Object[] argsPackage = ASTxUtils.createRArguments(nArgs, rFunction, dataItem, nameArgs);
             Object result = callTarget.call(argsPackage);
             return result;
         });

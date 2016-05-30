@@ -42,17 +42,20 @@ import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
 import com.oracle.truffle.r.runtime.data.RFunction;
+import com.oracle.truffle.r.runtime.data.RNull;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static <T, R> ArrayFunction<T, R> createMarawaccLambda(int nArgs, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, int neutral) {
+
         Identity identity = new Identity<>();
         ArrayFunction<T, R> function = identity.reduce((BiFunction) (x, y) -> {
-            Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, rFunction, x, y, nameArgs);
+            Object[] argsPackage = ASTxUtils.createRArguments(nArgs, rFunction, x, y, nameArgs);
             return callTarget.call(argsPackage);
         }, neutral);
+
         return function;
     }
 
@@ -60,7 +63,7 @@ public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
                     @SuppressWarnings("rawtypes") ArrayFunction arrayFunction) {
         @SuppressWarnings("unchecked")
         ArrayFunction<T, R> function = arrayFunction.reduce((x, y) -> {
-            Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, rFunction, x, y, nameArgs);
+            Object[] argsPackage = ASTxUtils.createRArguments(nArgs, rFunction, x, y, nameArgs);
             Object result = callTarget.call(argsPackage);
             return result;
         }, neutral);
@@ -190,7 +193,7 @@ public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
         } else if (marawaccFunction != null) {
             return composeReduceExpression(marawaccFunction, rFunction, callTarget, additionalInputs, neutral);
         } else {
-            return null;
+            return RNull.instance;
         }
     }
 }

@@ -46,7 +46,7 @@ public final class MarawaccTerminalReduceBuiltin extends RExternalBuiltinNode {
     private static <T, R> ArrayFunction<T, R> createMarawaccLambda(int nArgs, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, int neutral) {
         @SuppressWarnings("unchecked")
         ArrayFunction<T, R> function = (ArrayFunction<T, R>) Marawacc.reduce((x, y) -> {
-            Object[] argsPackage = ASTxUtils.getArgsPackage(nArgs, rFunction, x, y, nameArgs);
+            Object[] argsPackage = ASTxUtils.createRArguments(nArgs, rFunction, x, y, nameArgs);
             Object result = callTarget.call(argsPackage);
             return (Integer) result;
         }, neutral);

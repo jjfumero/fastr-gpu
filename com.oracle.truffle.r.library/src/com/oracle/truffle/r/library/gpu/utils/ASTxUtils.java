@@ -32,6 +32,7 @@ import uk.ac.ed.datastructures.tuples.Tuple;
 import uk.ac.ed.datastructures.tuples.Tuple2;
 import uk.ac.ed.datastructures.tuples.Tuple3;
 import uk.ac.ed.datastructures.tuples.Tuple4;
+import uk.ac.ed.datastructures.tuples.Tuple5;
 
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccRuntimeTypeException;
@@ -214,8 +215,35 @@ public class ASTxUtils {
         return argsPackage;
     }
 
+    @SuppressWarnings("rawtypes")
+    private static Object[] createObjectArrayFromTuple(int nArgs, Object input, int startIndex) {
+        Object[] argsRFunction = new Object[nArgs];
+        if (!(input instanceof Tuple)) {
+            argsRFunction[startIndex] = input;
+        } else if (input instanceof Tuple2) {
+            argsRFunction[startIndex] = ((Tuple2) input)._1();
+            argsRFunction[startIndex + 1] = ((Tuple2) input)._2();
+        } else if (input instanceof Tuple3) {
+            argsRFunction[startIndex] = ((Tuple3) input)._1();
+            argsRFunction[startIndex + 1] = ((Tuple3) input)._2();
+            argsRFunction[startIndex + 2] = ((Tuple3) input)._3();
+        } else if (input instanceof Tuple4) {
+            argsRFunction[startIndex] = ((Tuple4) input)._1();
+            argsRFunction[startIndex + 1] = ((Tuple4) input)._2();
+            argsRFunction[startIndex + 2] = ((Tuple4) input)._3();
+            argsRFunction[startIndex + 3] = ((Tuple4) input)._4();
+        } else if (input instanceof Tuple5) {
+            argsRFunction[startIndex] = ((Tuple5) input)._1();
+            argsRFunction[startIndex + 1] = ((Tuple5) input)._2();
+            argsRFunction[startIndex + 2] = ((Tuple5) input)._3();
+            argsRFunction[startIndex + 3] = ((Tuple5) input)._4();
+            argsRFunction[startIndex + 4] = ((Tuple5) input)._5();
+        }
+        return argsRFunction;
+    }
+
     /**
-     * Prepare args for the function with varargs
+     * Prepare args for the function with varargs.
      *
      * @param nArgs
      * @param function
@@ -223,48 +251,18 @@ public class ASTxUtils {
      * @param nameArgs
      * @return Object[]
      */
-    @SuppressWarnings("rawtypes")
-    public static Object[] getArgsPackage(int nArgs, RFunction function, Object input, String[] nameArgs) {
-        Object[] argsRFunction = new Object[nArgs];
-        if (!(input instanceof Tuple)) {
-            argsRFunction[0] = input;
-        } else if (input instanceof Tuple2) {
-            argsRFunction[0] = ((Tuple2) input)._1();
-            argsRFunction[1] = ((Tuple2) input)._2();
-        } else if (input instanceof Tuple3) {
-            argsRFunction[0] = ((Tuple3) input)._1();
-            argsRFunction[1] = ((Tuple3) input)._2();
-            argsRFunction[2] = ((Tuple3) input)._3();
-        } else if (input instanceof Tuple4) {
-            argsRFunction[0] = ((Tuple4) input)._1();
-            argsRFunction[1] = ((Tuple4) input)._2();
-            argsRFunction[2] = ((Tuple4) input)._3();
-            argsRFunction[3] = ((Tuple4) input)._4();
-        }
+    public static Object[] createRArguments(int nArgs, RFunction function, Object input, String[] nameArgs) {
+        int startIDX = 0;
+        Object[] argsRFunction = createObjectArrayFromTuple(nArgs, input, startIDX);
         Object[] argsPackage = RArguments.create(function, null, null, 0, argsRFunction, ArgumentsSignature.get(nameArgs), null);
         return argsPackage;
     }
 
-    @SuppressWarnings("rawtypes")
-    public static Object[] getArgsPackage(int nArgs, RFunction function, Object acc, Object y, String[] nameArgs) {
-        Object[] argsRFunction = new Object[nArgs];
-        argsRFunction[0] = acc;
+    public static Object[] createRArguments(int nArgs, RFunction function, Object acc, Object input, String[] nameArgs) {
+        int startIndex = 1;
+        Object[] argsRFunction = createObjectArrayFromTuple(nArgs, input, startIndex);
 
-        if (!(y instanceof Tuple)) {
-            argsRFunction[1] = y;
-        } else if (y instanceof Tuple2) {
-            argsRFunction[1] = ((Tuple2) y)._1();
-            argsRFunction[2] = ((Tuple2) y)._2();
-        } else if (y instanceof Tuple3) {
-            argsRFunction[1] = ((Tuple3) y)._1();
-            argsRFunction[2] = ((Tuple3) y)._2();
-            argsRFunction[3] = ((Tuple3) y)._3();
-        } else if (y instanceof Tuple4) {
-            argsRFunction[1] = ((Tuple4) y)._1();
-            argsRFunction[2] = ((Tuple4) y)._2();
-            argsRFunction[3] = ((Tuple4) y)._3();
-            argsRFunction[4] = ((Tuple4) y)._4();
-        }
+        argsRFunction[0] = acc;
         Object[] argsPackage = RArguments.create(function, null, null, 0, argsRFunction, ArgumentsSignature.get(nameArgs), null);
         return argsPackage;
     }

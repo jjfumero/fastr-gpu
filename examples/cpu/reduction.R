@@ -9,7 +9,8 @@ print(r);
 
 for (i in seq(1,10)) {
         start <- nanotime()
-        result <- marawacc.reduce(a, f, neutral=0)
+        reduction <- marawacc.reduce(a, f, neutral=0)
+        result <- marawacc.execute(reduction)
         end <- nanotime()
     	print(identical(r, result))
         print(end-start);
