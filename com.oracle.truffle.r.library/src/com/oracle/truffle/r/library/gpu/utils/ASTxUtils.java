@@ -450,6 +450,12 @@ public class ASTxUtils {
                     parray.put(k, new Tuple4<>(input.getDataAtAsObject(k), additionalArgs[0].getDataAtAsObject(k), additionalArgs[1].getDataAtAsObject(k), additionalArgs[2].getDataAtAsObject(k)));
                 }
                 return parray;
+            case 5:
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, new Tuple5<>(input.getDataAtAsObject(k), additionalArgs[0].getDataAtAsObject(k), additionalArgs[1].getDataAtAsObject(k), additionalArgs[2].getDataAtAsObject(k),
+                                    additionalArgs[3].getDataAtAsObject(k)));
+                }
+                return parray;
             default:
                 throw new MarawaccRuntimeTypeException("Tuple not supported yet: " + infoList.size() + " [ " + __LINE__.print() + "]");
         }
