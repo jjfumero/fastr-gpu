@@ -59,7 +59,7 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
  */
 public final class GPUTestNode extends RExternalBuiltinNode {
 
-    private static boolean gpuExecution = false;
+    private boolean gpuExecution = false;
 
     private static void applyCompilationPhasesForGPU(StructuredGraph graph) {
         // new GPUCleanPhase().apply(graphToCompile);
@@ -87,7 +87,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
      * @param firstValue
      * @return {@link GraalGPUCompilationUnit}
      */
-    private static GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue) {
+    private GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue) {
 
         // Just for debugging - it will generate a wrong kernel (filter one) to check if the
         // variable is true.
@@ -106,10 +106,10 @@ public final class GPUTestNode extends RExternalBuiltinNode {
             GraalAcceleratorOptions.printOffloadKernel = true;
         }
 
-        // Compilation
+        // Compilation to the GPU
         GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue);
 
-        // Insert into caches
+        // Insert graph into cache
         InternalGraphCache.INSTANCE.installGPUBinary(graphToCompile, gpuCompilationUnit);
 
         gpuExecution = true;
@@ -137,7 +137,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
         return arrayList;
     }
 
-    private static ArrayList<Object> runJavaSequential(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
+    private ArrayList<Object> runJavaSequential(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray) {
 
         ArrayList<Object> output = new ArrayList<>(input.getLength());
@@ -184,7 +184,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings("rawtypes")
-    private static RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) {
+    private RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) {
 
         int nArgs = ASTxUtils.getNumberOfArguments(function);
         String[] argsName = ASTxUtils.getArgumentsNames(function);
@@ -194,15 +194,16 @@ public final class GPUTestNode extends RExternalBuiltinNode {
         try {
             outputType = ASTxUtils.typeInference(value);
         } catch (MarawaccTypeException e) {
-            // TODO: DEPTIOMIZE
+            // TODO: Deoptimize
             e.printStackTrace();
         }
 
         TypeInfoList inputTypeList = null;
         try {
             inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
-        } catch (MarawaccTypeException e1) {
-            e1.printStackTrace();
+        } catch (MarawaccTypeException e) {
+            // TODO: Deoptimize
+            e.printStackTrace();
         }
 
         // Create PArrays
