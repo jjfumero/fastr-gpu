@@ -36,6 +36,7 @@ export(marawacc.map) 		# Non-blocking operation
 export(marawacc.execute) 
 export(marawacc.get) 		# For async operations
 export(marawacc.reduce)	
+export(marawacc.reduction)	# Blocking reduction
 export(marawacc.vectorMul)
 export(marawacc.testGPU)
 

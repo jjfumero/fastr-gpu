@@ -57,5 +57,4 @@ public class ASTxOptions {
      * Print information related to the cache system.
      */
     public static boolean debugCache = false;
-
 }

@@ -147,9 +147,9 @@ public abstract class FastR extends RBuiltinNode {
                 return FastRTraceFactory.TraceNodeGen.create();
 
                 /*
-                 * *********************************************
+                 * ***************************************************
                  * Marawacc builtins: GPU/CPU parallel execution
-                 * *********************************************
+                 * ***************************************************
                  */
             case "builtin.nanotime":
                 return RNanoTimeBuiltinNodeGen.create();
@@ -167,7 +167,8 @@ public abstract class FastR extends RBuiltinNode {
                 return new MarawaccMapBuiltin();
             case "marawacc.reduce":
                 return new MarawaccReduceBuiltin();
-            case "marawacc.terminalReduce":     // Blocking reduction
+            case "marawacc.terminalReduce": // Blocking reduction - just for experiments? Need to
+                                            // decide
                 return new MarawaccTerminalReduceBuiltin();
             case "marawacc.vectorMul":
                 return OCLVectorMulBuiltinNodeGen.create();
@@ -175,9 +176,9 @@ public abstract class FastR extends RBuiltinNode {
                 return MarawaccInitBuiltinNodeGen.create();
 
                 /*
-                 * *********************************************
+                 * ***************************************************
                  * ASTx thread model. It manages Java Threads from R.
-                 * *********************************************
+                 * ***************************************************
                  */
             case "astx.async":
                 return RAsyncFunctionNodeGen.create();

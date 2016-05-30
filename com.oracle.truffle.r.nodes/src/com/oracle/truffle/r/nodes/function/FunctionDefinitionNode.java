@@ -290,7 +290,6 @@ public final class FunctionDefinitionNode extends RRootNode implements RSyntaxNo
                 }
             }
         }
-
     }
 
     private Object gpuExecution(VirtualFrame vf) {
@@ -300,7 +299,7 @@ public final class FunctionDefinitionNode extends RRootNode implements RSyntaxNo
          */
 // Object handlerStack = RErrorHandling.getHandlerStack();
 // Object restartStack = RErrorHandling.getRestartStack();
-        boolean runOnExitHandlers = true;
+// boolean runOnExitHandlers = true;
         try {
 // verifyEnclosingAssumptions(vf);
 // setupS3Slots(vf);

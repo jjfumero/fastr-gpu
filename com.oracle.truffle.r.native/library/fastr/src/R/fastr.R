@@ -185,7 +185,8 @@ marawacc.reduce <- function(input, userFunction, neutral=0, ...) {
 	.FastR(.NAME="marawacc.reduce", input, userFunction, neutral, ...)
 }
 
-marawacc.treduce <- function(input, userFunction, neutral=0, ...) {
+# Blocking reduction. It returns the result
+marawacc.reduction <- function(input, userFunction, neutral=0, ...) {
 	.FastR(.NAME="marawacc.terminalReduce", input, userFunction, neutral, ...)
 }
 
