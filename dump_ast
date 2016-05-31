@@ -1,0 +1,1 @@
+mx Rscript --J @'-Djvmci.option.Dump=Truffle,TruffleTree -DR:+IgnoreVisibility -G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilation  -XX:-UseJVMCIClassLoader ' $* 
