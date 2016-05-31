@@ -85,8 +85,6 @@ public final class FunctionDefinitionNode extends RRootNode implements RSyntaxNo
 
     @Child private PostProcessArgumentsNode argPostProcess;
 
-    @CompilationFinal private boolean executeOnGPU = false;
-
     /**
      * An instance of this node may be called from with the intention to have its execution leave a
      * footprint behind in a specific frame/environment, e.g., during library loading, commands from
