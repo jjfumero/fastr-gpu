@@ -58,11 +58,11 @@ public final class RLogical extends RScalarVector implements RAbstractLogicalVec
             case Logical:
                 return this;
             case Integer:
-                if (isNA()) {
-                    return RInteger.NA;
-                } else {
-                    return RInteger.valueOf(value);
-                }
+// if (isNA()) {
+// return RInteger.NA;
+// } else {
+                return RInteger.valueOf(value);
+// }
             case Numeric:
             case Double:
                 if (isNA()) {

@@ -63,11 +63,11 @@ public final class RInteger extends RScalarVector implements RAbstractIntVector 
                 return this;
             case Numeric:
             case Double:
-                if (isNA()) {
-                    return RDouble.NA;
-                } else {
-                    return RDouble.valueOf(value);
-                }
+// if (isNA()) {
+// return RDouble.NA;
+// } else {
+                return RDouble.valueOf(value);
+// }
             case Complex:
                 if (isNA()) {
                     return RComplex.NA;
