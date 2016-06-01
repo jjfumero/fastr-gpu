@@ -88,10 +88,6 @@ public final class GPUTestNode extends RExternalBuiltinNode {
      */
     private GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue) {
 
-        // Just for debugging - it will generate a wrong kernel (filter one) to check if the
-        // variable is true.
-        GraalAcceleratorOptions.generateRKernel_debugging = false;
-
         applyCompilationPhasesForGPU(graphToCompile);
 
         if (ASTxOptions.debug) {
