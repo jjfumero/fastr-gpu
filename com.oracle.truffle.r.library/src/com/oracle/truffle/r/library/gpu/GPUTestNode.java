@@ -221,20 +221,26 @@ public final class GPUTestNode extends RExternalBuiltinNode {
     public Object call(RArgsValuesAndNames args) {
 
         RAbstractVector input = (RAbstractVector) args.getArgument(0);
-        RFunction function = (RFunction) args.getArgument(1);
+        RFunction rFunction = (RFunction) args.getArgument(1);
 
         // Get the callTarget from the cache
-        RootCallTarget target = RGPUCache.INSTANCE.lookup(function);
+        RootCallTarget target = RGPUCache.INSTANCE.lookup(rFunction);
 
         // Prepare all inputs in an array of Objects
         RAbstractVector[] additionalInputs = null;
-        if (args.getLength() > 3) {
-            additionalInputs = new RAbstractVector[args.getLength() - 3];
+        if (args.getLength() > 2) {
+            additionalInputs = new RAbstractVector[args.getLength() - 2];
             for (int i = 0; i < additionalInputs.length; i++) {
-                additionalInputs[i] = (RAbstractVector) args.getArgument(i + 3);
+                additionalInputs[i] = (RAbstractVector) args.getArgument(i + 2);
             }
         }
 
-        return computeMap(input, function, target, additionalInputs);
+        System.out.println("[DEBUG ASTx]: ");
+        System.out.println("Input: " + input);
+        System.out.println("Function: " + rFunction);
+        System.out.println("target: " + target);
+        System.out.println("additionalInputs: " + additionalInputs);
+
+        return computeMap(input, rFunction, target, additionalInputs);
     }
 }

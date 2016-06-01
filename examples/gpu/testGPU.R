@@ -14,7 +14,7 @@ seqResult <- sapply(a, f)
 for (i in seq(1,20)) {
 
     start <- nanotime()
-    result <- marawacc.testGPU(a, f, nThreads=4)
+    result <- marawacc.testGPU(a, f)
     end <- nanotime()
     print(end-start);
 	

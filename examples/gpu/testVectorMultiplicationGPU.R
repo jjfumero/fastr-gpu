@@ -1,5 +1,5 @@
-a <- 1:100000
-b <- 1:100000
+a <- 1:1000
+b <- 1:1000
 
 gpuFunction <- function(x, y) {
 	return (x * y)
