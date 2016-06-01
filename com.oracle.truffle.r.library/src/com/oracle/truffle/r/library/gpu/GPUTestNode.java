@@ -94,13 +94,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
         applyCompilationPhasesForGPU(graphToCompile);
 
-        System.out.println("[ASTx] #NODES: " + graphToCompile.getNodeCount());
-
         if (ASTxOptions.debug) {
-            System.out.println("[MARAWACC-ASTx] Graph to be compiled to the GPU: " + graphToCompile);
-            for (Node node : graphToCompile.getNodes()) {
-                System.out.println(node);
-            }
             // Force OpenCL kernel visualisation
             GraalAcceleratorOptions.printOffloadKernel = true;
         }
@@ -234,12 +228,6 @@ public final class GPUTestNode extends RExternalBuiltinNode {
                 additionalInputs[i] = (RAbstractVector) args.getArgument(i + 2);
             }
         }
-
-        System.out.println("[DEBUG ASTx]: ");
-        System.out.println("Input: " + input);
-        System.out.println("Function: " + rFunction);
-        System.out.println("target: " + target);
-        System.out.println("additionalInputs: " + additionalInputs);
 
         return computeMap(input, rFunction, target, additionalInputs);
     }
