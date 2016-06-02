@@ -33,7 +33,6 @@ import uk.ac.ed.jpai.graal.GraalGPUExecutor;
 import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
 import uk.ac.ed.marawacc.graal.CompilationUtils;
 
-import com.oracle.graal.graph.Node;
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.truffle.OptimizedCallTarget;
 import com.oracle.truffle.api.RootCallTarget;
@@ -197,7 +196,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
         }
 
         // Create PArrays
-        PArray<?> inputPArrayFormat = ASTxUtils.marshall(input, additionalArgs, inputTypeList);
+        PArray<?> inputPArrayFormat = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
 
         ArrayList<Object> result = runJavaSequential(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat);
         if (!gpuExecution) {

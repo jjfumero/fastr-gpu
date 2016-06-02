@@ -92,7 +92,7 @@ public final class MarawaccReduceBuiltin extends RExternalBuiltinNode {
         }
 
         ArrayFunction composeLambda = createMarawaccLambda(inputTypeList.size() + 1, callTarget, rFunction, argsName, neutral);
-        PArray pArrayInput = ASTxUtils.marshall(input, additionalArgs, inputTypeList);
+        PArray pArrayInput = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
 
         // Create package and annotate in the promises
         MarawaccPackage marawaccPackage = new MarawaccPackage(composeLambda);

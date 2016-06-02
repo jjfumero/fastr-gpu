@@ -462,7 +462,7 @@ public class ASTxUtils {
     }
 
     @SuppressWarnings("rawtypes")
-    public static PArray<?> marshall(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
+    public static PArray<?> marshal(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
         PArray parray = null;
         if (additionalArgs == null) {
             // Simple PArray

@@ -94,7 +94,7 @@ public final class MarawaccMapBuiltin extends RExternalBuiltinNode {
             throw new MarawaccRuntimeDeoptException("Input types not supported");
         }
         ArrayFunction composeLambda = createMarawaccLambda(inputTypeList.size(), callTarget, rFunction, argsName, nThreads);
-        PArray<?> pArrayInput = ASTxUtils.marshall(input, additionalArgs, inputTypeList);
+        PArray<?> pArrayInput = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
 
         int nArgs = ASTxUtils.getNumberOfArguments(rFunction);
         Object[] argsPackage = ASTxUtils.createRArguments(nArgs, rFunction, input, additionalArgs, argsName, 0);

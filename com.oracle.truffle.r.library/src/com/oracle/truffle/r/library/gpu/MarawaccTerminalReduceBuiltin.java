@@ -63,7 +63,7 @@ public final class MarawaccTerminalReduceBuiltin extends RExternalBuiltinNode {
     private static PArray<?> runMarawaccThreads(RAbstractVector input, RootCallTarget callTarget, RFunction rFunction, String[] nameArgs, int nThreads,
                     RAbstractVector[] additionalArgs, TypeInfoList infoList) {
         ArrayFunction composeLambda = createMarawaccLambda(infoList.size() + 1, callTarget, rFunction, nameArgs, nThreads);
-        PArray pArrayInput = ASTxUtils.marshall(input, additionalArgs, infoList);
+        PArray pArrayInput = ASTxUtils.marshal(input, additionalArgs, infoList);
         PArray<?> result = composeLambda.apply(pArrayInput);
 
         if (ASTxOptions.printResult) {
