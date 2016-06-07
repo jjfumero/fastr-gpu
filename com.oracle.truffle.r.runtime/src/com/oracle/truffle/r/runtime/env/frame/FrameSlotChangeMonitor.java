@@ -151,7 +151,8 @@ public final class FrameSlotChangeMonitor {
 
         if (getNotChangedNonLocallyAssumption(slot).isValid()) {
             // Check whether current frame is used outside a regular stack
-            if (isNonLocal || RArguments.getIsIrregular(curFrame)) {
+            // if (isNonLocal || RArguments.getIsIrregular(curFrame)) {
+            if (isNonLocal) {
                 // False positive: Also invalidates a slot in the current active frame if that one
                 // is used inside eval or the like, but this cost is definitely negligible.
                 if (invalidateProfile != null) {
