@@ -9,8 +9,9 @@ cpuFunction <- function(x, y) {
 	return (x * y)
 }
 
-
+# Need this line for warming up, more time in the profiling
 seqResult <- sapply(a, gpuFunction, b)
+seqResult <- a * b
 
 for (i in seq(1,20)) {
 
