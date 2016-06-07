@@ -54,7 +54,7 @@ Then import the projects into eclipse
 # Note
 
 This compiler has been tested on Linux Fedora 21/22/23 with OpenJDK >= 1.8_61.
-Implementation with JDK 8 u91
+Current implementation with JDK 8 u91
 
 
 # FastR
