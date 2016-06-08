@@ -12,6 +12,9 @@ update:
 eclipse:
 	mx eclipseinit 
 
+unittests:
+	./run examples/tuples.R
+
 sample:
 	./run examples/cpu/map.R 
 
