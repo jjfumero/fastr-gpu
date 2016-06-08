@@ -36,7 +36,7 @@ public class ASTxOptions {
     /**
      * Execute the parallel operations with Marawacc.
      */
-    public static boolean runMarawaccThreads = true;
+    public static boolean runMarawaccThreads = false;
 
     /**
      * Use Java futures for async computation when pattern composition is presented.

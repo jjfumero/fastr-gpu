@@ -104,7 +104,7 @@ public final class MarawaccTerminalReduceBuiltin extends RExternalBuiltinNode {
         if (!ASTxOptions.runMarawaccThreads) {
             // Run sequential
             ArrayList<Object> result = runJavaSequential(input, target, function, nArgs, additionalArgs, argsName, value);
-            return ASTxUtils.unMarshallResultFromList(outputType, result);
+            return ASTxUtils.unMarshallResultFromArrayList(outputType, result);
         } else {
             // Marawacc multithread
             PArray<?> result = runMarawaccThreads(input, target, function, argsName, neutral, additionalArgs, inputTypeList);

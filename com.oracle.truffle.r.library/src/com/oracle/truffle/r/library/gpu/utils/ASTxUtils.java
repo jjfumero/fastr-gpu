@@ -47,6 +47,7 @@ import com.oracle.truffle.r.runtime.data.RDoubleVector;
 import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.RIntSequence;
 import com.oracle.truffle.r.runtime.data.RIntVector;
+import com.oracle.truffle.r.runtime.data.RList;
 import com.oracle.truffle.r.runtime.data.RLogicalVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
@@ -315,6 +316,8 @@ public class ASTxUtils {
             type = TypeInfo.DOUBLE;
         } else if (value instanceof Boolean) {
             type = TypeInfo.BOOLEAN;
+        } else if (value instanceof RList) {
+            type = TypeInfo.LIST;
         } else {
             throw new MarawaccTypeException("Data type not supported: " + value.getClass() + " [ " + __LINE__.print() + "]");
         }
@@ -330,6 +333,12 @@ public class ASTxUtils {
     public static RIntVector getIntVector(ArrayList<Object> list) {
         int[] array = list.stream().mapToInt(i -> (Integer) i).toArray();
         return RDataFactory.createIntVector(array, false);
+    }
+
+    // / XXX: Review the semantic of this operation.
+    public static RList getRList(ArrayList<Object> list) {
+        RList output = RDataFactory.createList(list.toArray());
+        return output;
     }
 
     /**
@@ -380,11 +389,15 @@ public class ASTxUtils {
         }
     }
 
-    public static RAbstractVector unMarshallResultFromList(TypeInfo type, ArrayList<Object> result) {
+    public static RAbstractVector unMarshallResultFromArrayList(TypeInfo type, ArrayList<Object> result) {
         if (type == TypeInfo.INT) {
             return getIntVector(result);
-        } else {
+        } else if (type == TypeInfo.DOUBLE) {
             return getDoubleVector(result);
+        } else if (type == TypeInfo.LIST) {
+            return getRList(result);
+        } else {
+            return null;
         }
     }
 

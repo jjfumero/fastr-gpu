@@ -113,9 +113,12 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
         TypeInfoList inputTypeList = null;
         try {
             inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
-        } catch (MarawaccTypeException e1) {
-            e1.printStackTrace();
+        } catch (MarawaccTypeException e) {
+            // XXX: DEOPTIMIZE: we can deoptimize to LApply
+            System.out.println("[ASTx] Deoptimization generic LApply");
+            e.printStackTrace();
         }
+
         TypeInfo outputType = null;
         try {
             outputType = ASTxUtils.typeInference(value);
@@ -131,7 +134,7 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
         } else {
             // Run sequential
             ArrayList<Object> result = runJavaSequential(input, target, function, nArgs, additionalArgs, argsName, value);
-            return ASTxUtils.unMarshallResultFromList(outputType, result);
+            return ASTxUtils.unMarshallResultFromArrayList(outputType, result);
         }
     }
 

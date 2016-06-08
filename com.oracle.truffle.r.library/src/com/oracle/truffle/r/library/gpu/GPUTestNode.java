@@ -200,7 +200,7 @@ public final class GPUTestNode extends RExternalBuiltinNode {
 
         ArrayList<Object> result = runJavaSequential(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat);
         if (!gpuExecution) {
-            return ASTxUtils.unMarshallResultFromList(outputType, result);
+            return ASTxUtils.unMarshallResultFromArrayList(outputType, result);
         } else {
             return ASTxUtils.unMarshallResultFromPArrays(outputType, (PArray) result.get(0));
         }

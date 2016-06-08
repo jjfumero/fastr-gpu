@@ -4,10 +4,8 @@ a <- 1:1000
 # Function to execute on the GPU
 # f: Integer -> Tuple2<Integer, Integer>
 gpuFunction <- function(x) {
-	return list(x, x)
+	return (list(x, x))
 }
-
-seqResult <- a * b 
 
 result <- marawacc.testGPU(a, gpuFunction)
 
