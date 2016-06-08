@@ -7,7 +7,8 @@ runTests <- function() {
 				"testTuple2Sub.R",
 				"testTuple2Sum.R",
 				"testTuple3op.R",
-				"testTuple3.R"
+				"testTuple3.R",
+				"testSaxpy.R"
 			  )
 
     for (t in tests) {

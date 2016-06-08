@@ -13,7 +13,7 @@ eclipse:
 	mx eclipseinit 
 
 unittests:
-	./run examples/tuples.R
+	./run examples/unittestTuples.R
 
 sample:
 	./run examples/cpu/map.R 
