@@ -406,7 +406,7 @@ public class ASTxUtils {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static PArray<?> marshalSimple(TypeInfoList infoList, RAbstractVector input) {
+    public static PArray<?> marshalSimplePArrays(TypeInfoList infoList, RAbstractVector input) {
         PArray parray = null;
         TypeInfo type = infoList.get(0);
         switch (type) {
@@ -474,14 +474,21 @@ public class ASTxUtils {
         }
     }
 
+    /**
+     * Given the RVector, it creates the PArray. For future work is to extend the R data types to
+     * include in the object layout the PArray information.
+     *
+     * @param input
+     * @param additionalArgs
+     * @param infoList
+     * @return {@link PArray}
+     */
     @SuppressWarnings("rawtypes")
     public static PArray<?> marshal(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
         PArray parray = null;
         if (additionalArgs == null) {
-            // Simple PArray
-            parray = ASTxUtils.marshalSimple(infoList, input);
+            parray = ASTxUtils.marshalSimplePArrays(infoList, input);
         } else {
-            // Tuples
             parray = ASTxUtils.marshalWithTuples(input, additionalArgs, infoList);
         }
         return parray;
