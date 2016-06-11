@@ -36,7 +36,7 @@ public class ASTxOptions {
     /**
      * Execute the parallel operations with Marawacc.
      */
-    public static boolean runMarawaccThreads = false;
+    public static boolean runMarawaccThreads = getBoolean("-Dastx.marawacc.threads", true);
 
     /**
      * Use Java futures for async computation when pattern composition is presented.
@@ -57,4 +57,16 @@ public class ASTxOptions {
      * Print information related to the cache system.
      */
     public static boolean debugCache = false;
+
+    private static boolean getBoolean(String property, boolean defaultValue) {
+        if (System.getProperty(property) == null) {
+            return defaultValue;
+        } else if (System.getProperty(property).toLowerCase().equals("true")) {
+            return true;
+        } else if (System.getProperty(property).toLowerCase().equals("false")) {
+            return false;
+        }
+        return defaultValue;
+    }
+
 }

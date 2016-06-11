@@ -335,9 +335,18 @@ public class ASTxUtils {
         return RDataFactory.createIntVector(array, false);
     }
 
-    // / XXX: Review the semantic of this operation.
+    // XXX: Review the semantic of this operation.
     public static RList getRList(ArrayList<Object> list) {
         RList output = RDataFactory.createList(list.toArray());
+        return output;
+    }
+
+    // XXX: Review the semantic of this operation.
+    public static RList getRList(PArray<Integer> array) {
+        RList output = RDataFactory.createList(array.size());
+        for (int i = 0; i < array.size(); i++) {
+            output.setElement(i, array.get(i));
+        }
         return output;
     }
 
@@ -384,8 +393,12 @@ public class ASTxUtils {
     public static RAbstractVector unMarshallResultFromPArrays(TypeInfo type, PArray result) {
         if (type == TypeInfo.INT) {
             return getIntVector(result);
-        } else {
+        } else if (type == TypeInfo.DOUBLE) {
             return getDoubleVector(result);
+        } else if (type == TypeInfo.LIST) {
+            return getRList(result);
+        } else {
+            throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
         }
     }
 
@@ -397,7 +410,7 @@ public class ASTxUtils {
         } else if (type == TypeInfo.LIST) {
             return getRList(result);
         } else {
-            return null;
+            throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
         }
     }
 

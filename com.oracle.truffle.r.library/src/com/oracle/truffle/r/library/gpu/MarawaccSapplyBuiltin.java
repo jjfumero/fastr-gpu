@@ -132,7 +132,7 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
             PArray<?> result = runMarawaccThreads(input, target, function, argsName, nThreads, additionalArgs, inputTypeList);
             return ASTxUtils.unMarshallResultFromPArrays(outputType, result);
         } else {
-            // Run sequential
+            // Run in sequential
             ArrayList<Object> result = runJavaSequential(input, target, function, nArgs, additionalArgs, argsName, value);
             return ASTxUtils.unMarshallResultFromArrayList(outputType, result);
         }
