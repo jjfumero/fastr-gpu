@@ -43,7 +43,7 @@ import com.oracle.truffle.r.library.fastr.FastRTreeNodeGen;
 import com.oracle.truffle.r.library.fastr.FastRTypeofNodeGen;
 import com.oracle.truffle.r.library.fastr.InteropExportNodeGen;
 import com.oracle.truffle.r.library.fastr.InteropImportNodeGen;
-import com.oracle.truffle.r.library.gpu.GPUTestNode;
+import com.oracle.truffle.r.library.gpu.GPUSApply;
 import com.oracle.truffle.r.library.gpu.MarawaccExecuteNodeGen;
 import com.oracle.truffle.r.library.gpu.MarawaccGetNodeGen;
 import com.oracle.truffle.r.library.gpu.MarawaccInitBuiltinNodeGen;
@@ -156,7 +156,7 @@ public abstract class FastR extends RBuiltinNode {
             case "marawacc.deviceInfo":
                 return MarawaccOCLInfoBuiltinNodeGen.create();
             case "marawacc.testGPU":
-                return new GPUTestNode();
+                return new GPUSApply();
             case "marawacc.sapply":
                 return new MarawaccSapplyBuiltin();
             case "marawacc.execute":

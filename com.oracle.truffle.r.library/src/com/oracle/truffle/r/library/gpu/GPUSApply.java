@@ -55,7 +55,7 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
  * AST Node to check the connection with Marawacc. This is just a proof of concept.
  *
  */
-public final class GPUTestNode extends RExternalBuiltinNode {
+public final class GPUSApply extends RExternalBuiltinNode {
 
     private boolean gpuExecution = false;
 
