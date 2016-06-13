@@ -68,5 +68,4 @@ public class ASTxOptions {
         }
         return defaultValue;
     }
-
 }

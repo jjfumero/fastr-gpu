@@ -60,10 +60,11 @@ public final class GPUSApply extends RExternalBuiltinNode {
     private boolean gpuExecution = false;
 
     private static void applyCompilationPhasesForGPU(StructuredGraph graph) {
+
         // new GPUCleanPhase().apply(graphToCompile);
-        new GPUFrameStateEliminationPhase().apply(graph);
         // new GPURemoveInterpreterPhase().apply(graphToCompile);
 
+        new GPUFrameStateEliminationPhase().apply(graph);
         CompilationUtils.dumpGraph(graph, "afterGPUFrameState");
 
         // new GPUFixedGuardNodeRemovePhase().apply(graphToCompile);
@@ -71,7 +72,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         new GPUBoxingEliminationPhase().apply(graph);
         CompilationUtils.dumpGraph(graph, "GPUBoxingEliminationPhase");
-
     }
 
     /**
