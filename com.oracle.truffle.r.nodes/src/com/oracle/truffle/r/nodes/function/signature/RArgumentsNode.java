@@ -83,6 +83,7 @@ public abstract class RArgumentsNode extends RBaseNode {
         }
     }
 
+    @SuppressWarnings("unused")
     private static final class RArgumentsGPUNode extends RArgumentsNode {
         @Override
         public Object[] execute(RFunction function, RCaller caller, MaterializedFrame callerFrame, int depth, Object[] evaluatedArgs, ArgumentsSignature signature, S3Args s3Args) {
