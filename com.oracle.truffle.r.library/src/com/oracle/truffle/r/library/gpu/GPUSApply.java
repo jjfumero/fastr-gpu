@@ -99,7 +99,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue, isTruffle);
 
         // Insert graph into cache
-        InternalGraphCache.INSTANCE.installGPUBinary(graphToCompile, gpuCompilationUnit);
+        InternalGraphCache.INSTANCE.installGPUBinaryIntoCache(graphToCompile, gpuCompilationUnit);
 
         gpuExecution = true;
         return gpuCompilationUnit;
@@ -156,8 +156,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
             // Object val = newCallTarget.call(argsPackage);
             Object val = callTarget.call(argsPackage);
             output.add(val);
-
-            // int counter = MarawaccGraalIR.getInstance().getCounter();
 
             /*
              * Check if the graph is prepared for GPU compilation and invoke the compilation.

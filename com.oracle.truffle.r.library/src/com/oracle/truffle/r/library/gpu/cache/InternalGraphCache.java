@@ -38,7 +38,7 @@ public class InternalGraphCache {
         cache = new HashMap<>();
     }
 
-    public void installGPUBinary(StructuredGraph graph, GraalGPUCompilationUnit gpuCompilationUnit) {
+    public void installGPUBinaryIntoCache(StructuredGraph graph, GraalGPUCompilationUnit gpuCompilationUnit) {
         if (!cache.containsKey(graph)) {
             cache.put(graph, gpuCompilationUnit);
         }
