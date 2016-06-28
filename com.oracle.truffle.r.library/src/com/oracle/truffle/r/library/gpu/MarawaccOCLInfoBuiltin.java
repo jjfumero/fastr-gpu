@@ -42,8 +42,10 @@ public abstract class MarawaccOCLInfoBuiltin extends RExternalBuiltinNode.Arg0 {
         System.out.println("TYPE             : " + deviceInfo.getDeviceType());
         System.out.println("DRIVER           : " + deviceInfo.getDriverVersion());
         System.out.println("MAX COMPUTE UNITS: " + deviceInfo.getMaxComputeUnits());
+        System.out.println("MAX FREQUENCY    : " + deviceInfo.getMaxClockFrequency());
         System.out.println("GLOBAL MEMORY    : " + deviceInfo.getGlobalMemSize());
         System.out.println("LOCAL  MEMORY    : " + deviceInfo.getLocalMemSize());
+        System.out.println("ENDIANESS        : " + deviceInfo.getEndianess());
     }
 
     @Specialization
