@@ -28,6 +28,7 @@ public enum TypeInfo {
     DOUBLE("Double"),
     BOOLEAN("Boolean"),
     LIST("RList"),
+    TUPLE("TUPLE"),
     NULL("null"); // Not used, just from R side
 
     private String javaTypeString;

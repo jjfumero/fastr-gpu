@@ -49,6 +49,7 @@ import com.oracle.truffle.r.runtime.data.RIntSequence;
 import com.oracle.truffle.r.runtime.data.RIntVector;
 import com.oracle.truffle.r.runtime.data.RList;
 import com.oracle.truffle.r.runtime.data.RLogicalVector;
+import com.oracle.truffle.r.runtime.data.RStringVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 /**
@@ -308,6 +309,10 @@ public class ASTxUtils {
         return list;
     }
 
+    public static void printTypeError(Object value) throws MarawaccTypeException {
+        throw new MarawaccTypeException("Data type not supported: " + value.getClass() + " [ " + __LINE__.print() + "]");
+    }
+
     public static TypeInfo typeInference(Object value) throws MarawaccTypeException {
         TypeInfo type = null;
         if (value instanceof Integer) {
@@ -317,10 +322,16 @@ public class ASTxUtils {
         } else if (value instanceof Boolean) {
             type = TypeInfo.BOOLEAN;
         } else if (value instanceof RList) {
-            type = TypeInfo.LIST;
+            RStringVector object = (RStringVector) ((RList) value).getAttributes().get("class");
+            if (object.getDataAt(0).startsWith("tuple")) {
+                type = TypeInfo.TUPLE;
+            } else {
+                printTypeError(value);
+            }
         } else {
-            throw new MarawaccTypeException("Data type not supported: " + value.getClass() + " [ " + __LINE__.print() + "]");
+            printTypeError(value);
         }
+        System.out.println(type);
         return type;
     }
 
@@ -408,6 +419,8 @@ public class ASTxUtils {
         } else if (type == TypeInfo.DOUBLE) {
             return getDoubleVector(result);
         } else if (type == TypeInfo.LIST) {
+            return getRList(result);
+        } else if (type == TypeInfo.TUPLE) {
             return getRList(result);
         } else {
             throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");

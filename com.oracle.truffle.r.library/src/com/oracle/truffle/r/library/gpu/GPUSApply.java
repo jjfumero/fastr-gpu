@@ -126,7 +126,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return arrayList;
     }
 
-    private ArrayList<Object> runJavaSequential(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
+    private ArrayList<Object> runJavaJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray) {
 
         ArrayList<Object> output = new ArrayList<>(input.getLength());
@@ -176,8 +176,14 @@ public final class GPUSApply extends RExternalBuiltinNode {
         int nArgs = ASTxUtils.getNumberOfArguments(function);
         String[] argsName = ASTxUtils.getArgumentsNames(function);
         Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, 0);
+
+        System.out.println("First output execution");
+
         Object value = function.getTarget().call(argsPackage);
         TypeInfo outputType = null;
+
+        System.out.println("Data type inference");
+
         try {
             outputType = ASTxUtils.typeInference(value);
         } catch (MarawaccTypeException e) {
@@ -196,7 +202,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         // Create PArrays
         PArray<?> inputPArrayFormat = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
 
-        ArrayList<Object> result = runJavaSequential(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat);
+        ArrayList<Object> result = runJavaJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat);
         if (!gpuExecution) {
             return ASTxUtils.unMarshallResultFromArrayList(outputType, result);
         } else {

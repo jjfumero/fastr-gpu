@@ -224,24 +224,19 @@ createTuple3 <- function(a, b, c) {
 	return(t)
 }
 
-
 tuple2 <- function(a, b) {
 	# If fastR enable => call to FastR
-	if (exists(".FastR")) {
-		do.call(".FastR", list(.NAME="astx.tuple2", a, b))
-		return(createTuple2(a, b)) 
-	} else {
-		return(c(a,b));
-	}
+	#do.call(".FastR", list(.NAME="astx.tuple2", a, b))
+	t <- list(name="t2", a=a, b=b)	
+	attr(t, "class") <- "tuple2"
+	return(t)
 }
 
 tuple3 <- function(a, b, c) {
 	# If fastR enable => call to FastR
-	if (exists(".FastR")) {
-		do.call(".FastR", list(.NAME="astx.tuple3", a, b, c))
-		return(createTuple3(a, b, c)) 
-	} else {
-		return(c(a,b,c));
-	}
+	#do.call(".FastR", list(.NAME="astx.tuple3", a, b, c))
+	t <- list(name="t3", a=a, b=b,c=c)	
+	class(t) <- "tuple3"
+	return(t)
 }
 
