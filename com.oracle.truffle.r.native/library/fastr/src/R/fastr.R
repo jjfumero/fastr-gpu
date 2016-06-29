@@ -220,8 +220,9 @@ tuple2 <- function(x, y) {
 }
 
 tuple3 <- function(a, b, c) {
-	t <- list(name="t3", a=a, b=b,c=c)	
-	class(t) <- "t3"
-	return(t)
+	#t <- list(name="t3", a=a, b=b,c=c)	
+	#class(t) <- "t3"
+	#return(t)
+	list(a,b,c)
 }
 
