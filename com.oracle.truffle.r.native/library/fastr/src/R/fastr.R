@@ -216,7 +216,7 @@ tuple2 <- function(x, y) {
 	#t <- list(name="t2", a=x, b=y)	
 	#attr(t, "class") <- "t2"
 	#return(t)
-	list(x,y)
+	list(name="tuple2",x,y)
 }
 
 tuple3 <- function(a, b, c) {

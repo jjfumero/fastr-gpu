@@ -23,6 +23,7 @@
 package com.oracle.truffle.r.library.gpu.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -323,13 +324,16 @@ public class ASTxUtils {
             type = TypeInfo.BOOLEAN;
         } else if (value instanceof RList) {
             try {
-                RStringVector object = (RStringVector) ((RList) value).getAttributes().get("class");
-                if (object.getDataAt(0).startsWith("t")) {
-                    type = TypeInfo.TUPLE;
+                RList list = ((RList) value);
+                RStringVector names = list.getNames();
+                if (names.getDataAt(0).equals("name")) {
+                    if (list.getDataAt(0).equals("tuple2")) {
+                        type = TypeInfo.TUPLE;
+                    }
                 }
             } catch (Exception e) {
                 type = TypeInfo.LIST;
-                // printTypeError(value);
+                printTypeError(value);
             }
         } else {
             printTypeError(value);
