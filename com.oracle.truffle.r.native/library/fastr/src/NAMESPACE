@@ -49,3 +49,5 @@ export(astx.sync)
 
 # ASTx Tuples Library
 export(tuple2)
+export(tuple3)
+export(createTuple2)
