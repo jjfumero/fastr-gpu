@@ -205,3 +205,19 @@ astx.sync <- function(arrayThreadsIDs) {
 	.FastR(.NAME="astx.sync", arrayThreadsIDs)
 }
 
+
+# #########################################################################
+# ASTx Tuples Library
+# #########################################################################
+
+# This part of the framework is independent of the R implementation 
+
+tuple2 <- function(a, b) {
+	# If fastR enable => call to FastR
+	if (exists(".FastR")) {
+		do.call(".FastR", list(.NAME="astx.tuple2", a, b))
+	} else {
+		return(c(a,b));
+	}
+}
+
