@@ -54,8 +54,8 @@ import com.oracle.truffle.r.library.gpu.MarawaccSapplyBuiltin;
 import com.oracle.truffle.r.library.gpu.MarawaccTerminalReduceBuiltin;
 import com.oracle.truffle.r.library.gpu.OCLVectorMulBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.nodes.utils.RNanoTimeBuiltinNodeGen;
-import com.oracle.truffle.r.library.gpu.tuples.ASTxTuple2;
 import com.oracle.truffle.r.library.gpu.tuples.ASTxTuple2NodeGen;
+import com.oracle.truffle.r.library.gpu.tuples.ASTxTuple3NodeGen;
 import com.oracle.truffle.r.nodes.builtin.RBuiltinNode;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.RBuiltin;
@@ -194,6 +194,8 @@ public abstract class FastR extends RBuiltinNode {
                  */
             case "astx.tuple2":
                 return ASTxTuple2NodeGen.create();
+            case "astx.tuple3":
+                return ASTxTuple3NodeGen.create();
 
             default:
                 return null;
