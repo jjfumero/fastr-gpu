@@ -322,11 +322,14 @@ public class ASTxUtils {
         } else if (value instanceof Boolean) {
             type = TypeInfo.BOOLEAN;
         } else if (value instanceof RList) {
-            RStringVector object = (RStringVector) ((RList) value).getAttributes().get("class");
-            if (object.getDataAt(0).startsWith("tuple")) {
-                type = TypeInfo.TUPLE;
-            } else {
-                printTypeError(value);
+            try {
+                RStringVector object = (RStringVector) ((RList) value).getAttributes().get("class");
+                if (object.getDataAt(0).startsWith("t")) {
+                    type = TypeInfo.TUPLE;
+                }
+            } catch (Exception e) {
+                type = TypeInfo.LIST;
+                // printTypeError(value);
             }
         } else {
             printTypeError(value);

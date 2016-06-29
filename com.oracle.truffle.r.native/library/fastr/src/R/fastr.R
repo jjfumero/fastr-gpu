@@ -212,31 +212,16 @@ astx.sync <- function(arrayThreadsIDs) {
 
 # This part of the framework is independent of the R implementation 
 
-createTuple2 <- function(a, b) {
-	t <- list(name="t2", a=a, b=b)	
-	class(t) <- "tuple2"
-	return(t)
-}
-
-createTuple3 <- function(a, b, c) {
-	t <- list(name="t3", a=a, b=b,c=c)	
-	class(t) <- "tuple3"
-	return(t)
-}
-
-tuple2 <- function(a, b) {
-	# If fastR enable => call to FastR
-	#do.call(".FastR", list(.NAME="astx.tuple2", a, b))
-	t <- list(name="t2", a=a, b=b)	
-	attr(t, "class") <- "tuple2"
-	return(t)
+tuple2 <- function(x, y) {
+	#t <- list(name="t2", a=x, b=y)	
+	#attr(t, "class") <- "t2"
+	#return(t)
+	list(x,y)
 }
 
 tuple3 <- function(a, b, c) {
-	# If fastR enable => call to FastR
-	#do.call(".FastR", list(.NAME="astx.tuple3", a, b, c))
 	t <- list(name="t3", a=a, b=b,c=c)	
-	class(t) <- "tuple3"
+	class(t) <- "t3"
 	return(t)
 }
 
