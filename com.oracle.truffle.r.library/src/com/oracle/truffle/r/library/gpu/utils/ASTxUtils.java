@@ -314,6 +314,25 @@ public class ASTxUtils {
         throw new MarawaccTypeException("Data type not supported: " + value.getClass() + " [ " + __LINE__.print() + "]");
     }
 
+    private static TypeInfo listTupleAnalysis(Object value) throws MarawaccTypeException {
+        TypeInfo type = null;
+        try {
+            RList list = ((RList) value);
+            RStringVector names = list.getNames();
+            if (names.getDataAt(0).equals("name")) {
+                if (list.getDataAt(0).equals("tuple2")) {
+                    type = TypeInfo.TUPLE2;
+                } else if (list.getDataAt(0).equals("tuple3")) {
+                    type = TypeInfo.TUPLE3;
+                }
+            }
+        } catch (Exception e) {
+            type = TypeInfo.LIST;
+            printTypeError(value);
+        }
+        return type;
+    }
+
     public static TypeInfo typeInference(Object value) throws MarawaccTypeException {
         TypeInfo type = null;
         if (value instanceof Integer) {
@@ -323,22 +342,10 @@ public class ASTxUtils {
         } else if (value instanceof Boolean) {
             type = TypeInfo.BOOLEAN;
         } else if (value instanceof RList) {
-            try {
-                RList list = ((RList) value);
-                RStringVector names = list.getNames();
-                if (names.getDataAt(0).equals("name")) {
-                    if (list.getDataAt(0).equals("tuple2")) {
-                        type = TypeInfo.TUPLE;
-                    }
-                }
-            } catch (Exception e) {
-                type = TypeInfo.LIST;
-                printTypeError(value);
-            }
+            type = listTupleAnalysis(value);
         } else {
             printTypeError(value);
         }
-        System.out.println(type);
         return type;
     }
 
@@ -427,7 +434,7 @@ public class ASTxUtils {
             return getDoubleVector(result);
         } else if (type == TypeInfo.LIST) {
             return getRList(result);
-        } else if (type == TypeInfo.TUPLE) {
+        } else if (type == TypeInfo.TUPLE2) {
             return getRList(result);
         } else {
             throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
