@@ -20,16 +20,25 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.truffle.r.library.gpu.nodes.utils;
+package com.oracle.truffle.r.library.gpu.interop;
 
-import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
-import com.oracle.truffle.r.runtime.data.RDouble;
+import uk.ac.ed.datastructures.interop.InteropTable;
 
-public abstract class RNanoTimeBuiltin extends RExternalBuiltinNode.Arg0 {
+public class Interoperable {
 
-    @Specialization
-    public RDouble getTime() {
-        return (RDouble.valueOf(System.nanoTime()));
+    private InteropTable interopTable;
+    private Object[] classObjects;
+
+    public Interoperable(InteropTable interopTable, Object... classObjects) {
+        this.interopTable = interopTable;
+        this.classObjects = classObjects;
+    }
+
+    public InteropTable getInterop() {
+        return interopTable;
+    }
+
+    public Object[] getClassObjects() {
+        return classObjects;
     }
 }

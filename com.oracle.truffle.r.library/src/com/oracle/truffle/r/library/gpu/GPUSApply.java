@@ -23,6 +23,7 @@
 package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.datastructures.common.AcceleratorPArray;
@@ -50,6 +51,7 @@ import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.nodes.function.FunctionDefinitionNode;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
 import com.oracle.truffle.r.runtime.data.RFunction;
+import com.oracle.truffle.r.runtime.data.RList;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 /**
@@ -184,18 +186,31 @@ public final class GPUSApply extends RExternalBuiltinNode {
         try {
             outputType = ASTxUtils.typeInference(value);
         } catch (MarawaccTypeException e) {
-            // TODO: Deoptimize
-            e.printStackTrace();
+            // TODO: DEOPTIMIZATION
+            throw new RuntimeException("Interop data type not supported yet");
         }
 
-        InteropTable interop;
+        InteropTable interop = null;
+
         if (outputType == TypeInfo.TUPLE2) {
             interop = InteropTable.T2;
         } else if (outputType == TypeInfo.TUPLE2) {
             interop = InteropTable.T3;
         } else {
-            // TODO: Deoptimize
+            // TODO: DEOPTIMIZATION
             throw new RuntimeException("Interop data type not supported yet");
+        }
+
+        Object[] typeObject = null;
+        if (interop != null) {
+            // Create sub-type list
+            RList list = (RList) value;
+            int ntuple = list.getLength();
+            typeObject = new Object[ntuple - 1];
+            for (int i = 1; i < ntuple; i++) {
+                Class<?> k = list.getDataAt(i).getClass();
+                typeObject[i - 1] = k;
+            }
         }
 
         TypeInfoList inputTypeList = null;
