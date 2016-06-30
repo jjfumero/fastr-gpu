@@ -50,7 +50,7 @@ public abstract class MarawaccOCLInfoBuiltin extends RExternalBuiltinNode.Arg0 {
 
     @Specialization
     protected String clInfo() {
-        MarawaccInitBuiltinNodeGen.marawaccInitialization();
+        MarawaccInitilizationNodeGen.marawaccInitialization();
         GraalAcceleratorPlatform platform = GraalAcceleratorSystem.getInstance().getPlatform();
         GraalAcceleratorDevice device = platform.getDevice();
         OCLDeviceInfo deviceInfo = (OCLDeviceInfo) device.getDeviceInfo();

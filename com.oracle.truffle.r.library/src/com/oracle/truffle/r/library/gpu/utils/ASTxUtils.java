@@ -324,6 +324,8 @@ public class ASTxUtils {
                     type = TypeInfo.TUPLE2;
                 } else if (list.getDataAt(0).equals("tuple3")) {
                     type = TypeInfo.TUPLE3;
+                } else {
+                    printTypeError(value);
                 }
             }
         } catch (Exception e) {
