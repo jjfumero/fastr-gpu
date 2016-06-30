@@ -23,12 +23,12 @@
 package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.datastructures.common.AcceleratorPArray;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.interop.InteropTable;
+import uk.ac.ed.datastructures.interop.Interoperable;
 import uk.ac.ed.jpai.graal.GraalGPUCompilationUnit;
 import uk.ac.ed.jpai.graal.GraalGPUCompiler;
 import uk.ac.ed.jpai.graal.GraalGPUExecutor;
@@ -88,7 +88,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
      * @param firstValue
      * @return {@link GraalGPUCompilationUnit}
      */
-    private GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue, InteropTable interop) {
+    private GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue, Interoperable interoperable) {
 
         applyCompilationPhasesForGPU(graphToCompile);
 
@@ -99,7 +99,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         // Compilation to the GPU
         boolean isTruffle = true;
-        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue, isTruffle, interop);
+        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue, isTruffle, interoperable);
 
         // Insert graph into cache
         InternalGraphCache.INSTANCE.installGPUBinaryIntoCache(graphToCompile, gpuCompilationUnit);
@@ -130,7 +130,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
     }
 
     private ArrayList<Object> runJavaJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
-                    Object firstValue, PArray<?> inputPArray, InteropTable interop) {
+                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable) {
 
         ArrayList<Object> output = new ArrayList<>(input.getLength());
         output.add(firstValue);
@@ -166,7 +166,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
             if (graphToCompile != null && gpuCompilationUnit == null) {
                 // Get the Structured Graph and compile it for GPU
                 System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU");
-                gpuCompilationUnit = compileForMarawaccBackend(inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, firstValue, interop);
+                gpuCompilationUnit = compileForMarawaccBackend(inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, firstValue, interoperable);
                 return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
             }
         }
@@ -213,6 +213,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
             }
         }
 
+        Interoperable interoperable = new Interoperable(interop, typeObject);
+
         TypeInfoList inputTypeList = null;
         try {
             inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
@@ -224,7 +226,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         // Create PArrays
         PArray<?> inputPArrayFormat = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
 
-        ArrayList<Object> result = runJavaJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interop);
+        ArrayList<Object> result = runJavaJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable);
         if (!gpuExecution) {
             return ASTxUtils.unMarshallResultFromArrayList(outputType, result);
         } else {
