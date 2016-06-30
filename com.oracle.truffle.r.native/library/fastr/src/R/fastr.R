@@ -212,17 +212,17 @@ astx.sync <- function(arrayThreadsIDs) {
 
 # This part of the framework is independent of the R implementation 
 
-tuple2 <- function(x, y) {
+tuple2 <- function(a, b) {
 	#t <- list(name="t2", a=x, b=y)	
 	#attr(t, "class") <- "t2"
 	#return(t)
-	list(name="tuple2",x,y)
+	list(name="tuple2",a,b)
 }
 
 tuple3 <- function(a, b, c) {
 	#t <- list(name="t3", a=a, b=b,c=c)	
 	#class(t) <- "t3"
 	#return(t)
-	list(a,b,c)
+	list(name="tuple3", a, b, c)
 }
 
