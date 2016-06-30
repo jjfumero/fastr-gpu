@@ -19,11 +19,14 @@ VENDOR           : Advanced Micro Devices, Inc.
 TYPE             : GPU
 DRIVER           : 1598.5 (VM)
 MAX COMPUTE UNITS: 44
+MAX FREQUENCY    : 1030
 GLOBAL MEMORY    : 3221225472
 LOCAL  MEMORY    : 32768
+ENDIANESS        : LITTLE_ENDIAN
 
 
 > marawacc.map( 1:100000, function(x, y) x * y, 1:100000) 
+
 ```
 
 # Installation
