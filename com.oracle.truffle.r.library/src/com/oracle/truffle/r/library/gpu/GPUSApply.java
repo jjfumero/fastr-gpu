@@ -201,12 +201,12 @@ public final class GPUSApply extends RExternalBuiltinNode {
             throw new RuntimeException("Interop data type not supported yet");
         }
 
-        Object[] typeObject = null;
+        Class<?>[] typeObject = null;
         if (interop != null) {
             // Create sub-type list
             RList list = (RList) value;
             int ntuple = list.getLength();
-            typeObject = new Object[ntuple - 1];
+            typeObject = new Class<?>[ntuple - 1];
             for (int i = 1; i < ntuple; i++) {
                 Class<?> k = list.getDataAt(i).getClass();
                 typeObject[i - 1] = k;
