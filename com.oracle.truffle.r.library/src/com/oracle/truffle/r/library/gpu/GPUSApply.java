@@ -173,16 +173,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return output;
     }
 
-    @SuppressWarnings("rawtypes")
-    private RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) {
-
-        int nArgs = ASTxUtils.getNumberOfArguments(function);
-        String[] argsName = ASTxUtils.getArgumentsNames(function);
-        Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, 0);
-
-        Object value = function.getTarget().call(argsPackage);
+    private static TypeInfo obtainTypeInfo(Object value) {
         TypeInfo outputType = null;
-
         try {
             outputType = ASTxUtils.typeInference(value);
         } catch (MarawaccTypeException e) {
@@ -191,7 +183,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
         }
 
         InteropTable interop = null;
-
         // Ask for interop
         if (outputType != null && outputType.getGenericType().equals("T")) {
             if (outputType == TypeInfo.TUPLE2) {
@@ -204,6 +195,26 @@ public final class GPUSApply extends RExternalBuiltinNode {
             throw new RuntimeException("Interop data type not supported yet");
         }
 
+        return outputType;
+    }
+
+    private static InteropTable obtainInterop(TypeInfo outputType) {
+        InteropTable interop = null;
+        // Ask for interop
+        if (outputType != null && outputType.getGenericType().equals("T")) {
+            if (outputType == TypeInfo.TUPLE2) {
+                interop = InteropTable.T2;
+            } else if (outputType == TypeInfo.TUPLE3) {
+                interop = InteropTable.T3;
+            }
+        } else if (outputType == null) {
+            // TODO: DEOPTIMIZATION
+            throw new RuntimeException("Interop data type not supported yet");
+        }
+        return interop;
+    }
+
+    private static Class<?>[] createListSubTypes(InteropTable interop, Object value) {
         Class<?>[] typeObject = null;
         if (interop != null) {
             // Create sub-type list
@@ -215,11 +226,10 @@ public final class GPUSApply extends RExternalBuiltinNode {
                 typeObject[i - 1] = k;
             }
         }
-        Interoperable interoperable = null;
-        if (interop != null) {
-            interoperable = new Interoperable(interop, typeObject);
-        }
+        return typeObject;
+    }
 
+    private static TypeInfoList createTypeInfoListForInput(RAbstractVector input, RAbstractVector[] additionalArgs) {
         TypeInfoList inputTypeList = null;
         try {
             inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
@@ -227,11 +237,31 @@ public final class GPUSApply extends RExternalBuiltinNode {
             // TODO: Deoptimize
             e.printStackTrace();
         }
+        return inputTypeList;
+    }
+
+    @SuppressWarnings("rawtypes")
+    private RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) {
+
+        int nArgs = ASTxUtils.getNumberOfArguments(function);
+        String[] argsName = ASTxUtils.getArgumentsNames(function);
+        Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, 0);
+        Object value = function.getTarget().call(argsPackage);
+
+        // Interorable objects
+        TypeInfo outputType = obtainTypeInfo(value);
+        InteropTable interop = obtainInterop(outputType);
+        Class<?>[] typeObject = createListSubTypes(interop, value);
+        Interoperable interoperable = (interop != null) ? new Interoperable(interop, typeObject) : null;
+        TypeInfoList inputTypeList = createTypeInfoListForInput(input, additionalArgs);
 
         // Create PArrays
         PArray<?> inputPArrayFormat = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
 
+        // Execution
         ArrayList<Object> result = runJavaJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable);
+
+        // Result
         if (!gpuExecution) {
             return ASTxUtils.unMarshallResultFromArrayList(outputType, result);
         } else {
