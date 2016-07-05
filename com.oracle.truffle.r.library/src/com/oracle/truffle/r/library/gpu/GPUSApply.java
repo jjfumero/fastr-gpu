@@ -193,10 +193,15 @@ public final class GPUSApply extends RExternalBuiltinNode {
         InteropTable interop = null;
 
         // Ask for interop
-        if (outputType == TypeInfo.TUPLE2) {
-            interop = InteropTable.T2;
-        } else if (outputType == TypeInfo.TUPLE2) {
-            interop = InteropTable.T3;
+        if (outputType != null && outputType.getGenericType().equals("tuple")) {
+            if (outputType == TypeInfo.TUPLE2) {
+                interop = InteropTable.T2;
+            } else if (outputType == TypeInfo.TUPLE2) {
+                interop = InteropTable.T3;
+            }
+        } else if (outputType == null) {
+            // TODO: DEOPTIMIZATION
+            throw new RuntimeException("Interop data type not supported yet");
         }
 
         Class<?>[] typeObject = null;

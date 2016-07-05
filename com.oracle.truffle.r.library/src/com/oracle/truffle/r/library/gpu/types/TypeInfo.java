@@ -24,22 +24,28 @@ package com.oracle.truffle.r.library.gpu.types;
 
 public enum TypeInfo {
 
-    INT("Integer"),
-    DOUBLE("Double"),
-    BOOLEAN("Boolean"),
-    LIST("RList"),
-    TUPLE2("Tuple2"),
-    TUPLE3("Tuple3"),
-    NULL("null"); // Not used, just from R side
+    INT("Integer", "int"),
+    DOUBLE("Double", "double"),
+    BOOLEAN("Boolean", "boolean"),
+    LIST("RList", "list"),
+    TUPLE2("Tuple2", "tuple"),
+    TUPLE3("Tuple3", "tuple"),
+    NULL("null", "null"); // Not used, just from R side
 
     private String javaTypeString;
+    private String genericType;
 
-    TypeInfo(String str) {
-        this.javaTypeString = str;
+    TypeInfo(String name, String type) {
+        this.javaTypeString = name;
+        this.genericType = type;
     }
 
     public String getJavaType() {
         return this.javaTypeString;
+    }
+
+    public String getGenericType() {
+        return this.genericType;
     }
 
     @Override
