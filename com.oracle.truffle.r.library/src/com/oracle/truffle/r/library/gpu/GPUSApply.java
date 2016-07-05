@@ -193,10 +193,10 @@ public final class GPUSApply extends RExternalBuiltinNode {
         InteropTable interop = null;
 
         // Ask for interop
-        if (outputType != null && outputType.getGenericType().equals("tuple")) {
+        if (outputType != null && outputType.getGenericType().equals("T")) {
             if (outputType == TypeInfo.TUPLE2) {
                 interop = InteropTable.T2;
-            } else if (outputType == TypeInfo.TUPLE2) {
+            } else if (outputType == TypeInfo.TUPLE3) {
                 interop = InteropTable.T3;
             }
         } else if (outputType == null) {

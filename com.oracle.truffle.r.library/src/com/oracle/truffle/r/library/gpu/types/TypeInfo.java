@@ -28,8 +28,8 @@ public enum TypeInfo {
     DOUBLE("Double", "double"),
     BOOLEAN("Boolean", "boolean"),
     LIST("RList", "list"),
-    TUPLE2("Tuple2", "tuple"),
-    TUPLE3("Tuple3", "tuple"),
+    TUPLE2("Tuple2", "T"),
+    TUPLE3("Tuple3", "T"),
     NULL("null", "null"); // Not used, just from R side
 
     private String javaTypeString;
