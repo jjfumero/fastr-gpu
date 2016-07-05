@@ -33,7 +33,7 @@ import uk.ac.ed.jpai.graal.GraalGPUCompilationUnit;
 import uk.ac.ed.jpai.graal.GraalGPUCompiler;
 import uk.ac.ed.jpai.graal.GraalGPUExecutor;
 import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
-import uk.ac.ed.marawacc.graal.CompilationUtils;
+import uk.ac.ed.marawacc.graal.CompilerUtils;
 
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.truffle.OptimizedCallTarget;
@@ -68,13 +68,13 @@ public final class GPUSApply extends RExternalBuiltinNode {
         // new GPURemoveInterpreterPhase().apply(graphToCompile);
 
         new GPUFrameStateEliminationPhase().apply(graph);
-        CompilationUtils.dumpGraph(graph, "afterGPUFrameState");
+        CompilerUtils.dumpGraph(graph, "afterGPUFrameState");
 
         // new GPUFixedGuardNodeRemovePhase().apply(graphToCompile);
         // GraalIRConversion.dumpGraph(graphToCompile, "GPUFixedGuardNodeRemovePhase");
 
         new GPUBoxingEliminationPhase().apply(graph);
-        CompilationUtils.dumpGraph(graph, "GPUBoxingEliminationPhase");
+        CompilerUtils.dumpGraph(graph, "GPUBoxingEliminationPhase");
     }
 
     /**
