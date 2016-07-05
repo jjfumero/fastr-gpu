@@ -438,6 +438,8 @@ public class ASTxUtils {
             return getRList(result);
         } else if (type == TypeInfo.TUPLE2) {
             return getRList(result);
+        } else if (type == TypeInfo.TUPLE3) {
+            return getRList(result);
         } else {
             throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
         }
