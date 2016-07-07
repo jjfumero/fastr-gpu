@@ -369,10 +369,20 @@ public class ASTxUtils {
     }
 
     // XXX: Review the semantic of this operation.
-    public static RList getRList(PArray<Integer> array) {
+    public static RList getRList(PArray<?> array) {
         RList output = RDataFactory.createList(array.size());
         for (int i = 0; i < array.size(); i++) {
             output.setElement(i, array.get(i));
+        }
+        return output;
+    }
+
+    // XXX: Check the semantic of this operation
+    public static RList getRListFromTuple2(PArray<Tuple2<?, ?>> array) {
+        RList output = RDataFactory.createList(array.size());
+        for (int i = 0; i < array.size(); i++) {
+            // / XXX: Return the elements in the Tuple2
+            output.setElement(i, array.get(i)._1);
         }
         return output;
     }
@@ -424,6 +434,8 @@ public class ASTxUtils {
             return getDoubleVector(result);
         } else if (type == TypeInfo.LIST) {
             return getRList(result);
+        } else if (type == TypeInfo.TUPLE2) {
+            return getRListFromTuple2(result);
         } else {
             throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
         }
