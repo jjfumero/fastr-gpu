@@ -7,12 +7,10 @@ import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 
 public abstract class ASTxTuple2 extends RExternalBuiltinNode.Arg2 {
 
-    @SuppressWarnings("rawtypes")
     @Specialization
-    public Tuple2 createTuple2(Object a, Object b) {
-        Tuple2 tuple = new Tuple2<>(a, b);
+    public Tuple2<?, ?> createTuple2(Object a, Object b) {
+        Tuple2<?, ?> tuple = new Tuple2<>(a, b);
         System.out.println(tuple);
         return tuple;
     }
-
 }
