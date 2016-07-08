@@ -242,7 +242,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         try {
             inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
         } catch (MarawaccTypeException e) {
-            // TODO: Deoptimize
+            // TODO: DEOPTIMIZE
             e.printStackTrace();
         }
         return inputTypeList;
@@ -251,6 +251,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
     @SuppressWarnings("rawtypes")
     private RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) {
 
+        // Type inference - execution of the first element
         int nArgs = ASTxUtils.getNumberOfArguments(function);
         String[] argsName = ASTxUtils.getArgumentsNames(function);
         Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, 0);
