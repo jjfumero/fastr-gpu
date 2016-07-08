@@ -404,22 +404,39 @@ public class ASTxUtils {
         return output;
     }
 
-    // XXX: Check the semantic of this operation
+    /**
+     * This method is time consuming (unmarshalling data from PArray to Tuple2)
+     *
+     * @param array
+     * @return {@link RList}
+     */
     public static RList getRListFromTuple2(PArray<Tuple2<?, ?>> array) {
         RList output = RDataFactory.createList(array.size());
         for (int i = 0; i < array.size(); i++) {
-            // / XXX: Return the elements in the Tuple2
-            output.setElement(i, array.get(i)._1);
+            Object[] contentTuple = new Object[2];
+            contentTuple[0] = array.get(i)._1;
+            contentTuple[1] = array.get(i)._2;
+            RList v = RDataFactory.createList(contentTuple);
+            output.setElement(i, v);
         }
         return output;
     }
 
-    // XXX: Check the semantic of this operation
+    /**
+     * This method is time consuming (unmarshalling data from PArray to Tuple2)
+     *
+     * @param array
+     * @return {@link RList}
+     */
     public static RList getRListFromTuple3(PArray<Tuple3<?, ?, ?>> array) {
         RList output = RDataFactory.createList(array.size());
         for (int i = 0; i < array.size(); i++) {
-            // / XXX: Return the elements in the Tuple2
-            output.setElement(i, array.get(i)._1);
+            Object[] contentTuple = new Object[3];
+            contentTuple[0] = array.get(i)._1;
+            contentTuple[1] = array.get(i)._2;
+            contentTuple[2] = array.get(i)._3;
+            RList v = RDataFactory.createList(contentTuple);
+            output.setElement(i, v);
         }
         return output;
     }
