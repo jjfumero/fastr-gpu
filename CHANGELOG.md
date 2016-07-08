@@ -1,4 +1,9 @@
 
+## astx-0.4 
+	* Tuples support from RList in the R lambda expression
+	* Graph simplified within the interpreter level to the GraalIR
+	* Graal extension to get the information whithin the data types from Partial Escape Analysis
+	* Mararawcc code generator improved for tuples support from Virtual Nodes and CommitAllocationNode
 
 ## astx-0.3
 	* Basic support for GPU from AST -> Graal IR with Truffle information -> OpenCL code.
