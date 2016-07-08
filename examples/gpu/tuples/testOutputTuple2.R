@@ -4,7 +4,7 @@ a <- 1:1000000
 # Function to execute on the GPU
 # f: Integer -> Tuple2<Integer, Integer>
 gpuFunction <- function(x) {
-	return(tuple2(x, x))
+	return(list(x, x))
 }
 
 for (i in seq(1,10)) {

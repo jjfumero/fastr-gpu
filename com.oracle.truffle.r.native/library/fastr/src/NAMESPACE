@@ -47,9 +47,3 @@ export(nanotime)
 export(astx.async)
 export(astx.sync)
 
-# ASTx Tuples Library
-export(tuple2)
-export(tuple3)
-export(tuple4)
-export(tuple5)
-export(tuple6)

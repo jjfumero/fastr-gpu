@@ -23,7 +23,6 @@
 package com.oracle.truffle.r.library.gpu.utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -314,6 +313,13 @@ public class ASTxUtils {
         throw new MarawaccTypeException("Data type not supported: " + value.getClass() + " [ " + __LINE__.print() + "]");
     }
 
+    /**
+     * Analysis when the Tuple contains the name="tupleX" attribute
+     *
+     * @param value
+     * @return {@link TypeInfo}
+     * @throws MarawaccTypeException
+     */
     private static TypeInfo listTupleAnalysis(Object value) throws MarawaccTypeException {
         TypeInfo type = null;
         try {
@@ -335,6 +341,27 @@ public class ASTxUtils {
         return type;
     }
 
+    private static TypeInfo listTupleOutputAnalysis(Object value) throws MarawaccTypeException {
+        TypeInfo type = null;
+        try {
+            RList list = ((RList) value);
+
+            int length = list.getLength();
+            if (length == 2) {
+                type = TypeInfo.TUPLE2;
+            } else if (length == 3) {
+                type = TypeInfo.TUPLE3;
+            } else {
+                printTypeError(value);
+            }
+
+        } catch (Exception e) {
+            type = TypeInfo.LIST;
+            printTypeError(value);
+        }
+        return type;
+    }
+
     public static TypeInfo typeInference(Object value) throws MarawaccTypeException {
         TypeInfo type = null;
         if (value instanceof Integer) {
@@ -344,7 +371,7 @@ public class ASTxUtils {
         } else if (value instanceof Boolean) {
             type = TypeInfo.BOOLEAN;
         } else if (value instanceof RList) {
-            type = listTupleAnalysis(value);
+            type = listTupleOutputAnalysis(value);
         } else {
             printTypeError(value);
         }
@@ -379,6 +406,16 @@ public class ASTxUtils {
 
     // XXX: Check the semantic of this operation
     public static RList getRListFromTuple2(PArray<Tuple2<?, ?>> array) {
+        RList output = RDataFactory.createList(array.size());
+        for (int i = 0; i < array.size(); i++) {
+            // / XXX: Return the elements in the Tuple2
+            output.setElement(i, array.get(i)._1);
+        }
+        return output;
+    }
+
+    // XXX: Check the semantic of this operation
+    public static RList getRListFromTuple3(PArray<Tuple3<?, ?, ?>> array) {
         RList output = RDataFactory.createList(array.size());
         for (int i = 0; i < array.size(); i++) {
             // / XXX: Return the elements in the Tuple2
@@ -436,6 +473,8 @@ public class ASTxUtils {
             return getRList(result);
         } else if (type == TypeInfo.TUPLE2) {
             return getRListFromTuple2(result);
+        } else if (type == TypeInfo.TUPLE3) {
+            return getRListFromTuple3(result);
         } else {
             throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
         }

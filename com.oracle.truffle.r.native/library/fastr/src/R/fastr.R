@@ -205,34 +205,3 @@ astx.sync <- function(arrayThreadsIDs) {
 	.FastR(.NAME="astx.sync", arrayThreadsIDs)
 }
 
-
-# #########################################################################
-# ASTx Tuples Library
-# #########################################################################
-
-# This part of the framework is independent of the R implementation 
-
-tuple2 <- function(a, b) {
-	#t <- list(name="t2", a=x, b=y)	
-	#attr(t, "class") <- "t2"
-	#return(t)
-	list(name="tuple2",a,b)
-}
-
-tuple3 <- function(a, b, c) {
-	list(name="tuple3", a, b, c)
-}
-
-tuple4 <- function(a, b, c, d) {
-	list(name="tuple4", a, b, c, d)
-}
-
-tuple5 <- function(a, b, c, d, e) {
-	list(name="tuple5", a, b, c, d, e)
-}
-
-tuple6 <- function(a, b, c, d, e, f) {
-	list(name="tuple6", a, b, c, d, e, f)
-}
-
-

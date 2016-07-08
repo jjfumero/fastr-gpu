@@ -205,8 +205,31 @@ public final class GPUSApply extends RExternalBuiltinNode {
             // Create sub-type list
             RList list = (RList) value;
             int ntuple = list.getLength();
+            typeObject = new Class<?>[ntuple];
+            for (int i = 0; i < ntuple; i++) {
+                Class<?> k = list.getDataAt(i).getClass();
+                typeObject[i] = k;
+            }
+        }
+        return typeObject;
+    }
+
+    /**
+     * If tuple contains the name="tuple".
+     *
+     * @param interop
+     * @param value
+     * @return {@link Class}
+     */
+    @SuppressWarnings("unused")
+    private static Class<?>[] createListSubTypesWithName(InteropTable interop, Object value) {
+        Class<?>[] typeObject = null;
+        if (interop != null) {
+            // Create sub-type list
+            RList list = (RList) value;
+            int ntuple = list.getLength();
             typeObject = new Class<?>[ntuple - 1];
-            for (int i = 1; i < ntuple; i++) {
+            for (int i = 0; i < ntuple; i++) {
                 Class<?> k = list.getDataAt(i).getClass();
                 typeObject[i - 1] = k;
             }
