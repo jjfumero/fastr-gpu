@@ -320,6 +320,7 @@ public class ASTxUtils {
      * @return {@link TypeInfo}
      * @throws MarawaccTypeException
      */
+    @SuppressWarnings("unused")
     private static TypeInfo listTupleAnalysis(Object value) throws MarawaccTypeException {
         TypeInfo type = null;
         try {
