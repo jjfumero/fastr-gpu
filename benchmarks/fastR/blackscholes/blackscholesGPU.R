@@ -67,7 +67,10 @@ benchmark <- function(inputSize) {
 		list(callRes, d2)	
 	}	
 
-	x <- 0:size;
+	x <- 1:size
+	for (i in 1:size) {
+		x[i] = runif(1)
+	}	
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
