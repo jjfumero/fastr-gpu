@@ -87,7 +87,7 @@ benchmark <- function(inputSize) {
 			# Put price
             putRes <- KConstant * exp(1 * t * (-1) * r) - resultD2Minus - s * resultD1Minus;
  
-		list(callRes, d2)	
+		list(callRes, putRes)	
 	}	
 
 
