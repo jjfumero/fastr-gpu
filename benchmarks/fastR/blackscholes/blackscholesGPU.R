@@ -37,6 +37,7 @@ benchmark <- function(inputSize) {
 	 	d1 <- (log(s / KConstant) + ((r + (v * v / 2)) * t)) / v * sqrt(t)
 		d2 <- d1 - (v * sqrt(t))
 
+	   # cnd(d1)
        a1 <- 0.319381530
        a2 <- -0.356563782
        a3 <- 1.781477937
@@ -49,28 +50,51 @@ benchmark <- function(inputSize) {
 
 	   w <- 1.0 - 1.0 / 1 * a6 * exp((-1 * l) * l / 2) * (a1 * k + a2 * k * k * 1 + a3 * k * k * k * +a4 * k * k * k * k * 1 + a5 * k * k * k * k * k);
 		resultD1 <- w
-       if (d1 < 0.0) {
+       if (d1 < 0) {
        		resultD1 <- 1.0 - w;
        }
 
 		# cnd(d2)
         l <- abs(d2);
-        k = 1.0 / (1.0 + 0.2316419 * l);
-        w = 1.0 - 1.0 / 1 * a6 * exp((-1 * l) * l / 2) * (a1 * k + a2 * k * k * 1 + a3 * k * k * k * +a4 * k * k * k * k * 1 + a5 * k * k * k * k * k);
-        resultD2 = w;
-        if (d2 < 0.0) {
+        k <- 1.0 / (1.0 + 0.2316419 * l);
+        w <- 1.0 - 1.0 / 1 * a6 * exp((-1 * l) * l / 2) * (a1 * k + a2 * k * k * 1 + a3 * k * k * k * +a4 * k * k * k * k * 1 + a5 * k * k * k * k * k);
+        resultD2 <- w;
+        if (d2 < 0) {
         	resultD2 <- 1.0 - w;
         }
 
+		## Call price
        callRes <- s * resultD1 - KConstant * exp(1 * t * (-1) * r) * resultD2;
+
+		# cnd(-1)
+            l <- abs(-d1);
+            k <- 1.0 / (1.0 + 0.2316419 * l);
+            w <- 1.0 - 1.0 / 1 * a6 * exp((-1 * l) * l / 2) * (a1 * k + a2 * k * k * 1 + a3 * k * k * k * +a4 * k * k * k * k * 1 + a5 * k * k * k * k * k);
+            resultD1Minus <-  w
+            if ((-d1) < 0) {
+            	resultD1Minus <- 1.0 - w;
+            } 
+
+            # cnd(-2)
+            l <- abs(-d2);
+            k <- 1.0 / (1.0 + 0.2316419 * l);
+            w <- 1.0 - 1.0 / 1 * a6 * exp((-1 * l) * l / 2) * (a1 * k + a2 * k * k * 1 + a3 * k * k * k * +a4 * k * k * k * k * 1 + a5 * k * k * k * k * k);
+            resultD2Minus <- w
+            if ((-d2) < 0) {
+            	resultD2Minus <- 1.0 - w;
+			}
+
+			# Put price
+            putRes <- KConstant * exp(1 * t * (-1) * r) - resultD2Minus - s * resultD1Minus;
  
 		list(callRes, d2)	
 	}	
 
-	x <- 1:size
-	for (i in 1:size) {
-		x[i] = runif(1)
-	}	
+
+    x <- 1:size
+    for (i in 1:size) {
+        x[i] = runif(1)
+    }
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
