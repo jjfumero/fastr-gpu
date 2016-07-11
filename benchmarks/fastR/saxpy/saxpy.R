@@ -26,11 +26,32 @@ benchmark <- function(inputSize) {
 	x <- 0:size;
 	y <- 0:size;
 
+	# Seq code
+	resultSeq <- alpha * x + y
+	correct <- TRUE
+
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
 		result <- mapply(saxpyFunction, x, y);
 		total <- nanotime() - start
 		print(total)
+
+		# check result
+		nonError <- identical(resultSeq, result)
+		if (!nonError) {
+			for (i in seq(result)) {
+				if (abs(resultSeq[i] - result[i]) > 0.1) {
+					print(nonError)
+					correct <- FALSE
+					break;
+				}
+			}
+			if (correct) {
+				print("Result is correct")
+			}	
+		} else {
+			print("Result is correct")
+		}
 		#print(result);
 	}
 }
