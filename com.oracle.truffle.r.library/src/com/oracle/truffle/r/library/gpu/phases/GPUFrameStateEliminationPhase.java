@@ -26,7 +26,6 @@ public class GPUFrameStateEliminationPhase extends Phase {
         }
 
         Providers providers = GraalOCLBackendConnector.getProviders();
-
         new CanonicalizerPhase().apply(graph, new PhaseContext(providers));
         new DeadCodeEliminationPhase().apply(graph);
     }

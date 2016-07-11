@@ -72,7 +72,6 @@ public class GPUBoxingEliminationPhase extends Phase {
         Backend backend = GraalOCLBackendConnector.getHostBackend();
         Providers providers = backend.getProviders();
         PhaseSuite<HighTierContext> graphBuilderSuite = getDefaultGraphBuilderSuite(backend);
-
         HighTierContext context = new HighTierContext(providers, graphBuilderSuite, OptimisticOptimizations.ALL);
 
         boxingRemoval2(graph, context);
