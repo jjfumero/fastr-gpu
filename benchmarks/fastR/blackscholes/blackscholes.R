@@ -6,7 +6,7 @@
 args <- commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
-	stop("No input size passed. Usage: ./saxpy.R <size> ")
+	stop("No input size passed. Usage: ./blackcholes.R <size> ")
 } 
 
 size <- as.integer(args[1])
@@ -90,16 +90,23 @@ benchmark <- function(inputSize) {
 		list(callRes, putRes)	
 	}	
 
+	
+	initialization <- function(size) {
+        x <- runif(size, 0, 1)
+		return (x)
+	}
 
-    x <- 1:size
-    for (i in 1:size) {
-        x[i] = runif(1)
-    }
+	x <- initialization(size)
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
 		result <- mapply(bsFunction, x);
-		total <- nanotime() - start
+
+		l <- result[1][[2]]
+		print(l)
+
+		end <- nanotime()
+		total <- end - start
 		print(total)
 		#print(result);
 	}

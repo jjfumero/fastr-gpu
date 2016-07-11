@@ -6,7 +6,7 @@
 args <- commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
-	stop("No input size passed. Usage: ./saxpy.R <size> ")
+	stop("No input size passed. Usage: ./blackcholesGPU.R <size> ")
 } 
 
 size <- as.integer(args[1])
@@ -165,11 +165,13 @@ benchmark <- function(inputSize) {
 		list(callRes, putRes)	
 	}	
 
-    x <- 1:size
-    for (i in 1:size) {
-        x[i] = runif(1)
-    }
-		
+	initialization <- function(size) {
+        x <- runif(size, 0, 1)
+		return (x)
+	}
+
+	x <- initialization(size)
+
 	seq <- mapply(bsCPUFunction, x);
 
 	for (i in 1:REPETITIONS) {
@@ -177,11 +179,31 @@ benchmark <- function(inputSize) {
 		result <- marawacc.testGPU(x, bsFunction);
 		total <- nanotime() - start
 		print(total)
-		print(result[1])
+
+		# Check result
+		i <- 1
+		j <- 1
+		while (i < size) {
+			lseq <- c(seq[[i]], seq[[i+1]])
+			lgpu <- c(result[[j]][[1]], result[[j]][[2]])
+
+			# check the elements for the tuple
+			if (abs(lseq[1] - lgpu[1]) > 0.1) {
+           		print("Result is wrong")
+                break;
+            }
+			if (abs(lseq[2] - lgpu[2]) > 0.1) {
+           		print("Result is wrong")
+                break;
+            }
+
+			i <- i + 2
+			j <- j + 1
+		}
+
 		#print(result);
 	}
 
-	print(seq[1])
 }
 
 ## Main 
