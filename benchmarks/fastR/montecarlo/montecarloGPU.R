@@ -23,13 +23,10 @@ benchmark <- function(inputSize) {
 		sum <- 0.0
 		
 		for (j in 1:iter) {
-			#x <- runif(1)
-			#y <- runif(1)
 			# random for x
-			x <- runif(1);
+			x <- runif(1)
 			# random for y
 			y <- runif(1)
-
 			dist <- sqrt(x*x + y * y)
 			if (dist <= 1.0) {
 				sum <- sum + 1.0;
