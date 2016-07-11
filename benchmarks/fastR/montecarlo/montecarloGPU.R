@@ -16,7 +16,7 @@ REPETITIONS <- 100
 ## Lambda expression for the computation
 benchmark <- function(inputSize) {
 
-	montecarloFunction <- function(x) {
+	montecarloGPUFunction <- function(x) {
 		iter <- 25000
 
 		seed <- x
@@ -24,9 +24,14 @@ benchmark <- function(inputSize) {
 		
 		for (j in 1:iter) {
 			# random for x
-			x <- runif(1)
+			#x <- runif(1)
 			# random for y
-			y <- runif(1)
+			#y <- runif(1)
+
+			# temporal
+			x <- 0.1232
+			y <- 0.8712
+
 			dist <- sqrt(x*x + y * y)
 			if (dist <= 1.0) {
 				sum <- sum + 1.0;
@@ -36,14 +41,49 @@ benchmark <- function(inputSize) {
 		return(sum)
 	}
 
+	montecarloCPUFunction <- function(x) {
+		iter <- 25000
+
+		seed <- x
+		sum <- 0.0
+		
+		for (j in 1:iter) {
+			# random for x
+			#x <- runif(1)
+			# random for y
+			#y <- runif(1)
+
+			# temporal
+			x <- 0.1232
+			y <- 0.8712
+
+			dist <- sqrt(x*x + y * y)
+			if (dist <= 1.0) {
+				sum <- sum + 1.0;
+			}
+		}
+		return(sum)
+	}
+
 	x <- 0:size;
+
+	resultSeq <- mapply(montecarloCPUFunction, x)
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
-		result <- marawacc.testGPU(x, montecarloFunction);
+		result <- marawacc.testGPU(x, montecarloGPUFunction);
 		end <- nanotime()
 		total <- end - start
 		print(total)
+
+		# Check result
+		for (i in 1:size) {
+			if (abs(resultSeq[i] - result[i]) > 0.1) {
+				print("Result is wrong")
+				break
+			}
+		}
+
 		#print(result);
 	}
 }

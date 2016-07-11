@@ -6,7 +6,7 @@
 args <- commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
-	stop("No input size passed. Usage: ./saxpy.R <size> ")
+	stop("No input size passed. Usage: ./montecarlo.R <size> ")
 } 
 
 size <- as.integer(args[1])
