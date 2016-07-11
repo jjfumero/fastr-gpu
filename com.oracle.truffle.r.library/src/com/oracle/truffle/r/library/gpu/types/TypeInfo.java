@@ -26,6 +26,7 @@ public enum TypeInfo {
 
     INT("Integer", "int"),
     DOUBLE("Double", "double"),
+    DOUBLE_VECTOR("Double[]", "double[]"),
     BOOLEAN("Boolean", "boolean"),
     LIST("RList", "list"),
     TUPLE2("Tuple2", "T"),

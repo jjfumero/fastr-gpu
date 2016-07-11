@@ -6,7 +6,7 @@
 args <- commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
-	stop("No input size passed. Usage: ./saxpy.R <size> ")
+	stop("No input size passed. Usage: ./montecarloGPU.R <size> ")
 } 
 
 size <- as.integer(args[1])
@@ -25,8 +25,8 @@ benchmark <- function(inputSize) {
 		for (j in 1:iter) {
 			#x <- runif(1)
 			#y <- runif(1)
-			x <-0.21
-			y <- 0.1
+			x <- random(j)
+			y <- random(j)
 			dist <- sqrt(x*x + y * y)
 			if (dist <= 1.0) {
 				sum <- sum + 1.0;

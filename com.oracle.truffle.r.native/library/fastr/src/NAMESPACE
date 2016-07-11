@@ -42,6 +42,7 @@ export(marawacc.testGPU)
 
 # Utilities
 export(nanotime)
+export(random)
 
 # ASTx utilities
 export(astx.async)

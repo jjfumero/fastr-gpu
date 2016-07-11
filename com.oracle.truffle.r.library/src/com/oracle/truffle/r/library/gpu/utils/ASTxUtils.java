@@ -373,6 +373,8 @@ public class ASTxUtils {
             type = TypeInfo.BOOLEAN;
         } else if (value instanceof RList) {
             type = listTupleOutputAnalysis(value);
+        } else if (value instanceof RDoubleVector) {
+            type = TypeInfo.DOUBLE_VECTOR;
         } else {
             printTypeError(value);
         }

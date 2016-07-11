@@ -179,7 +179,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
             outputType = ASTxUtils.typeInference(value);
         } catch (MarawaccTypeException e) {
             // TODO: DEOPTIMIZATION
-            throw new RuntimeException("Interop data type not supported yet");
+            throw new RuntimeException("Interop data type not supported yet: " + value.getClass());
         }
         return outputType;
     }

@@ -153,6 +153,10 @@ nanotime <- function() {
 	.FastR(.NAME="builtin.nanotime")
 }
 
+random <- function(x) {
+	.FastR(.NAME="builtin.random", x)
+}
+
 marawacc.init <- function() {
 	.FastR(.NAME="marawacc.init")
 }
