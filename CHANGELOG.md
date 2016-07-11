@@ -1,4 +1,12 @@
 
+## astx-0.5 
+	* Benchmarks saxpy, montecarlo and blackscholes provided. There is an assumption in montecarlo for random numbers (still working on it).
+	* Nodes ZeroExtendNode, XorNode and OrNode supported.
+	* ForeignCallNode fixed.
+	* AMD64MathIntrinsicNode supported.
+	* Builtin for random numbers in Java
+	* Fix semantic Tuples and RLists
+
 ## astx-0.4 
 	* Tuples support from RList in the R lambda expression
 	* Graph simplified within the interpreter level to the GraalIR
