@@ -38,6 +38,9 @@ import uk.ac.ed.marawacc.graal.CompilerUtils;
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.truffle.OptimizedCallTarget;
 import com.oracle.truffle.api.RootCallTarget;
+import com.oracle.truffle.api.frame.Frame;
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
@@ -50,9 +53,11 @@ import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.nodes.function.FunctionDefinitionNode;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
+import com.oracle.truffle.r.runtime.data.RAttributes;
 import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.RList;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
+import com.oracle.truffle.r.runtime.env.REnvironment;
 
 /**
  * AST Node to check the connection with Marawacc. This is just a proof of concept.
@@ -250,8 +255,27 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return inputTypeList;
     }
 
+    @SuppressWarnings("unused")
+    private static void framesDetection(RFunction function) {
+        RAttributes attributes = function.getAttributes();
+        System.out.println("ATTRIBUTES: " + attributes);
+        System.out.println("RBuiltin: " + function.getRBuiltin());
+
+        MaterializedFrame enclosingFrame = function.getEnclosingFrame();
+        FrameDescriptor frameDescriptor = enclosingFrame.getFrameDescriptor();
+
+        System.out.println("FRMAW DESCCRIPTOR of enclosing frame: " + enclosingFrame.getFrameDescriptor());
+
+        REnvironment frameToEnvironment = REnvironment.frameToEnvironment(enclosingFrame);
+        System.out.println(frameToEnvironment.getFrame());
+        System.out.println(enclosingFrame);
+
+    }
+
     @SuppressWarnings("rawtypes")
     private RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) {
+
+        // framesDetection(function);
 
         // Type inference - execution of the first element
         int nArgs = ASTxUtils.getNumberOfArguments(function);
