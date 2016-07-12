@@ -39,6 +39,7 @@ export(marawacc.reduce)
 export(marawacc.reduction)	# Blocking reduction
 export(marawacc.vectorMul)
 export(marawacc.testGPU)
+export(marawacc.gpusapply)
 
 # Utilities
 export(nanotime)

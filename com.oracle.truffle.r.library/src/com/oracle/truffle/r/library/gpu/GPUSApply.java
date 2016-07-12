@@ -64,6 +64,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
     private static void applyCompilationPhasesForGPU(StructuredGraph graph) {
 
+        CompilerUtils.dumpGraph(graph, "beforeOptomisations");
+
         // new GPUCleanPhase().apply(graphToCompile);
         // new GPURemoveInterpreterPhase().apply(graphToCompile);
 
