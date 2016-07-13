@@ -24,13 +24,13 @@ benchmark <- function(inputSize) {
 		
 		for (j in 1:iter) {
 			# random for x
-			#x <- runif(1)
+			x <- runif(1)
 			# random for y
-			#y <- runif(1)
+			y <- runif(1)
 
 			# temporal
-			x <- 0.1232
-			y <- 0.8712
+			#x <- 0.1232
+			#y <- 0.8712
 
 			dist <- sqrt(x*x + y * y)
 			if (dist <= 1.0) {

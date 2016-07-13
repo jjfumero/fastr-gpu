@@ -25,6 +25,7 @@ package com.oracle.truffle.r.library.stats;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.data.RDataFactory;
+import com.oracle.truffle.r.runtime.data.RDouble;
 import com.oracle.truffle.r.runtime.rng.RandomNumberNode;
 
 /**
@@ -32,7 +33,45 @@ import com.oracle.truffle.r.runtime.rng.RandomNumberNode;
  */
 public abstract class Runif extends RExternalBuiltinNode.Arg3 {
 
-    @Child private RandomNumberNode random = new RandomNumberNode();
+    // @Child private RandomNumberNode random = new RandomNumberNode();
+
+    private int I1 = 1234;
+    private int I2 = 5678;
+
+    private double unif_rand() {
+        I1 = 36969 * (I1 & 0177777) + (I1 >> 16);
+        I2 = 18000 * (I2 & 0177777) + (I2 >> 16);
+        return ((I1 << 16) ^ (I2 & 0177777)) * 2.328306437080797e-10; /* in [0,1) */
+    }
+
+    public double runif(double a, double b) {
+        // if (!R_finite(a) || !R_finite(b) || b < a) {
+        if (b < a) {
+            return RDouble.NA.getDataAt(0);
+        }
+
+        if (a == b) {
+            return a;
+        }
+        else {
+            double u;
+            /*
+             * This is true of all builtin generators, but protect against user-supplied ones
+             */
+            do {
+                u = unif_rand();
+            } while (u <= 0 || u >= 1);
+            return a + (b - a) * u;
+        }
+    }
+
+    public double[] randomNumbers(int nInt) {
+        double[] v = new double[nInt];
+        for (int i = 0; i < v.length; i++) {
+            v[i] = runif(0, 1);
+        }
+        return v;
+    }
 
     @Specialization
     protected Object doRunif(Object n, Object min, Object max) {
@@ -42,10 +81,16 @@ public abstract class Runif extends RExternalBuiltinNode.Arg3 {
         double maxDouble = castDouble(castVector(max)).getDataAt(0);
         double delta = maxDouble - minDouble;
 
-        double[] result = random.executeDouble(nInt);
-        for (int i = 0; i < nInt; i++) {
-            result[i] = minDouble + result[i] * delta;
+        // double[] result = random.executeDouble(nInt);
+        double[] result = randomNumbers(nInt);
+
+        if (minDouble < 0 || maxDouble >= 1.0) {
+            for (int i = 0; i < nInt; i++) {
+                result[i] = minDouble + result[i] * delta;
+            }
         }
-        return RDataFactory.createDoubleVector(result, RDataFactory.COMPLETE_VECTOR);
+
+        // return RDataFactory.createDoubleVector(result, RDataFactory.COMPLETE_VECTOR);
+        return RDataFactory.createDoubleVector(result, false);
     }
 }
