@@ -26,7 +26,6 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.data.RDataFactory;
 import com.oracle.truffle.r.runtime.data.RDouble;
-import com.oracle.truffle.r.runtime.rng.RandomNumberNode;
 
 /**
  * TODO GnuR checks/updates {@code .Random.seed} across this call.
