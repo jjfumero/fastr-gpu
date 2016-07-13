@@ -38,7 +38,6 @@ import uk.ac.ed.marawacc.graal.CompilerUtils;
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.truffle.OptimizedCallTarget;
 import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
