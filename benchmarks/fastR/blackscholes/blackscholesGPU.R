@@ -206,6 +206,8 @@ benchmark <- function(inputSize) {
 
 }
 
-## Main 
+## Main
+print("ASTx GPU")
+print(paste("SIZE:", size))
 benchmark(size)
 
