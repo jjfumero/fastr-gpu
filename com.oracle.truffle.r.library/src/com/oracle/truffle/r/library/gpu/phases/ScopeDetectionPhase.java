@@ -5,6 +5,7 @@ import jdk.vm.ci.hotspot.HotSpotObjectConstantImpl;
 import jdk.vm.ci.meta.Constant;
 import jdk.vm.ci.meta.JavaKind;
 import uk.ac.ed.datastructures.common.PArray;
+import uk.ac.ed.datastructures.common.TypeFactory;
 
 import com.oracle.graal.graph.Node;
 import com.oracle.graal.graph.NodePosIterator;
@@ -23,16 +24,41 @@ import com.oracle.graal.phases.Phase;
 public class ScopeDetectionPhase extends Phase {
 
     private Object rawData;
-    private PArray<?> parray;
+    @SuppressWarnings("rawtypes") private PArray parray;
+    private JavaKind kind;
+    private int size;
 
     @Override
     protected void run(StructuredGraph graph) {
         checkLoadIndexedNodes(graph);
     }
 
-    private void handle(Object object) {
+    @SuppressWarnings("unchecked")
+    private void createPArray(Object object) {
         this.rawData = object;
+        if (kind == JavaKind.Double) {
+            double[] v = (double[]) object;
+            parray = new PArray<>(size, TypeFactory.Double());
+            for (int i = 0; i < size; i++) {
+                parray.put(i, v[i]);
+            }
+        } else if (kind == JavaKind.Int) {
+            parray = new PArray<>(size, TypeFactory.Integer());
+            int[] v = (int[]) object;
+            for (int i = 0; i < size; i++) {
+                parray.put(i, v[i]);
+            }
+        } else if (kind == JavaKind.Boolean) {
+            parray = new PArray<>(size, TypeFactory.Boolean());
+            boolean[] v = (boolean[]) object;
+            for (int i = 0; i < size; i++) {
+                parray.put(i, v[i]);
+            }
+        }
+    }
 
+    public JavaKind getJavaKind() {
+        return kind;
     }
 
     public PArray<?> getPArray() {
@@ -43,14 +69,22 @@ public class ScopeDetectionPhase extends Phase {
         return rawData;
     }
 
-    private static JavaKind getTypeOfArray(Object object) {
+    private JavaKind getTypeOfArray(Object object) {
         if (object.getClass() == double[].class) {
+            size = ((double[]) object).length;
+            kind = JavaKind.Double;
             return JavaKind.Double;
         } else if (object.getClass() == int[].class) {
+            size = ((int[]) object).length;
+            kind = JavaKind.Int;
             return JavaKind.Int;
         } else if (object.getClass() == boolean[].class) {
+            size = ((boolean[]) object).length;
+            kind = JavaKind.Boolean;
             return JavaKind.Boolean;
         } else {
+            size = -1;
+            kind = JavaKind.Illegal;
             return JavaKind.Illegal;
         }
     }
@@ -58,14 +92,12 @@ public class ScopeDetectionPhase extends Phase {
     private void analyseConstant(Constant value) {
 
         if (value instanceof HotSpotObjectConstant) {
-
             HotSpotObjectConstantImpl constantValue = (HotSpotObjectConstantImpl) value;
             Object object = constantValue.object();
             JavaKind kind = getTypeOfArray(object);
 
             if (kind != JavaKind.Illegal) {
-                // we can handle it
-                handle(object);
+                createPArray(object);
             } else {
                 throw new RuntimeException("Data type not supported as scope variable");
             }
