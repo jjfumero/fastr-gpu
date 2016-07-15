@@ -69,12 +69,16 @@ import com.oracle.truffle.r.runtime.nodes.RSyntaxNode;
 public final class GPUSApply extends RExternalBuiltinNode {
 
     private boolean gpuExecution = false;
+    private Object[] scopeArray;
 
-    private static void applyCompilationPhasesForGPU(StructuredGraph graph) {
+    private void applyCompilationPhasesForGPU(StructuredGraph graph) {
 
         CompilerUtils.dumpGraph(graph, "beforeOptomisations");
 
-        new ScopeDetectionPhase().apply(graph);
+        ScopeDetectionPhase scopeDetection = new ScopeDetectionPhase();
+        scopeDetection.apply(graph);
+        scopeArray = scopeDetection.getDataArray();
+        System.out.println(scopeArray);
 
         // new GPUCleanPhase().apply(graphToCompile);
         // new GPURemoveInterpreterPhase().apply(graphToCompile);
@@ -111,7 +115,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         // Compilation to the GPU
         boolean isTruffle = true;
-        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue, isTruffle, interoperable);
+        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue, isTruffle, interoperable, scopeArray);
 
         // Insert graph into cache
         InternalGraphCache.INSTANCE.installGPUBinaryIntoCache(graphToCompile, gpuCompilationUnit);
