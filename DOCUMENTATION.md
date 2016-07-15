@@ -1,5 +1,7 @@
 ## Options 
 
+### ASTx ###
+
 1. Use the marawacc threads when sapply for Java threads
 
 -Dastx.marawacc.threads=true 
@@ -7,9 +9,11 @@
 Disable with: 
 -Dastx.marawacc.threads=false
 
+2. Print R AST to be executed on the GPU.
 
+-Dastx.marawacc.printast=true   # False by default
 
-2. FastR can set marawacc options too. 
+### FastR can set marawacc options too ###
 
 Choose a specific OpenCL vendor for CPU
 

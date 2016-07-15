@@ -58,6 +58,11 @@ public class ASTxOptions {
      */
     public static boolean debugCache = false;
 
+    /**
+     * Print AST for the R function to be executed on the GPU
+     */
+    public static boolean printAST = getBoolean("-Dastx.marawacc.printast", false);
+
     private static boolean getBoolean(String property, boolean defaultValue) {
         if (System.getProperty(property) == null) {
             return defaultValue;

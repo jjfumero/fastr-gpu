@@ -41,10 +41,10 @@ import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
+import com.oracle.truffle.r.library.gpu.nodes.utils.ASTxPrinter;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.phases.GPUBoxingEliminationPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUFrameStateEliminationPhase;
@@ -60,7 +60,6 @@ import com.oracle.truffle.r.runtime.data.RList;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 import com.oracle.truffle.r.runtime.env.REnvironment;
 import com.oracle.truffle.r.runtime.nodes.RSyntaxNode;
-import com.oracle.truffle.r.runtime.nodes.RSyntaxNodeVisitor;
 
 /**
  * AST Node to check the connection with Marawacc. This is just a proof of concept.
@@ -139,40 +138,9 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return arrayList;
     }
 
-    // Debugging purposes
-    private static class PrintAST implements RSyntaxNodeVisitor {
-
-        public boolean visit(RSyntaxNode node, int depth) {
-            for (int i = 0; i < depth; i++) {
-                System.out.print(' ');
-            }
-            System.out.print(node.getClass().getSimpleName());
-            SourceSection ss = ((Node) node).getSourceSection();
-            // All syntax nodes should have source sections
-            if (ss == null) {
-                System.out.print(" *** null source section");
-            } else {
-                printSourceCode(ss);
-            }
-
-            System.out.println();
-            return true;
-        }
-
-        private static void printSourceCode(SourceSection ss) {
-            String code = ss.getCode();
-            if (code.length() > 20) {
-                code = code.substring(0, 20) + " ....";
-            }
-            code = code.replace("\n", "\\n ");
-            System.out.print(" : ");
-            System.out.print(code.length() == 0 ? "<EMPTY>" : code);
-        }
-    }
-
     private static void printAST(RFunction function) {
         Node root = function.getTarget().getRootNode();
-        PrintAST printAST = new PrintAST();
+        ASTxPrinter printAST = new ASTxPrinter();
         RSyntaxNode.accept(root, 0, printAST);
     }
 
@@ -350,7 +318,9 @@ public final class GPUSApply extends RExternalBuiltinNode {
         RAbstractVector input = (RAbstractVector) args.getArgument(0);
         RFunction function = (RFunction) args.getArgument(1);
 
-        printAST(function);
+        if (ASTxOptions.printAST) {
+            printAST(function);
+        }
 
         // Get the callTarget from the cache
         RootCallTarget target = RGPUCache.INSTANCE.lookup(function);
