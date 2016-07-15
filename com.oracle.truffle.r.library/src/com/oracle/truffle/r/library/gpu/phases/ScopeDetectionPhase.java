@@ -69,7 +69,7 @@ public class ScopeDetectionPhase extends Phase {
         return rawData;
     }
 
-    private JavaKind getTypeOfArray(Object object) {
+    private JavaKind inferTypeOfArray(Object object) {
         if (object.getClass() == double[].class) {
             size = ((double[]) object).length;
             kind = JavaKind.Double;
@@ -90,12 +90,10 @@ public class ScopeDetectionPhase extends Phase {
     }
 
     private void analyseConstant(Constant value) {
-
         if (value instanceof HotSpotObjectConstant) {
             HotSpotObjectConstantImpl constantValue = (HotSpotObjectConstantImpl) value;
             Object object = constantValue.object();
-            JavaKind kind = getTypeOfArray(object);
-
+            inferTypeOfArray(object);
             if (kind != JavaKind.Illegal) {
                 createPArray(object);
             } else {
