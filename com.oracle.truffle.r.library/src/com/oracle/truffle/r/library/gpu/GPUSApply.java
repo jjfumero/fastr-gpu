@@ -48,6 +48,7 @@ import com.oracle.truffle.r.library.gpu.nodes.utils.ASTxPrinter;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.phases.GPUBoxingEliminationPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUFrameStateEliminationPhase;
+import com.oracle.truffle.r.library.gpu.phases.ScopeDetectionPhase;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
@@ -72,6 +73,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
     private static void applyCompilationPhasesForGPU(StructuredGraph graph) {
 
         CompilerUtils.dumpGraph(graph, "beforeOptomisations");
+
+        new ScopeDetectionPhase().apply(graph);
 
         // new GPUCleanPhase().apply(graphToCompile);
         // new GPURemoveInterpreterPhase().apply(graphToCompile);
