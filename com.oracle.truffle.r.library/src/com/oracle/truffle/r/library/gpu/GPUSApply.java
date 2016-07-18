@@ -160,10 +160,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
         ArrayList<Object> output = new ArrayList<>(input.getLength());
         output.add(firstValue);
 
-        // Create a new root node
-        // RootNode rootNode = function.getRootNode();
-        // RootCallTarget newCallTarget = Truffle.getRuntime().createCallTarget(rootNode);
-
         callTarget.generateIDForGPU();
         // Set the GPU execution to true;
         ((FunctionDefinitionNode) function.getRootNode()).setGPUFlag(true);
@@ -181,7 +177,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         for (int i = 1; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
-            // Object val = newCallTarget.call(argsPackage);
             Object val = callTarget.call(argsPackage);
             output.add(val);
 
