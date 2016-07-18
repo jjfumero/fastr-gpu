@@ -284,27 +284,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return inputTypeList;
     }
 
-    @SuppressWarnings("unused")
-    private static void framesDetection(RFunction function) {
-        RAttributes attributes = function.getAttributes();
-        System.out.println("ATTRIBUTES: " + attributes);
-        System.out.println("RBuiltin: " + function.getRBuiltin());
-
-        MaterializedFrame enclosingFrame = function.getEnclosingFrame();
-        FrameDescriptor frameDescriptor = enclosingFrame.getFrameDescriptor();
-
-        System.out.println("FRMAW DESCCRIPTOR of enclosing frame: " + enclosingFrame.getFrameDescriptor());
-
-        REnvironment frameToEnvironment = REnvironment.frameToEnvironment(enclosingFrame);
-        System.out.println(frameToEnvironment.getFrame());
-        System.out.println(enclosingFrame);
-
-    }
-
     @SuppressWarnings("rawtypes")
     private RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) {
-
-        // framesDetection(function);
 
         // Type inference - execution of the first element
         int nArgs = ASTxUtils.getNumberOfArguments(function);
