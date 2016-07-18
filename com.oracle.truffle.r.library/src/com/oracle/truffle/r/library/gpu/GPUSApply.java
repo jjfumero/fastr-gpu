@@ -124,13 +124,13 @@ public final class GPUSApply extends RExternalBuiltinNode {
         applyCompilationPhasesForGPU(graphToCompile);
 
         if (ASTxOptions.debug) {
-            // Force OpenCL kernel visualisation
+            // Force OpenCL kernel visualisation once generated
             GraalAcceleratorOptions.printOffloadKernel = true;
         }
 
         // Compilation to the GPU
-        boolean isTruffle = true;
-        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue, isTruffle, interoperable, scopeData.getData());
+        boolean ISTRUFFLE = true;
+        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData());
 
         // Insert graph into cache
         InternalGraphCache.INSTANCE.installGPUBinaryIntoCache(graphToCompile, gpuCompilationUnit);
