@@ -26,6 +26,7 @@ import java.util.ArrayList;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.accelerator.profiler.Profiler;
+import uk.ac.ed.accelerator.profiler.ProfilerType;
 import uk.ac.ed.datastructures.common.AcceleratorPArray;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.interop.InteropTable;
@@ -71,6 +72,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
     private boolean gpuExecution = false;
     private Object[] scopeArray;
+    private static int iteration = 0;
 
     private void applyCompilationPhasesForGPU(StructuredGraph graph) {
 
@@ -307,22 +309,50 @@ public final class GPUSApply extends RExternalBuiltinNode {
         TypeInfoList inputTypeList = createTypeInfoListForInput(input, additionalArgs);
 
         // Create PArrays
+        long startMarshal = System.nanoTime();
         PArray<?> inputPArrayFormat = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
+        long endMarshal = System.nanoTime();
 
         // Execution
+        long startExecution = System.nanoTime();
         ArrayList<Object> result = runJavaJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable);
+        long endExecution = System.nanoTime();
 
+        long startUnmarshal = System.nanoTime();
+        RAbstractVector resultFastR = null;
         // Result
         if (!gpuExecution) {
-            return ASTxUtils.unMarshallResultFromArrayList(outputType, result);
+            resultFastR = ASTxUtils.unMarshallResultFromArrayList(outputType, result);
         } else {
-            return ASTxUtils.unMarshallResultFromPArrays(outputType, (PArray) result.get(0));
+            resultFastR = ASTxUtils.unMarshallResultFromPArrays(outputType, (PArray) result.get(0));
         }
+        long endUnmarshal = System.nanoTime();
+
+        // Print profiler
+        if (ASTxOptions.profiler) {
+            // Marshal
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "start", startMarshal);
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end", endMarshal);
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end-start", (endMarshal - startMarshal));
+
+            // Execution
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "start", startExecution);
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "end", endExecution);
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end-start", (endExecution - startExecution));
+
+            // Unmarshal
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "start", startUnmarshal);
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "end", endUnmarshal);
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end-start", (endUnmarshal - startUnmarshal));
+        }
+
+        return resultFastR;
     }
 
     @Override
     public Object call(RArgsValuesAndNames args) {
 
+        Profiler.getInstance().print("\nIteration: " + iteration++);
         System.gc();
         long start = System.nanoTime();
 
