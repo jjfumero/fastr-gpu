@@ -40,8 +40,6 @@ import uk.ac.ed.marawacc.graal.CompilerUtils;
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.truffle.OptimizedCallTarget;
 import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
@@ -57,11 +55,9 @@ import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.nodes.function.FunctionDefinitionNode;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
-import com.oracle.truffle.r.runtime.data.RAttributes;
 import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.RList;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
-import com.oracle.truffle.r.runtime.env.REnvironment;
 import com.oracle.truffle.r.runtime.nodes.RSyntaxNode;
 
 /**
@@ -337,7 +333,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
             Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "end", endUnmarshal);
             Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end-start", (endUnmarshal - startUnmarshal));
         }
-
         return resultFastR;
     }
 
