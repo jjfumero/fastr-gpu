@@ -71,17 +71,31 @@ import com.oracle.truffle.r.runtime.nodes.RSyntaxNode;
 public final class GPUSApply extends RExternalBuiltinNode {
 
     private boolean gpuExecution = false;
-    private Object[] scopeArray;
     private static int iteration = 0;
 
-    private void applyCompilationPhasesForGPU(StructuredGraph graph) {
+    private static class ScopeData {
+        private Object[] scopeArray;
 
-        CompilerUtils.dumpGraph(graph, "beforeOptomisations");
+        public ScopeData(Object[] data) {
+            this.scopeArray = data;
+        }
 
+        public Object[] getData() {
+            return scopeArray;
+        }
+    }
+
+    private static ScopeData scopeArrayDetection(StructuredGraph graph) {
+        // Scope detection
         ScopeDetectionPhase scopeDetection = new ScopeDetectionPhase();
         scopeDetection.apply(graph);
-        scopeArray = scopeDetection.getDataArray();
-        System.out.println(scopeArray);
+        ScopeData scopeData = new ScopeData(scopeDetection.getDataArray());
+        return scopeData;
+    }
+
+    private static void applyCompilationPhasesForGPU(StructuredGraph graph) {
+
+        CompilerUtils.dumpGraph(graph, "beforeOptomisations");
 
         // new GPUCleanPhase().apply(graphToCompile);
         // new GPURemoveInterpreterPhase().apply(graphToCompile);
@@ -94,6 +108,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         new GPUBoxingEliminationPhase().apply(graph);
         CompilerUtils.dumpGraph(graph, "GPUBoxingEliminationPhase");
+
     }
 
     /**
@@ -109,6 +124,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
      */
     private GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue, Interoperable interoperable) {
 
+        ScopeData scopeData = scopeArrayDetection(graphToCompile);
         applyCompilationPhasesForGPU(graphToCompile);
 
         if (ASTxOptions.debug) {
@@ -118,7 +134,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         // Compilation to the GPU
         boolean isTruffle = true;
-        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue, isTruffle, interoperable, scopeArray);
+        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue, isTruffle, interoperable, scopeData.getData());
 
         // Insert graph into cache
         InternalGraphCache.INSTANCE.installGPUBinaryIntoCache(graphToCompile, gpuCompilationUnit);
