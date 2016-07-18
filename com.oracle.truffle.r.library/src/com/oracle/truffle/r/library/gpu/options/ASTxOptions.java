@@ -36,7 +36,7 @@ public class ASTxOptions {
     /**
      * Execute the parallel operations with Marawacc.
      */
-    public static boolean runMarawaccThreads = getBoolean("-Dastx.marawacc.threads", true);
+    public static boolean runMarawaccThreads = getBoolean("astx.marawacc.threads", true);
 
     /**
      * Use Java futures for async computation when pattern composition is presented.
@@ -61,7 +61,12 @@ public class ASTxOptions {
     /**
      * Print AST for the R function to be executed on the GPU
      */
-    public static boolean printAST = getBoolean("-Dastx.marawacc.printast", false);
+    public static boolean printAST = getBoolean("astx.marawacc.printast", false);
+
+    /**
+     * Get profiler information and show when the R VM is finalising.
+     */
+    public static boolean profiler = getBoolean("astx.marawacc.profiler", false);
 
     private static boolean getBoolean(String property, boolean defaultValue) {
         if (System.getProperty(property) == null) {

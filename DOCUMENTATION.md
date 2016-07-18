@@ -9,6 +9,7 @@
 Disable with: 
 -Dastx.marawacc.threads=false
 
+
 2. Print R AST to be executed on the GPU.
 
 -Dastx.marawacc.printast=true   # False by default
@@ -25,6 +26,10 @@ $ export GRAAL_GPU_PLATFORM="NVIDIA"
 
 
 $ export GRAAL_WARMINGUP="TRUE"
+
+3. Enable profiling
+
+-Dastx.marawacc.profiler=true   # false by default
 
 
 ## VM Options ## 

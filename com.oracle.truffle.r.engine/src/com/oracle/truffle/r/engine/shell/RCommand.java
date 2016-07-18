@@ -45,6 +45,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.List;
 
+import uk.ac.ed.accelerator.profiler.Profiler;
 import jline.console.ConsoleReader;
 import jline.console.UserInterruptException;
 
@@ -54,6 +55,7 @@ import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.vm.PolyglotEngine;
 import com.oracle.truffle.r.engine.TruffleRLanguage;
+import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.nodes.builtin.base.Quit;
 import com.oracle.truffle.r.runtime.BrowserQuitException;
 import com.oracle.truffle.r.runtime.RCmdOptions;
@@ -239,6 +241,7 @@ public class RCommand {
                              * We have to extract QuitException and DebugExitException and rethrow
                              * them explicitly
                              */
+
                             Throwable cause = e.getCause();
                             if (cause instanceof BrowserQuitException) {
                                 // drop through to continue REPL
@@ -260,6 +263,11 @@ public class RCommand {
                                 consoleHandler.println("unexpected internal error (" + e.getClass().getSimpleName() + "); " + e.getMessage());
                                 RInternalError.reportError(e);
                             }
+                        }
+                        if (ASTxOptions.profiler) {
+                            Profiler.getInstance().printLogBuffers();
+                            Profiler.getInstance().printMediansOCLEvents();
+                            Profiler.getInstance().clean();
                         }
                         continue REPL;
                     }

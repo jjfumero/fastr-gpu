@@ -25,6 +25,7 @@ package com.oracle.truffle.r.library.gpu;
 import java.util.ArrayList;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
+import uk.ac.ed.accelerator.profiler.Profiler;
 import uk.ac.ed.datastructures.common.AcceleratorPArray;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.interop.InteropTable;
@@ -322,6 +323,9 @@ public final class GPUSApply extends RExternalBuiltinNode {
     @Override
     public Object call(RArgsValuesAndNames args) {
 
+        System.gc();
+        long start = System.nanoTime();
+
         RAbstractVector input = (RAbstractVector) args.getArgument(0);
         RFunction function = (RFunction) args.getArgument(1);
 
@@ -341,6 +345,17 @@ public final class GPUSApply extends RExternalBuiltinNode {
             }
         }
 
-        return computeMap(input, function, target, additionalInputs);
+        RAbstractVector computeMap = computeMap(input, function, target, additionalInputs);
+
+        long end = System.nanoTime();
+        System.gc();
+
+        if (ASTxOptions.profiler) {
+            Profiler.getInstance().writeInBuffer("gpu start-end", (end - start));
+            Profiler.getInstance().writeInBuffer("gpu start", start);
+            Profiler.getInstance().writeInBuffer("gpu end", end);
+        }
+
+        return computeMap;
     }
 }
