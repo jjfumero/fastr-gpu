@@ -31,6 +31,9 @@ public enum TypeInfo {
     LIST("RList", "list"),
     TUPLE2("Tuple2", "T"),
     TUPLE3("Tuple3", "T"),
+
+    TUPLE_GENERIC_TYPE("T", "T"),
+
     NULL("null", "null"); // Not used, just from R side
 
     private String javaTypeString;
