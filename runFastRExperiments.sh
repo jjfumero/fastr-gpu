@@ -8,10 +8,10 @@ function getDate() {
 
 function runSaxpy {
 	logFile=$1
-    for size in 8388608 16777216 33554432 67108864 134217728
+    for size in 100 200 8388608 16777216 33554432 67108864 134217728
     do
         echo "Running saxpy with : $size" 
-        ./run benchmarks/fastR/saxpy/$2 $size > ../$logFile
+        ./runbench benchmarks/fastR/saxpy/$2 $size > ../$logFile
     done
 }
 
@@ -30,13 +30,11 @@ function saxpy() {
 function runBS {
     # 1048576:67108864:*2
 	logFile=$1
-    for size in 1048576 2097152 4194304 8388608 16777216 33554432 67108864
+    for size in 1000 2000 1048576 2097152 4194304 8388608 16777216 33554432 67108864
     do
         echo "Running blackscholes with : $size" 
-        ./run benchmarks/fastR/blackscholes/$2 $size > ../$logFile
+        ./runbench benchmarks/fastR/blackscholes/$2 $size > ../$logFile
     done
-
-
 }
 
 function blackscholes() {
@@ -57,10 +55,8 @@ function runMC {
     for size in 262144 524288 1048576 2097152
     do
         echo "Running montecarlo with : $size" 
-        ./run benchmarks/fastR/montecarlo/$2 $size > ../$logFile
+        ./runbench benchmarks/fastR/montecarlo/$2 $size > ../$logFile
     done
-
-
 }
 
 function montecarlo() {
