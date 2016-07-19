@@ -15,7 +15,7 @@ scope <- runif(1000)
 #scope <- 1001:2000
 a <- 1:size
 
-for (i in seq(1,20)) {
+for (i in seq(1,2)) {
     start <- nanotime()
     result <- marawacc.gpusapply(a, gpuFunction)
     end <- nanotime()

@@ -81,6 +81,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
         }
     }
 
+    private GraalGPUExecutor executor;
+
     private static ScopeData scopeArrayDetection(StructuredGraph graph) {
         // Scope detection
         ScopeDetectionPhase scopeDetection = new ScopeDetectionPhase();
@@ -131,6 +133,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         // Compilation to the GPU
         boolean ISTRUFFLE = true;
         GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData());
+        gpuCompilationUnit.setScopeArrays(scopeData.getData());
 
         // Insert graph into cache
         InternalGraphCache.INSTANCE.installGPUBinaryIntoCache(graphToCompile, gpuCompilationUnit);
@@ -151,12 +154,17 @@ public final class GPUSApply extends RExternalBuiltinNode {
      * @return {@link ArrayList}
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalGPUCompilationUnit gpuCompilationUnit) {
-        AcceleratorPArray copyToDevice = GraalGPUExecutor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
-        AcceleratorPArray executeOnTheDevice = GraalGPUExecutor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType());
-        PArray result = GraalGPUExecutor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
+    private ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalGPUCompilationUnit gpuCompilationUnit) {
+        if (executor == null) {
+            executor = new GraalGPUExecutor();
+        }
+        AcceleratorPArray copyToDevice = executor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
+        AcceleratorPArray executeOnTheDevice = executor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType(), gpuCompilationUnit.getScopeArrays());
+        PArray result = executor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
+
         ArrayList<Object> arrayList = new ArrayList<>();
         arrayList.add(result);
+
         return arrayList;
     }
 
