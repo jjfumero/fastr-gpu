@@ -310,6 +310,7 @@ public class ASTxUtils {
     }
 
     public static void printTypeError(Object value) throws MarawaccTypeException {
+        System.err.println("Data type not supported: " + value.getClass() + " [ " + __LINE__.print() + "]");
         throw new MarawaccTypeException("Data type not supported: " + value.getClass() + " [ " + __LINE__.print() + "]");
     }
 
