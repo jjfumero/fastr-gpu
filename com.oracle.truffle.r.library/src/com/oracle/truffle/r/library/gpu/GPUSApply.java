@@ -123,6 +123,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
     private GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue, Interoperable interoperable) {
 
         ScopeData scopeData = scopeArrayDetection(graphToCompile);
+        System.out.println(" SCOPE DATA: " + scopeData.getData().length);
+        System.out.println(" SCOPE DATA: " + scopeData.getData());
         applyCompilationPhasesForGPU(graphToCompile);
 
         if (ASTxOptions.debug) {

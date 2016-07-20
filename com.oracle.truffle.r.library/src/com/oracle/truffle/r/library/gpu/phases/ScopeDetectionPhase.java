@@ -1,6 +1,7 @@
 package com.oracle.truffle.r.library.gpu.phases;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import jdk.vm.ci.hotspot.HotSpotObjectConstant;
 import jdk.vm.ci.hotspot.HotSpotObjectConstantImpl;
@@ -24,11 +25,15 @@ import com.oracle.graal.phases.Phase;
 public class ScopeDetectionPhase extends Phase {
 
     private ArrayList<Object> rawData;
+    private HashSet<ConstantNode> set;
 
     @Override
     protected void run(StructuredGraph graph) {
         if (rawData == null) {
             rawData = new ArrayList<>();
+        }
+        if (set == null) {
+            set = new HashSet<>();
         }
         checkLoadIndexedNodes(graph);
     }
@@ -45,18 +50,24 @@ public class ScopeDetectionPhase extends Phase {
         }
     }
 
+    private void iterateLoadIndexInputs(NodePosIterator iterator) {
+        while (iterator.hasNext()) {
+            Node scopeNode = iterator.next();
+            if (scopeNode instanceof ConstantNode) {
+                if (!set.contains(scopeNode)) {
+                    analyseConstant(((ConstantNode) scopeNode).getValue());
+                    set.add((ConstantNode) scopeNode);
+                }
+            }
+        }
+    }
+
     private void checkLoadIndexedNodes(StructuredGraph graph) {
         for (Node node : graph.getNodes()) {
             if (node instanceof LoadIndexedNode) {
                 LoadIndexedNode loadIndexed = (LoadIndexedNode) node;
                 NodePosIterator iterator = loadIndexed.inputs().iterator();
-
-                while (iterator.hasNext()) {
-                    Node scopeNode = iterator.next();
-                    if (scopeNode instanceof ConstantNode) {
-                        analyseConstant(((ConstantNode) scopeNode).getValue());
-                    }
-                }
+                iterateLoadIndexInputs(iterator);
             }
         }
     }
