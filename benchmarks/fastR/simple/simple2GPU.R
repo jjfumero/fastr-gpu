@@ -18,7 +18,10 @@ NUMBODIES <- size
 ## Lambda expression for the computation
 benchmark <- function(inputSize) {
 
-	gpuFunction <- function(px) {
+	#this <- new.env()
+	#environment(this) <- emptyenv()
+
+	gpuFunction <<- function(px) {
     	dist <- 0
 	    for (i in 1:size) {
     	    x <- px * vectorData[i]
@@ -27,8 +30,8 @@ benchmark <- function(inputSize) {
     	return(dist)    
 	}
 
-	input <- runif(size)
-	vectorData <- runif(size)
+	input <<- runif(size)
+	vectorData <<- runif(size)
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
