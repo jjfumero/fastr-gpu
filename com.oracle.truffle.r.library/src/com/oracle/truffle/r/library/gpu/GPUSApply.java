@@ -308,19 +308,14 @@ public final class GPUSApply extends RExternalBuiltinNode {
         TypeInfo outputType = obtainTypeInfo(value);
         InteropTable interop = obtainInterop(outputType);
 
-        System.out.println("INTEROP: " + interop.toString());
-
         Class<?>[] typeObject = createListSubTypes(interop, value);
         Interoperable interoperable = (interop != null) ? new Interoperable(interop, typeObject) : null;
         TypeInfoList inputTypeList = createTypeInfoListForInput(input, additionalArgs);
 
         // Create PArrays
         long startMarshal = System.nanoTime();
-        System.out.println("calling marshall");
         PArray<?> inputPArrayFormat = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
         long endMarshal = System.nanoTime();
-
-        System.out.println("Running ...... ");
 
         // Execution
         long startExecution = System.nanoTime();
