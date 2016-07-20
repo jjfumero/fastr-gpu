@@ -466,6 +466,69 @@ public class ASTxUtils {
     }
 
     /**
+     * This method is time consuming (unmarshalling data from PArray to Tuple2)
+     *
+     * @param array
+     * @return {@link RList}
+     */
+    public static RList getRListFromTuple4(PArray<Tuple4<?, ?, ?, ?>> array) {
+        RList output = RDataFactory.createList(array.size());
+        for (int i = 0; i < array.size(); i++) {
+            Object[] contentTuple = new Object[4];
+            contentTuple[0] = array.get(i)._1;
+            contentTuple[1] = array.get(i)._2;
+            contentTuple[2] = array.get(i)._3;
+            contentTuple[3] = array.get(i)._4;
+            RList v = RDataFactory.createList(contentTuple);
+            output.setElement(i, v);
+        }
+        return output;
+    }
+
+    /**
+     * This method is time consuming (unmarshalling data from PArray to Tuple2)
+     *
+     * @param array
+     * @return {@link RList}
+     */
+    public static RList getRListFromTuple5(PArray<Tuple5<?, ?, ?, ?, ?>> array) {
+        RList output = RDataFactory.createList(array.size());
+        for (int i = 0; i < array.size(); i++) {
+            Object[] contentTuple = new Object[5];
+            contentTuple[0] = array.get(i)._1;
+            contentTuple[1] = array.get(i)._2;
+            contentTuple[2] = array.get(i)._3;
+            contentTuple[3] = array.get(i)._4;
+            contentTuple[4] = array.get(i)._5;
+            RList v = RDataFactory.createList(contentTuple);
+            output.setElement(i, v);
+        }
+        return output;
+    }
+
+    /**
+     * This method is time consuming (unmarshalling data from PArray to Tuple2)
+     *
+     * @param array
+     * @return {@link RList}
+     */
+    public static RList getRListFromTuple6(PArray<Tuple6<?, ?, ?, ?, ?, ?>> array) {
+        RList output = RDataFactory.createList(array.size());
+        for (int i = 0; i < array.size(); i++) {
+            Object[] contentTuple = new Object[6];
+            contentTuple[0] = array.get(i)._1;
+            contentTuple[1] = array.get(i)._2;
+            contentTuple[2] = array.get(i)._3;
+            contentTuple[3] = array.get(i)._4;
+            contentTuple[4] = array.get(i)._5;
+            contentTuple[5] = array.get(i)._6;
+            RList v = RDataFactory.createList(contentTuple);
+            output.setElement(i, v);
+        }
+        return output;
+    }
+
+    /**
      * Un-marshal to {@link RDoubleVector} from {@link ArrayList} of objects.
      *
      * @param list
@@ -516,6 +579,12 @@ public class ASTxUtils {
             return getRListFromTuple2(result);
         } else if (type == TypeInfo.TUPLE3) {
             return getRListFromTuple3(result);
+        } else if (type == TypeInfo.TUPLE4) {
+            return getRListFromTuple4(result);
+        } else if (type == TypeInfo.TUPLE5) {
+            return getRListFromTuple5(result);
+        } else if (type == TypeInfo.TUPLE6) {
+            return getRListFromTuple6(result);
         } else {
             throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
         }
@@ -531,6 +600,12 @@ public class ASTxUtils {
         } else if (type == TypeInfo.TUPLE2) {
             return getRList(result);
         } else if (type == TypeInfo.TUPLE3) {
+            return getRList(result);
+        } else if (type == TypeInfo.TUPLE4) {
+            return getRList(result);
+        } else if (type == TypeInfo.TUPLE5) {
+            return getRList(result);
+        } else if (type == TypeInfo.TUPLE6) {
             return getRList(result);
         } else {
             throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
