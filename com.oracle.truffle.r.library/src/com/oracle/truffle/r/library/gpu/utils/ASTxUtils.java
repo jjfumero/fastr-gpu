@@ -29,10 +29,16 @@ import java.util.regex.Pattern;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.TypeFactory;
 import uk.ac.ed.datastructures.tuples.Tuple;
+import uk.ac.ed.datastructures.tuples.Tuple10;
+import uk.ac.ed.datastructures.tuples.Tuple11;
 import uk.ac.ed.datastructures.tuples.Tuple2;
 import uk.ac.ed.datastructures.tuples.Tuple3;
 import uk.ac.ed.datastructures.tuples.Tuple4;
 import uk.ac.ed.datastructures.tuples.Tuple5;
+import uk.ac.ed.datastructures.tuples.Tuple6;
+import uk.ac.ed.datastructures.tuples.Tuple7;
+import uk.ac.ed.datastructures.tuples.Tuple8;
+import uk.ac.ed.datastructures.tuples.Tuple9;
 
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccRuntimeTypeException;
@@ -347,16 +353,30 @@ public class ASTxUtils {
         TypeInfo type = null;
         try {
             RList list = ((RList) value);
-
             int length = list.getLength();
             if (length == 2) {
                 type = TypeInfo.TUPLE2;
             } else if (length == 3) {
                 type = TypeInfo.TUPLE3;
+            } else if (length == 4) {
+                type = TypeInfo.TUPLE4;
+            } else if (length == 5) {
+                type = TypeInfo.TUPLE5;
+            } else if (length == 6) {
+                type = TypeInfo.TUPLE6;
+            } else if (length == 7) {
+                type = TypeInfo.TUPLE7;
+            } else if (length == 8) {
+                type = TypeInfo.TUPLE8;
+            } else if (length == 9) {
+                type = TypeInfo.TUPLE9;
+            } else if (length == 10) {
+                type = TypeInfo.TUPLE10;
+            } else if (length == 11) {
+                type = TypeInfo.TUPLE11;
             } else {
                 printTypeError(value);
             }
-
         } catch (Exception e) {
             type = TypeInfo.LIST;
             printTypeError(value);
@@ -559,10 +579,21 @@ public class ASTxUtils {
         return returns.toString();
     }
 
+    /**
+     * Ideally the R data structure will contain the parray itself (so it willbe prepared and this
+     * is just to return the buffer).
+     *
+     * @param input
+     * @param additionalArgs
+     * @param infoList
+     * @return {@link PArray}
+     */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static PArray<?> marshalWithTuples(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
         String returns = composeReturnType(infoList);
+        System.out.println("returns: " + returns);
         PArray parray = new PArray<>(input.getLength(), TypeFactory.Tuple(returns));
+        System.out.println(infoList.size());
         switch (infoList.size()) {
             case 2:
                 for (int k = 0; k < parray.size(); k++) {
@@ -585,6 +616,51 @@ public class ASTxUtils {
                                     additionalArgs[3].getDataAtAsObject(k)));
                 }
                 return parray;
+            case 6:
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, new Tuple6<>(input.getDataAtAsObject(k), additionalArgs[0].getDataAtAsObject(k), additionalArgs[1].getDataAtAsObject(k), additionalArgs[2].getDataAtAsObject(k),
+                                    additionalArgs[3].getDataAtAsObject(k), additionalArgs[4].getDataAtAsObject(k)));
+                }
+                return parray;
+
+            case 7:
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, new Tuple7<>(input.getDataAtAsObject(k), additionalArgs[0].getDataAtAsObject(k), additionalArgs[1].getDataAtAsObject(k), additionalArgs[2].getDataAtAsObject(k),
+                                    additionalArgs[3].getDataAtAsObject(k), additionalArgs[4].getDataAtAsObject(k), additionalArgs[5].getDataAtAsObject(k)));
+                }
+                return parray;
+
+            case 8:
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, new Tuple8<>(input.getDataAtAsObject(k), additionalArgs[0].getDataAtAsObject(k), additionalArgs[1].getDataAtAsObject(k), additionalArgs[2].getDataAtAsObject(k),
+                                    additionalArgs[3].getDataAtAsObject(k), additionalArgs[4].getDataAtAsObject(k), additionalArgs[5].getDataAtAsObject(k), additionalArgs[6].getDataAtAsObject(k)));
+                }
+                return parray;
+
+            case 9:
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, new Tuple9<>(input.getDataAtAsObject(k), additionalArgs[0].getDataAtAsObject(k), additionalArgs[1].getDataAtAsObject(k), additionalArgs[2].getDataAtAsObject(k),
+                                    additionalArgs[3].getDataAtAsObject(k), additionalArgs[4].getDataAtAsObject(k), additionalArgs[5].getDataAtAsObject(k), additionalArgs[6].getDataAtAsObject(k),
+                                    additionalArgs[7].getDataAtAsObject(k)));
+                }
+                return parray;
+
+            case 10:
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, new Tuple10<>(input.getDataAtAsObject(k), additionalArgs[0].getDataAtAsObject(k), additionalArgs[1].getDataAtAsObject(k), additionalArgs[2].getDataAtAsObject(k),
+                                    additionalArgs[3].getDataAtAsObject(k), additionalArgs[4].getDataAtAsObject(k), additionalArgs[5].getDataAtAsObject(k), additionalArgs[6].getDataAtAsObject(k),
+                                    additionalArgs[7].getDataAtAsObject(k), additionalArgs[8].getDataAtAsObject(k)));
+                }
+                return parray;
+
+            case 11:
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, new Tuple11<>(input.getDataAtAsObject(k), additionalArgs[0].getDataAtAsObject(k), additionalArgs[1].getDataAtAsObject(k), additionalArgs[2].getDataAtAsObject(k),
+                                    additionalArgs[3].getDataAtAsObject(k), additionalArgs[4].getDataAtAsObject(k), additionalArgs[5].getDataAtAsObject(k), additionalArgs[6].getDataAtAsObject(k),
+                                    additionalArgs[7].getDataAtAsObject(k), additionalArgs[8].getDataAtAsObject(k), additionalArgs[9].getDataAtAsObject(k)));
+                }
+                return parray;
+
             default:
                 throw new MarawaccRuntimeTypeException("Tuple not supported yet: " + infoList.size() + " [ " + __LINE__.print() + "]");
         }

@@ -29,8 +29,18 @@ public enum TypeInfo {
     DOUBLE_VECTOR("Double[]", "double[]"),
     BOOLEAN("Boolean", "boolean"),
     LIST("RList", "list"),
+
+    // Tuples
     TUPLE2("Tuple2", "T"),
     TUPLE3("Tuple3", "T"),
+    TUPLE4("Tuple4", "T"),
+    TUPLE5("Tuple5", "T"),
+    TUPLE6("Tuple6", "T"),
+    TUPLE7("Tuple7", "T"),
+    TUPLE8("Tuple8", "T"),
+    TUPLE9("Tuple9", "T"),
+    TUPLE10("Tuple10", "T"),
+    TUPLE11("Tuple11", "T"),
 
     TUPLE_GENERIC_TYPE("T", "T"),
 
