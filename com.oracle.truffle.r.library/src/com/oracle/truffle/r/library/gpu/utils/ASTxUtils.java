@@ -27,7 +27,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import uk.ac.ed.datastructures.common.PArray;
-import uk.ac.ed.datastructures.common.RuntimeObjectTypeInfo;
 import uk.ac.ed.datastructures.common.TypeFactory;
 import uk.ac.ed.datastructures.tuples.Tuple;
 import uk.ac.ed.datastructures.tuples.Tuple10;
@@ -592,13 +591,7 @@ public class ASTxUtils {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static PArray<?> marshalWithTuples(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
         String returns = composeReturnType(infoList);
-        System.out.println("returns: " + returns);
-        System.out.println("L: " + input.getLength());
-        RuntimeObjectTypeInfo runtimeObjectTypeInfo = TypeFactory.Tuple(returns);
-        System.out.println(runtimeObjectTypeInfo);
-
-        PArray parray = new PArray<>(input.getLength(), runtimeObjectTypeInfo);
-        System.out.println("SIZE: " + infoList.size());
+        PArray parray = new PArray<>(input.getLength(), TypeFactory.Tuple(returns));
         switch (infoList.size()) {
             case 2:
                 for (int k = 0; k < parray.size(); k++) {
