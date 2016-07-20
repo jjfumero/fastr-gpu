@@ -21,7 +21,7 @@ benchmark <- function(inputSize) {
 	#this <- new.env()
 	#environment(this) <- emptyenv()
 
-	gpuFunction <<- function(px) {
+	gpuFunction <- function(px) {
     	dist <- 0
 	    for (i in 1:size) {
     	    x <- px * vectorData[i]
@@ -30,7 +30,9 @@ benchmark <- function(inputSize) {
     	return(dist)    
 	}
 
-	input <<- runif(size)
+	input <- runif(size)
+		
+	# if scope var appears as global -> Graal will provide a ConstantNode[]
 	vectorData <<- runif(size)
 
 	for (i in 1:REPETITIONS) {

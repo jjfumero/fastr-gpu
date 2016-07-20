@@ -12,7 +12,6 @@ if (length(args) == 0) {
 size <- as.integer(args[1])
 
 REPETITIONS <- 100
-
 KS <- 10
 
 ## Lambda expression for the computation
@@ -22,7 +21,7 @@ benchmark <- function(inputSize) {
 		minDist <- -1
 		id <- -1
 		for (i in 1:KS) {
-			currentDist <- (x - centre[i]) * (x - centre[i]) + 
+			currentDist <- (x - centre[i]) * (x - centre[i])  +
 						   (y - centre[i + KS]) * (y - centre[i + KS])
 			if (currentDist < minDist) {
 				minDist <- currentDist
@@ -31,17 +30,11 @@ benchmark <- function(inputSize) {
 		}
 		return(id)
 	}
-
-	x <- 0:size;
-	y <- 0:size;
-	centre <- 1:(size*2)
-
-	for (i in 1:size) {
-		idx <- i * 2
-		centre[idx] <- x[i]
-		centre[idx + 1] <- y[i]	
-	}
 	
+	centre <<- runif(KS*2)
+	x <- centre[1:KS]
+	y <- centre[(KS+1):(KS*2)]
+
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
 		result <- marawacc.testGPU(x, kmeansFunction, y);

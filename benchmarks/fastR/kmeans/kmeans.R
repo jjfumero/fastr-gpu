@@ -33,16 +33,10 @@ benchmark <- function(inputSize) {
 		return(id)
 	}
 
-	x <- 0:size;
-	y <- 0:size;
-	centre <- 1:(size*2)
+	centre <<- runif(KS*2)
+	x <- centre[1:KS]
+	y <- centre[(KS+1):(KS*2)]
 
-	for (i in 1:size) {
-		idx <- i * 2
-		centre[idx] <- x[i]
-		centre[idx + 1] <- y[i]	
-	}
-	
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
 		result <- mapply(kmeansFunction, x, y);
