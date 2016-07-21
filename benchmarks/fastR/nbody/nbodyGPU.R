@@ -17,47 +17,46 @@ NUMBODIES <- size
 DELTA <- 0.005
 ESPSQRT <- 500
 
+nbodyFunction <- function(px, py, pz, vx, vy, vz) {
+	acc1 <- 0
+	acc2 <- 0
+	acc3 <- 0
+	for (i in 1:NUMBODIES) {
+		body <- 4*i
+		distSrt <- 0.0
+		
+		r1 <- positions[body] - px	
+		r2 <- positions[body + 1] - py
+		r3 <- positions[body + 2] - pz	
+
+		distSrt <- distSrt + (r1 * r1)
+		distSrt <- distSrt + (r2 * r2)
+		distSrt <- distSrt + (r3 * r3)
+
+		invDist <- 1.0 / sqrt(distSrt + ESPSQRT)
+		invDistCube <- invDist * invDist * invDist;	
+		s <- positions[body + 3] * invDistCube;
+
+        acc1 <-(s * r1);
+        acc2 <-(s * r2);
+        acc3 <-(s * r3);
+    }
+
+	npx <- px + (vx * DELTA + 0.5 * acc1 * DELTA * DELTA);
+	npy <- py + (vy * DELTA + 0.5 * acc2 * DELTA * DELTA);
+	npz <- pz + (vz * DELTA + 0.5 * acc3 * DELTA * DELTA);
+
+  	nvx <- vx + ( acc1 * DELTA);
+ 	nvy <- vy + ( acc2 * DELTA);
+  	nvz <- vz + ( acc3 * DELTA);
+	
+	result <- list(px, py, pz, vx, vy, vz)
+	return(result)	
+}
+
+
 ## Lambda expression for the computation
 benchmark <- function(inputSize) {
-
-	nbodyFunction <- function(px, py, pz, vx, vy, vz) {
-		
-		acc1 <- 0
-		acc2 <- 0
-		acc3 <- 0
-		for (i in 1:NUMBODIES) {
-			body <- 4*i
-			distSrt <- 0.0
-			
-			r1 <- positions[body] - px	
-			r2 <- positions[body + 1] - py
-			r3 <- positions[body + 2] - pz	
-
-			distSrt <- distSrt + (r1 * r1)
-			distSrt <- distSrt + (r2 * r2)
-			distSrt <- distSrt + (r3 * r3)
-	
-			invDist <- 1.0 / sqrt(distSrt + ESPSQRT)
-			invDistCube <- invDist * invDist * invDist;	
-			s <- positions[body + 3] * invDistCube;
-
-            acc1 <-(s * r1);
-            acc2 <-(s * r2);
-            acc3 <-(s * r3);
-        }
-
-		npx <- px + (vx * DELTA + 0.5 * acc1 * DELTA * DELTA);
-		npy <- py + (vy * DELTA + 0.5 * acc2 * DELTA * DELTA);
-		npz <- pz + (vz * DELTA + 0.5 * acc3 * DELTA * DELTA);
-
-      	nvx <- vx + ( acc1 * DELTA);
-     	nvy <- vy + ( acc2 * DELTA);
-      	nvz <- vz + ( acc3 * DELTA);
-		
-		result <- list(px, py, pz, vx, vy, vz)
-		return(result)	
-	}
-
 	px <- runif(size)
 	py <- runif(size)
 	pz <- runif(size)
