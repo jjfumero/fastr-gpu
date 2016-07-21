@@ -48,6 +48,7 @@ import com.oracle.truffle.r.library.gpu.nodes.utils.ASTxPrinter;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.phases.GPUBoxingEliminationPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUFrameStateEliminationPhase;
+import com.oracle.truffle.r.library.gpu.phases.ScopeArraysDetectionPhase;
 import com.oracle.truffle.r.library.gpu.phases.ScopeDetectionPhase;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
@@ -84,9 +85,15 @@ public final class GPUSApply extends RExternalBuiltinNode {
     private GraalGPUExecutor executor;
 
     private static ScopeData scopeArrayDetection(StructuredGraph graph) {
-        // Scope detection
         ScopeDetectionPhase scopeDetection = new ScopeDetectionPhase();
         scopeDetection.apply(graph);
+
+        if (scopeDetection.getDataArray().length == 0) {
+            // we can try to analyze for R<T>Vector#data
+            ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
+            arraysDetectionPhase.apply(graph);
+        }
+
         ScopeData scopeData = new ScopeData(scopeDetection.getDataArray());
         return scopeData;
     }
