@@ -38,6 +38,7 @@ import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
 import uk.ac.ed.marawacc.graal.CompilerUtils;
 
 import com.oracle.graal.nodes.StructuredGraph;
+import com.oracle.graal.replacements.nodes.ExplodeLoopNode;
 import com.oracle.graal.truffle.OptimizedCallTarget;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.nodes.Node;
@@ -363,9 +364,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
     public Object call(RArgsValuesAndNames args) {
 
         Profiler.getInstance().print("\nIteration: " + iteration++);
-        System.gc();
-        long start = System.nanoTime();
 
+        long start = System.nanoTime();
         RAbstractVector input = (RAbstractVector) args.getArgument(0);
         RFunction function = (RFunction) args.getArgument(1);
 
@@ -386,9 +386,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         }
 
         RAbstractVector computeMap = computeMap(input, function, target, additionalInputs);
-
         long end = System.nanoTime();
-        System.gc();
 
         if (ASTxOptions.profiler) {
             Profiler.getInstance().writeInBuffer("gpu start-end", (end - start));

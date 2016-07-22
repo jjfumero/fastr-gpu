@@ -38,8 +38,6 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 /**
  * It will execute an operation and unmarshal the data. It will execute everything in the previous
  * pipeline to the given operation. This is a blocking operation.
- *
- *
  */
 public abstract class MarawaccExecuteNode extends RExternalBuiltinNode.Arg1 {
 
@@ -77,7 +75,6 @@ public abstract class MarawaccExecuteNode extends RExternalBuiltinNode.Arg1 {
         } else {
             RMarawaccPromises.INSTANCE.clean();
         }
-
         return rResult;
     }
 }
