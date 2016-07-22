@@ -21,13 +21,14 @@ nbodyFunction <- function(px, py, pz, vx, vy, vz) {
 	acc1 <- 0
 	acc2 <- 0
 	acc3 <- 0
+		
 	for (i in 1:NUMBODIES) {
 		body <- 4*i
 		distSrt <- 0.0
 		
 		r1 <- positions[body] - px	
 		r2 <- positions[body + 1] - py
-		r3 <- positions[body + 2] - pz	
+		r3 <- positions[body + 2] - pz
 
 		distSrt <- distSrt + (r1 * r1)
 		distSrt <- distSrt + (r2 * r2)
@@ -65,7 +66,7 @@ benchmark <- function(inputSize) {
 	vz <- runif(size)
 
 	positions <<- 1:size*4
-	
+
 	for (i in 1:size) {
 		idx <- i * 4	
 		positions[idx] <<- px[i]

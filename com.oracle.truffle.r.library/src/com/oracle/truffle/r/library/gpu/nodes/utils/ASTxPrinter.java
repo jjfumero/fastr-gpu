@@ -12,6 +12,7 @@ public class ASTxPrinter implements RSyntaxNodeVisitor {
             System.out.print(' ');
         }
         System.out.print(node.getClass().getSimpleName());
+
         SourceSection ss = ((Node) node).getSourceSection();
         // All syntax nodes should have source sections
         if (ss == null) {
@@ -26,8 +27,8 @@ public class ASTxPrinter implements RSyntaxNodeVisitor {
 
     private static void printSourceCode(SourceSection ss) {
         String code = ss.getCode();
-        if (code.length() > 20) {
-            code = code.substring(0, 20) + " ....";
+        if (code.length() > 60) {
+            code = code.substring(0, 60) + " ....";
         }
         code = code.replace("\n", "\\n ");
         System.out.print(" : ");

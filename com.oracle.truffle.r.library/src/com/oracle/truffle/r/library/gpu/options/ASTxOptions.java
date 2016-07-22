@@ -61,7 +61,7 @@ public class ASTxOptions {
     /**
      * Print AST for the R function to be executed on the GPU
      */
-    public static boolean printAST = getBoolean("astx.marawacc.printast", false);
+    public static boolean printAST = getBoolean("astx.marawacc.printast", true);
 
     /**
      * Get profiler information and show when the R VM is finalising.
