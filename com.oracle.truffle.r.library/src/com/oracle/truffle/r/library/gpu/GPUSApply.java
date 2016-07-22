@@ -38,13 +38,13 @@ import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
 import uk.ac.ed.marawacc.graal.CompilerUtils;
 
 import com.oracle.graal.nodes.StructuredGraph;
-import com.oracle.graal.replacements.nodes.ExplodeLoopNode;
 import com.oracle.graal.truffle.OptimizedCallTarget;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
+import com.oracle.truffle.r.library.gpu.nodes.utils.ASTLexicalScoping;
 import com.oracle.truffle.r.library.gpu.nodes.utils.ASTxPrinter;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.phases.GPUBoxingEliminationPhase;
@@ -176,10 +176,16 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return arrayList;
     }
 
+    @SuppressWarnings("unused")
     private static void printAST(RFunction function) {
         Node root = function.getTarget().getRootNode();
         ASTxPrinter printAST = new ASTxPrinter();
         RSyntaxNode.accept(root, 0, printAST);
+    }
+
+    private static void lexicalScopingAST(RFunction function) {
+        ASTLexicalScoping lexicalScoping = new ASTLexicalScoping();
+        lexicalScoping.apply(function);
     }
 
     private ArrayList<Object> runJavaJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
@@ -370,7 +376,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
         RFunction function = (RFunction) args.getArgument(1);
 
         if (ASTxOptions.printAST) {
-            printAST(function);
+            // printAST(function);
+            lexicalScopingAST(function);
         }
 
         // Get the callTarget from the cache
