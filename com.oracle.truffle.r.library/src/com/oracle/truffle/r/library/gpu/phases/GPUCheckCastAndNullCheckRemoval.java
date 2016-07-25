@@ -22,36 +22,67 @@
  */
 package com.oracle.truffle.r.library.gpu.phases;
 
-import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
+import java.util.Iterator;
+
 import uk.ac.ed.marawacc.graal.GraalOCLBackendConnector;
 
 import com.oracle.graal.graph.Node;
+import com.oracle.graal.graph.iterators.NodeIterable;
+import com.oracle.graal.nodes.FixedGuardNode;
+import com.oracle.graal.nodes.FixedWithNextNode;
 import com.oracle.graal.nodes.StructuredGraph;
-import com.oracle.graal.nodes.calc.ReinterpretNode;
+import com.oracle.graal.nodes.java.CheckCastNode;
 import com.oracle.graal.phases.Phase;
 import com.oracle.graal.phases.common.CanonicalizerPhase;
 import com.oracle.graal.phases.common.DeadCodeEliminationPhase;
 import com.oracle.graal.phases.tiers.PhaseContext;
 import com.oracle.graal.phases.util.Providers;
 
-public class GPURemoveInterpreterPhase extends Phase {
+public class GPUCheckCastAndNullCheckRemoval extends Phase {
 
     @Override
     protected void run(StructuredGraph graph) {
-
-        if (GraalAcceleratorOptions.printMessagesFromFastR) {
-            System.out.println("[ASTx] RemoveInterpreterNode Phase");
-        }
-
-        for (Node node : graph.getNodes()) {
-            if (node instanceof ReinterpretNode) {
-                node.replaceAtUsages(null);
-                node.safeDelete();
+        NodeIterable<Node> nodes = graph.getNodes();
+        Iterator<Node> iterator = nodes.iterator();
+        Node prev = iterator.next();
+        while (iterator.hasNext()) {
+            Node node = iterator.next();
+            if (node instanceof CheckCastNode) {
+                // graph.replaceFixed((FixedWithNextNode) node, iterator.next());
+                graph.replaceFixed((FixedWithNextNode) node, prev);
             }
+            prev = node;
         }
 
-        Providers providers = GraalOCLBackendConnector.getProviders();
+        Providers providers = GraalOCLBackendConnector.getHostBackend().getProviders();
         new CanonicalizerPhase().apply(graph, new PhaseContext(providers));
         new DeadCodeEliminationPhase().apply(graph);
+
+        iterator = nodes.iterator();
+        prev = iterator.next();
+        while (iterator.hasNext()) {
+
+            Node node = iterator.next();
+            if (node instanceof FixedGuardNode) {
+                // graph.replaceFixed((FixedWithNextNode) node, iterator.next());
+                System.out.println(node.predecessor());
+
+                Node predecessor = node.predecessor();
+                System.out.println(predecessor);
+                Node replacements = null;
+                if (predecessor == null) {
+                    replacements = prev;
+                } else {
+                    replacements = predecessor;
+                }
+
+                graph.replaceFixed((FixedWithNextNode) node, replacements);
+            }
+            prev = node;
+        }
+
+        new CanonicalizerPhase().apply(graph, new PhaseContext(providers));
+        new DeadCodeEliminationPhase().apply(graph);
+
     }
 }
