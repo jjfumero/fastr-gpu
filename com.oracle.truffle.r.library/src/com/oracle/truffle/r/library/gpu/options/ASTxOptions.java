@@ -24,7 +24,6 @@ package com.oracle.truffle.r.library.gpu.options;
 
 /**
  * ASTx runtime options.
- *
  */
 public class ASTxOptions {
 
@@ -34,7 +33,7 @@ public class ASTxOptions {
     public static boolean printResult = false;
 
     /**
-     * Execute the parallel operations with Marawacc.
+     * Execute the parallel operations with Marawacc. This is unsafe - running threads inside R.
      */
     public static boolean runMarawaccThreads = getBoolean("astx.marawacc.threads", true);
 
@@ -44,12 +43,13 @@ public class ASTxOptions {
     public static boolean useAsyncComputation = true;
 
     /**
-     * Dont clean the cache for async functions. It uses the result stored in the array of Futures.
+     * Do not clean the cache for async functions. It uses the result stored in the array of
+     * Futures.
      */
     public static boolean useAsyncMemoisation = true;
 
     /**
-     * Print internal messages such as deoptimizations, data types and so on for debugging.
+     * Print internal messages such as deoptimisations, data types and so on for debugging.
      */
     public static boolean debug = true;
 
