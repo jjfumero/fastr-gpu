@@ -23,7 +23,6 @@
 package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.accelerator.profiler.Profiler;
@@ -49,6 +48,7 @@ import com.oracle.truffle.r.library.gpu.nodes.utils.ASTLexicalScoping;
 import com.oracle.truffle.r.library.gpu.nodes.utils.ASTxPrinter;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.phases.GPUBoxingEliminationPhase;
+import com.oracle.truffle.r.library.gpu.phases.GPUInstanceOfRemovePhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUFrameStateEliminationPhase;
 import com.oracle.truffle.r.library.gpu.phases.ScopeArraysDetectionPhase;
 import com.oracle.truffle.r.library.gpu.phases.ScopeDetectionPhase;
@@ -105,12 +105,12 @@ public final class GPUSApply extends RExternalBuiltinNode {
         CompilerUtils.dumpGraph(graph, "beforeOptomisations");
 
         // new GPUCleanPhase().apply(graphToCompile);
-        // new GPURemoveInterpreterPhase().apply(graphToCompile);
+        // new GPURemoveInterpreterPhase().apply(graph);
 
         new GPUFrameStateEliminationPhase().apply(graph);
         CompilerUtils.dumpGraph(graph, "afterGPUFrameState");
 
-        // new GPUFixedGuardNodeRemovePhase().apply(graphToCompile);
+        // new GPUInstanceOfRemovePhase().apply(graph);
         // GraalIRConversion.dumpGraph(graphToCompile, "GPUFixedGuardNodeRemovePhase");
 
         new GPUBoxingEliminationPhase().apply(graph);
