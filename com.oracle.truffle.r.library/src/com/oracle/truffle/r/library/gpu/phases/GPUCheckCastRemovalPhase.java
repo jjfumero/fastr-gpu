@@ -28,18 +28,16 @@ import uk.ac.ed.marawacc.graal.GraalOCLBackendConnector;
 
 import com.oracle.graal.graph.Node;
 import com.oracle.graal.graph.iterators.NodeIterable;
-import com.oracle.graal.nodes.FixedGuardNode;
 import com.oracle.graal.nodes.FixedWithNextNode;
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.nodes.java.CheckCastNode;
-import com.oracle.graal.nodes.java.InstanceOfNode;
 import com.oracle.graal.phases.Phase;
 import com.oracle.graal.phases.common.CanonicalizerPhase;
 import com.oracle.graal.phases.common.DeadCodeEliminationPhase;
 import com.oracle.graal.phases.tiers.PhaseContext;
 import com.oracle.graal.phases.util.Providers;
 
-public class GPUCheckCastAndNullCheckRemoval extends Phase {
+public class GPUCheckCastRemovalPhase extends Phase {
 
     @Override
     protected void run(StructuredGraph graph) {
@@ -58,28 +56,6 @@ public class GPUCheckCastAndNullCheckRemoval extends Phase {
         Providers providers = GraalOCLBackendConnector.getHostBackend().getProviders();
         new CanonicalizerPhase().apply(graph, new PhaseContext(providers));
         new DeadCodeEliminationPhase().apply(graph);
-
-        for (Node node : graph.getNodes()) {
-            if (node instanceof FixedGuardNode) {
-                node.replaceAtUsages(null);
-                graph.removeFixed((FixedWithNextNode) node);
-
-            }
-        }
-
-// iterator = nodes.iterator();
-// prev = iterator.next();
-// while (iterator.hasNext()) {
-//
-// Node node = iterator.next();
-// if (node instanceof FixedGuardNode) {
-// node.markDeleted();
-// }
-// prev = node;
-// }
-//
-// new CanonicalizerPhase().apply(graph, new PhaseContext(providers));
-// new DeadCodeEliminationPhase().apply(graph);
 
     }
 }

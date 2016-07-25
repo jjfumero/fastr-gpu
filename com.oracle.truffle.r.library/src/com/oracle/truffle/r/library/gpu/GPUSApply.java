@@ -47,8 +47,9 @@ import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.nodes.utils.ASTLexicalScoping;
 import com.oracle.truffle.r.library.gpu.nodes.utils.ASTxPrinter;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
+import com.oracle.truffle.r.library.gpu.phases.GPUFixedGuardRemovalPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUBoxingEliminationPhase;
-import com.oracle.truffle.r.library.gpu.phases.GPUCheckCastAndNullCheckRemoval;
+import com.oracle.truffle.r.library.gpu.phases.GPUCheckCastRemovalPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUFrameStateEliminationPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUInstanceOfRemovePhase;
 import com.oracle.truffle.r.library.gpu.phases.ScopeArraysDetectionPhase;
@@ -111,8 +112,11 @@ public final class GPUSApply extends RExternalBuiltinNode {
         new GPUInstanceOfRemovePhase().apply(graph);
         CompilerUtils.dumpGraph(graph, "GPUInstanceOfRemovePhase");
 
-        new GPUCheckCastAndNullCheckRemoval().apply(graph);
-        CompilerUtils.dumpGraph(graph, "GPUCheckCastAndNullCheckRemoval");
+        new GPUCheckCastRemovalPhase().apply(graph);
+        CompilerUtils.dumpGraph(graph, "GPUCheckCastRemovalPhase");
+
+        new GPUFixedGuardRemovalPhase().apply(graph);
+        CompilerUtils.dumpGraph(graph, "GPUFixedGuardRemovalPhase");
 
         new GPUBoxingEliminationPhase().apply(graph);
         CompilerUtils.dumpGraph(graph, "GPUBoxingEliminationPhase");
