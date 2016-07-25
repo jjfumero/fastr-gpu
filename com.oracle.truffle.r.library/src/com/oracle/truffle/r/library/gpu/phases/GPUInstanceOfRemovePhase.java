@@ -19,7 +19,7 @@ public class GPUInstanceOfRemovePhase extends Phase {
     protected void run(StructuredGraph graph) {
 
         if (GraalAcceleratorOptions.printMessagesFromFastR) {
-            System.out.println("[ASTx] GPUFixedGuardNodeRemovePhase");
+            System.out.println("[ASTx] GPUInstanceOfRemovePhase");
         }
 
         for (Node node : graph.getNodes()) {
@@ -36,13 +36,9 @@ public class GPUInstanceOfRemovePhase extends Phase {
             }
         }
 
-// for (FixedGuardNode node : graph.getNodes(FixedGuardNode.TYPE)) {
-// node.replaceAtUsages(null);
-// node.safeDelete();
-// }
-
         Providers providers = GraalOCLBackendConnector.getProviders();
         new CanonicalizerPhase().apply(graph, new PhaseContext(providers));
         new DeadCodeEliminationPhase().apply(graph);
+
     }
 }

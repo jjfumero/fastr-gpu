@@ -110,7 +110,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         new GPUFrameStateEliminationPhase().apply(graph);
         CompilerUtils.dumpGraph(graph, "afterGPUFrameState");
 
-        // new GPUInstanceOfRemovePhase().apply(graph);
+        new GPUInstanceOfRemovePhase().apply(graph);
         // GraalIRConversion.dumpGraph(graphToCompile, "GPUFixedGuardNodeRemovePhase");
 
         new GPUBoxingEliminationPhase().apply(graph);
