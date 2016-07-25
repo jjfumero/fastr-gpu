@@ -122,8 +122,13 @@ public class ASTLexicalScoping {
         }
     }
 
-    public HashSet<String> scopeVars() {
-        return scopes;
+    public String[] scopeVars() {
+        String[] out = new String[scopes.size()];
+        int idx = 0;
+        for (String s : scopes) {
+            out[idx++] = s;
+        }
+        return out;
     }
 
     public void apply(RFunction rFunction) {

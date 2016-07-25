@@ -23,6 +23,7 @@
 package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.accelerator.profiler.Profiler;
@@ -182,9 +183,11 @@ public final class GPUSApply extends RExternalBuiltinNode {
         RSyntaxNode.accept(root, 0, printAST);
     }
 
-    private static void lexicalScopingAST(RFunction function) {
+    private static String[] lexicalScopingAST(RFunction function) {
         ASTLexicalScoping lexicalScoping = new ASTLexicalScoping();
         lexicalScoping.apply(function);
+        String[] scopeVars = lexicalScoping.scopeVars();
+        return scopeVars;
     }
 
     private ArrayList<Object> runJavaJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
@@ -309,7 +312,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings("rawtypes")
-    private RAbstractVector computeMap(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) {
+    private RAbstractVector computeSApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) {
 
         // Type inference - execution of the first element
         int nArgs = ASTxUtils.getNumberOfArguments(function);
@@ -376,8 +379,11 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         if (ASTxOptions.printAST) {
             printAST(function);
-            lexicalScopingAST(function);
         }
+
+        // Lexical scoping from the AST level
+        String[] scopeVars = lexicalScopingAST(function);
+        Object[] scopes = ASTxUtils.getScopeArrays(scopeVars, function);
 
         // Get the callTarget from the cache
         RootCallTarget target = RGPUCache.INSTANCE.lookup(function);
@@ -391,7 +397,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
             }
         }
 
-        RAbstractVector computeMap = computeMap(input, function, target, additionalInputs);
+        RAbstractVector mapResult = computeSApply(input, function, target, additionalInputs);
         long end = System.nanoTime();
 
         if (ASTxOptions.profiler) {
@@ -400,6 +406,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
             Profiler.getInstance().writeInBuffer("gpu end", end);
         }
 
-        return computeMap;
+        return mapResult;
     }
 }

@@ -23,6 +23,7 @@
 package com.oracle.truffle.r.library.gpu.utils;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,6 +41,8 @@ import uk.ac.ed.datastructures.tuples.Tuple7;
 import uk.ac.ed.datastructures.tuples.Tuple8;
 import uk.ac.ed.datastructures.tuples.Tuple9;
 
+import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccRuntimeTypeException;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
@@ -47,6 +50,9 @@ import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.runtime.ArgumentsSignature;
 import com.oracle.truffle.r.runtime.RArguments;
+import com.oracle.truffle.r.runtime.RRuntime;
+import com.oracle.truffle.r.runtime.context.RContext;
+import com.oracle.truffle.r.runtime.context.Engine.ParseException;
 import com.oracle.truffle.r.runtime.data.RDataFactory;
 import com.oracle.truffle.r.runtime.data.RDoubleSequence;
 import com.oracle.truffle.r.runtime.data.RDoubleVector;
@@ -56,6 +62,7 @@ import com.oracle.truffle.r.runtime.data.RIntVector;
 import com.oracle.truffle.r.runtime.data.RList;
 import com.oracle.truffle.r.runtime.data.RLogicalVector;
 import com.oracle.truffle.r.runtime.data.RStringVector;
+import com.oracle.truffle.r.runtime.data.RVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 /**
@@ -760,6 +767,26 @@ public class ASTxUtils {
     }
 
     private ASTxUtils() {
+    }
+
+    public static Object[] getScopeArrays(String[] scopeVars, RFunction function) {
+        LinkedList<Object> scopes = new LinkedList<>();
+        for (String var : scopeVars) {
+            StringBuffer scopeVar = new StringBuffer(var);
+            Source source = Source.fromText(scopeVar, "<eval>").withMimeType(RRuntime.R_APP_MIME);
+            MaterializedFrame frame = function.getEnclosingFrame();
+            Object val = null;
+            try {
+                val = RContext.getEngine().parseAndEval(source, frame, false);
+                System.out.println(val.getClass());
+                if (val instanceof RVector) {
+                    scopes.add(val);
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        return scopes.toArray();
     }
 
 }
