@@ -92,11 +92,12 @@ public final class GPUSApply extends RExternalBuiltinNode {
         ScopeDetectionPhase scopeDetection = new ScopeDetectionPhase();
         scopeDetection.apply(graph);
 
-        if (scopeDetection.getDataArray().length == 0) {
-            // we can try to analyze for R<T>Vector#data
-            ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
-            arraysDetectionPhase.apply(graph);
-        }
+        // Experimental Phase
+// if (scopeDetection.getDataArray().length == 0) {
+// // we can try to analyze for R<T>Vector#data
+// ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
+// arraysDetectionPhase.apply(graph);
+// }
 
         ScopeData scopeData = new ScopeData(scopeDetection.getDataArray());
         return scopeData;
@@ -109,14 +110,14 @@ public final class GPUSApply extends RExternalBuiltinNode {
         new GPUFrameStateEliminationPhase().apply(graph);
         CompilerUtils.dumpGraph(graph, "GPUFrameStateEliminationPhase");
 
-        new GPUInstanceOfRemovePhase().apply(graph);
-        CompilerUtils.dumpGraph(graph, "GPUInstanceOfRemovePhase");
-
-        new GPUCheckCastRemovalPhase().apply(graph);
-        CompilerUtils.dumpGraph(graph, "GPUCheckCastRemovalPhase");
-
-        new GPUFixedGuardRemovalPhase().apply(graph);
-        CompilerUtils.dumpGraph(graph, "GPUFixedGuardRemovalPhase");
+// new GPUInstanceOfRemovePhase().apply(graph);
+// CompilerUtils.dumpGraph(graph, "GPUInstanceOfRemovePhase");
+//
+// new GPUCheckCastRemovalPhase().apply(graph);
+// CompilerUtils.dumpGraph(graph, "GPUCheckCastRemovalPhase");
+//
+// new GPUFixedGuardRemovalPhase().apply(graph);
+// CompilerUtils.dumpGraph(graph, "GPUFixedGuardRemovalPhase");
 
         new GPUBoxingEliminationPhase().apply(graph);
         CompilerUtils.dumpGraph(graph, "GPUBoxingEliminationPhase");
@@ -137,6 +138,11 @@ public final class GPUSApply extends RExternalBuiltinNode {
     private GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue, Interoperable interoperable) {
 
         ScopeData scopeData = scopeArrayDetection(graphToCompile);
+
+        for (int i = 0; i < scopeData.getData().length; i++) {
+            System.out.println(scopeData.getData()[i]);
+        }
+
         applyCompilationPhasesForGPU(graphToCompile);
 
         if (ASTxOptions.debug) {

@@ -24,14 +24,14 @@ benchmark <- function(inputSize) {
 			currentDist <- (x - centre[i]) * (x - centre[i])  +
 						   (y - centre[i + KS]) * (y - centre[i + KS])
 			if (currentDist < minDist) {
-				minDist <- currentDist
-				id <- i
+				minDist <<- currentDist
+				id <<- i
 			}			
 		}
 		return(id)
 	}
 	
-	centre <<- runif(KS*2)
+	centre <<- runif(KS*2) 
 	x <- centre[1:KS]
 	y <- centre[(KS+1):(KS*2)]
 
