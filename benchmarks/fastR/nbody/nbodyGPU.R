@@ -25,7 +25,7 @@ nbodyFunction <- function(px, py, pz, vx, vy, vz) {
 	for (i in 1:NUMBODIES) {
 		body <- 4*i
 		distSrt <- 0.0
-		
+
 		r1 <- positions[body] - px	
 		r2 <- positions[body + 1] - py
 		r3 <- positions[body + 2] - pz

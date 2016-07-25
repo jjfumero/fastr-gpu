@@ -176,7 +176,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return arrayList;
     }
 
-    @SuppressWarnings("unused")
     private static void printAST(RFunction function) {
         Node root = function.getTarget().getRootNode();
         ASTxPrinter printAST = new ASTxPrinter();
@@ -376,7 +375,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         RFunction function = (RFunction) args.getArgument(1);
 
         if (ASTxOptions.printAST) {
-            // printAST(function);
+            printAST(function);
             lexicalScopingAST(function);
         }
 
