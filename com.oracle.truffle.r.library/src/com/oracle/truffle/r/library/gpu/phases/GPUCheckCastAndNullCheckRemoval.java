@@ -32,6 +32,7 @@ import com.oracle.graal.nodes.FixedGuardNode;
 import com.oracle.graal.nodes.FixedWithNextNode;
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.nodes.java.CheckCastNode;
+import com.oracle.graal.nodes.java.InstanceOfNode;
 import com.oracle.graal.phases.Phase;
 import com.oracle.graal.phases.common.CanonicalizerPhase;
 import com.oracle.graal.phases.common.DeadCodeEliminationPhase;
@@ -58,31 +59,27 @@ public class GPUCheckCastAndNullCheckRemoval extends Phase {
         new CanonicalizerPhase().apply(graph, new PhaseContext(providers));
         new DeadCodeEliminationPhase().apply(graph);
 
-        iterator = nodes.iterator();
-        prev = iterator.next();
-        while (iterator.hasNext()) {
-
-            Node node = iterator.next();
+        for (Node node : graph.getNodes()) {
             if (node instanceof FixedGuardNode) {
-                // graph.replaceFixed((FixedWithNextNode) node, iterator.next());
-                System.out.println(node.predecessor());
+                node.replaceAtUsages(null);
+                graph.removeFixed((FixedWithNextNode) node);
 
-                Node predecessor = node.predecessor();
-                System.out.println(predecessor);
-                Node replacements = null;
-                if (predecessor == null) {
-                    replacements = prev;
-                } else {
-                    replacements = predecessor;
-                }
-
-                graph.replaceFixed((FixedWithNextNode) node, replacements);
             }
-            prev = node;
         }
 
-        new CanonicalizerPhase().apply(graph, new PhaseContext(providers));
-        new DeadCodeEliminationPhase().apply(graph);
+// iterator = nodes.iterator();
+// prev = iterator.next();
+// while (iterator.hasNext()) {
+//
+// Node node = iterator.next();
+// if (node instanceof FixedGuardNode) {
+// node.markDeleted();
+// }
+// prev = node;
+// }
+//
+// new CanonicalizerPhase().apply(graph, new PhaseContext(providers));
+// new DeadCodeEliminationPhase().apply(graph);
 
     }
 }
