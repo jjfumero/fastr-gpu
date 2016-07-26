@@ -96,19 +96,13 @@ public class ScopeArraysDetectionPhase extends Phase {
 
     @Override
     protected void run(StructuredGraph graph) {
-
         NodeIterable<Node> nodes = graph.getNodes();
         Iterator<Node> iterator = nodes.iterator();
-
         while (iterator.hasNext()) {
             Node node = iterator.next();
-
             if (node instanceof LoadFieldNode) {
-
                 boolean clear = false;
-
                 ArrayList<Node> auxNotValid = new ArrayList<>();
-
                 for (Class<?> comp : scopePattern) {
                     if (node.getClass() == comp) {
                         node = node.successors().first();
@@ -132,5 +126,4 @@ public class ScopeArraysDetectionPhase extends Phase {
     public ArrayList<Node> getScopedNodes() {
         return notValidNodes;
     }
-
 }

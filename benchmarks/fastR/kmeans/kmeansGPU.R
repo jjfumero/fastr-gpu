@@ -18,13 +18,13 @@ KS <- 10
 benchmark <- function(inputSize) {
 
 	kmeansFunction <- function(x, y) {
-		minDist <- -100000
+		minDist <- 10000
 		id <- 0
 		for (i in 1:KS) {
 			currentDist <- (x - centre[i]) * (x - centre[i])  +
 						   (y - centre[i + KS]) * (y - centre[i + KS])
 			if (currentDist < minDist) {
-				minDist <<- currentDist
+				minDist <- currentDist
 				id <- i
 			}			
 		}
