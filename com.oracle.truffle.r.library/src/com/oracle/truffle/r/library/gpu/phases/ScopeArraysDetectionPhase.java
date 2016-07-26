@@ -24,8 +24,6 @@ package com.oracle.truffle.r.library.gpu.phases;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 import com.oracle.graal.compiler.common.type.Stamp;
 import com.oracle.graal.graph.Node;
@@ -38,7 +36,6 @@ import com.oracle.graal.nodes.java.ArrayLengthNode;
 import com.oracle.graal.nodes.java.LoadFieldNode;
 import com.oracle.graal.nodes.java.LoadIndexedNode;
 import com.oracle.graal.phases.Phase;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections;
 
 public class ScopeArraysDetectionPhase extends Phase {
 
@@ -72,7 +69,6 @@ public class ScopeArraysDetectionPhase extends Phase {
                 LoadFieldNode loadFieldNode = (LoadFieldNode) node;
 
                 String fieldName = loadFieldNode.field().getName();
-                System.out.println("FIELD NAMEEEEEE: " + fieldName);
                 ValueNode value = loadFieldNode.getValue();
                 String stamp = value.stamp().toString();
 
@@ -91,10 +87,9 @@ public class ScopeArraysDetectionPhase extends Phase {
 
                 if (stamp.endsWith("RDoubleVector;")) {
                     if (fieldName.equals("data")) {
-                        System.out.println("SCOPE VAR!!!!!!!!");
+                        System.out.println("Scope Var found");
                     }
                 }
-
             }
         }
     }
@@ -128,7 +123,14 @@ public class ScopeArraysDetectionPhase extends Phase {
                 }
             }
         }
-
-        System.out.println(notValidNodes);
     }
+
+    public boolean isScopeDetected() {
+        return notValidNodes.isEmpty();
+    }
+
+    public ArrayList<Node> getScopedNodes() {
+        return notValidNodes;
+    }
+
 }
