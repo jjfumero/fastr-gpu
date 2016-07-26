@@ -202,7 +202,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
     }
 
     private ArrayList<Object> runJavaJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
-                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable) {
+                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes) {
 
         ArrayList<Object> output = new ArrayList<>(input.getLength());
         output.add(firstValue);
@@ -323,7 +323,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings("rawtypes")
-    private RAbstractVector computeSApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs) {
+    private RAbstractVector computeSApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes) {
 
         // Type inference - execution of the first element
         int nArgs = ASTxUtils.getNumberOfArguments(function);
@@ -346,7 +346,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         // Execution
         long startExecution = System.nanoTime();
-        ArrayList<Object> result = runJavaJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable);
+        ArrayList<Object> result = runJavaJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes);
         long endExecution = System.nanoTime();
 
         long startUnmarshal = System.nanoTime();
@@ -394,7 +394,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         // Lexical scoping from the AST level
         String[] scopeVars = lexicalScopingAST(function);
-        Object[] scopes = ASTxUtils.getScopeArrays(scopeVars, function);
+        Object[] lexicalScopes = ASTxUtils.getScopeArrays(scopeVars, function);
 
         // Get the callTarget from the cache
         RootCallTarget target = RGPUCache.INSTANCE.lookup(function);
@@ -408,7 +408,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
             }
         }
 
-        RAbstractVector mapResult = computeSApply(input, function, target, additionalInputs);
+        RAbstractVector mapResult = computeSApply(input, function, target, additionalInputs, lexicalScopes);
         long end = System.nanoTime();
 
         if (ASTxOptions.profiler) {

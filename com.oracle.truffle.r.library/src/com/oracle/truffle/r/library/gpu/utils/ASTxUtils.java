@@ -766,9 +766,14 @@ public class ASTxUtils {
         return parray;
     }
 
-    private ASTxUtils() {
-    }
-
+    /**
+     * Given an array of scopeVars and the function, this method evaluates this variables and
+     * returns an array with only the arrays.
+     *
+     * @param scopeVars
+     * @param function
+     * @return Object[]
+     */
     public static Object[] getScopeArrays(String[] scopeVars, RFunction function) {
         LinkedList<Object> scopes = new LinkedList<>();
         for (String var : scopeVars) {
@@ -778,7 +783,6 @@ public class ASTxUtils {
             Object val = null;
             try {
                 val = RContext.getEngine().parseAndEval(source, frame, false);
-                System.out.println(val.getClass());
                 if (val instanceof RVector) {
                     scopes.add(val);
                 }
@@ -786,7 +790,14 @@ public class ASTxUtils {
                 e.printStackTrace();
             }
         }
+
+        if (scopes.isEmpty()) {
+            return null;
+        }
         return scopes.toArray();
     }
 
+    private ASTxUtils() {
+        // empty constructor
+    }
 }
