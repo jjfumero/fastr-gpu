@@ -84,6 +84,10 @@ public final class GPUSApply extends RExternalBuiltinNode {
         public Object[] getData() {
             return scopeArray;
         }
+
+        public void setData(Object[] data) {
+            this.scopeArray = data;
+        }
     }
 
     private GraalGPUExecutor executor;
@@ -135,12 +139,13 @@ public final class GPUSApply extends RExternalBuiltinNode {
      * @param firstValue
      * @return {@link GraalGPUCompilationUnit}
      */
-    private GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue, Interoperable interoperable) {
+    private GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue, Interoperable interoperable,
+                    Object[] lexicalScope) {
 
         ScopeData scopeData = scopeArrayDetection(graphToCompile);
 
-        for (int i = 0; i < scopeData.getData().length; i++) {
-            System.out.println(scopeData.getData()[i]);
+        if (lexicalScope != null) {
+            scopeData.setData(lexicalScope);
         }
 
         applyCompilationPhasesForGPU(graphToCompile);
@@ -237,11 +242,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
                     System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU");
                 }
 
-                gpuCompilationUnit = compileForMarawaccBackend(inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, firstValue, interoperable);
-
-                if (lexicalScopes != null) {
-                    gpuCompilationUnit.setScopeArrays(lexicalScopes);
-                }
+                gpuCompilationUnit = compileForMarawaccBackend(inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, firstValue, interoperable, lexicalScopes);
                 return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
             }
         }
