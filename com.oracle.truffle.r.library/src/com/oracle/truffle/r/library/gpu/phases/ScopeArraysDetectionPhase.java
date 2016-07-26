@@ -23,53 +23,70 @@
 package com.oracle.truffle.r.library.gpu.phases;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
-import jdk.vm.ci.meta.Constant;
-
+import com.oracle.graal.compiler.common.type.Stamp;
 import com.oracle.graal.graph.Node;
+import com.oracle.graal.graph.iterators.NodeIterable;
 import com.oracle.graal.nodes.PiNode;
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.nodes.ValueNode;
 import com.oracle.graal.nodes.extended.UnsafeLoadNode;
+import com.oracle.graal.nodes.java.ArrayLengthNode;
 import com.oracle.graal.nodes.java.LoadFieldNode;
+import com.oracle.graal.nodes.java.LoadIndexedNode;
 import com.oracle.graal.phases.Phase;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections;
 
 public class ScopeArraysDetectionPhase extends Phase {
 
-    private ArrayList<Object> rawData;
+    private ArrayList<Node> notValidNodes;
+    private ArrayList<Class<?>> scopePattern;
 
-    @Override
-    protected void run(StructuredGraph graph) {
-        if (rawData == null) {
-            rawData = new ArrayList<>();
-        }
+    public ScopeArraysDetectionPhase() {
+        notValidNodes = new ArrayList<>();
+        scopePattern = new ArrayList<>();
 
-        checkLoadArrayNodes(graph);
+        // Pattern
+        scopePattern.add(LoadFieldNode.class);
+        scopePattern.add(ArrayLengthNode.class);
+        scopePattern.add(LoadIndexedNode.class);
+        scopePattern.add(LoadFieldNode.class);
+        scopePattern.add(UnsafeLoadNode.class);
+        scopePattern.add(LoadFieldNode.class);
+        scopePattern.add(LoadFieldNode.class);
     }
 
-    private static void checkLoadArrayNodes(StructuredGraph graph) {
+    @SuppressWarnings("unused")
+    private static void oldDetection(StructuredGraph graph) {
+        NodeIterable<Node> nodes = graph.getNodes();
+        Iterator<Node> iterator = nodes.iterator();
+        while (iterator.hasNext()) {
 
-        for (Node node : graph.getNodes()) {
+            Node node = iterator.next();
+
             if (node instanceof LoadFieldNode) {
                 // inspect loadFieldNode
                 LoadFieldNode loadFieldNode = (LoadFieldNode) node;
 
-                Constant asConstant = loadFieldNode.asConstant();
-
                 String fieldName = loadFieldNode.field().getName();
+                System.out.println("FIELD NAMEEEEEE: " + fieldName);
                 ValueNode value = loadFieldNode.getValue();
                 String stamp = value.stamp().toString();
 
-                System.out.println("VALUE GETCLASS: " + value.getClass());
+                Stamp stampLoad = loadFieldNode.stamp();
+                // System.out.println("STAMP FIELD: " + stampLoad);
+
                 if (value instanceof PiNode) {
-                    System.out.println("THIS IS A PINODE");
+
                     PiNode piNode = (PiNode) value;
                     ValueNode object = piNode.object();
                     System.out.println(object);
                     if (object instanceof UnsafeLoadNode) {
                         UnsafeLoadNode unsafe = (UnsafeLoadNode) object;
                     }
-
                 }
 
                 if (stamp.endsWith("RDoubleVector;")) {
@@ -78,16 +95,40 @@ public class ScopeArraysDetectionPhase extends Phase {
                     }
                 }
 
-// ValueNode value = loadFieldNode.getValue();
-// if (value instanceof PiNode) {
-// PiNode piNode = (PiNode) value;
-// System.out.println(piNode.asJavaConstant());
-// System.out.println(piNode.getGuard().toString());
-// }
-//
-// Map<Object, Object> debugProperties = loadFieldNode.getDebugProperties();
-// System.out.println(debugProperties);
             }
         }
+    }
+
+    @Override
+    protected void run(StructuredGraph graph) {
+
+        NodeIterable<Node> nodes = graph.getNodes();
+        Iterator<Node> iterator = nodes.iterator();
+
+        while (iterator.hasNext()) {
+            Node node = iterator.next();
+
+            if (node instanceof LoadFieldNode) {
+
+                boolean clear = false;
+
+                ArrayList<Node> auxNotValid = new ArrayList<>();
+
+                for (Class<?> comp : scopePattern) {
+                    if (node.getClass() == comp) {
+                        node = node.successors().first();
+                        auxNotValid.add(node);
+                    } else {
+                        clear = true;
+                        break;
+                    }
+                }
+                if (!clear) {
+                    notValidNodes.addAll(auxNotValid);
+                }
+            }
+        }
+
+        System.out.println(notValidNodes);
     }
 }

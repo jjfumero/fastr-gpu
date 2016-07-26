@@ -95,14 +95,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
     private static ScopeData scopeArrayDetection(StructuredGraph graph) {
         ScopeDetectionPhase scopeDetection = new ScopeDetectionPhase();
         scopeDetection.apply(graph);
-
-        // Experimental Phase - scope based on a set of nodes in the IR (common pattern).
-        if (scopeDetection.getDataArray().length == 0) {
-            // we can try to analyze for R<T>Vector#data
-            ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
-            arraysDetectionPhase.apply(graph);
-        }
-
         ScopeData scopeData = new ScopeData(scopeDetection.getDataArray());
         return scopeData;
     }
@@ -126,6 +118,9 @@ public final class GPUSApply extends RExternalBuiltinNode {
         new GPUBoxingEliminationPhase().apply(graph);
         CompilerUtils.dumpGraph(graph, "GPUBoxingEliminationPhase");
 
+        // we can try to analyze for R<T>Vector#data
+        ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
+        arraysDetectionPhase.apply(graph);
     }
 
     /**
