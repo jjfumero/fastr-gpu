@@ -51,7 +51,7 @@ nbodyFunction <- function(px, py, pz, vx, vy, vz) {
  	nvy <- vy + ( acc2 * DELTA);
   	nvz <- vz + ( acc3 * DELTA);
 	
-	result <- list(px, py, pz, vx, vy, vz)
+	result <- list(npx, npy, npz, nvx, nvy, nvz)
 	return(result)	
 }
 
