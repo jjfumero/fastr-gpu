@@ -232,8 +232,16 @@ public final class GPUSApply extends RExternalBuiltinNode {
              */
             if (graphToCompile != null && gpuCompilationUnit == null) {
                 // Get the Structured Graph and compile it for GPU
-                System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU");
+
+                if (ASTxOptions.debug) {
+                    System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU");
+                }
+
                 gpuCompilationUnit = compileForMarawaccBackend(inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, firstValue, interoperable);
+
+                if (lexicalScopes != null) {
+                    gpuCompilationUnit.setScopeArrays(lexicalScopes);
+                }
                 return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
             }
         }

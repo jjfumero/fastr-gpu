@@ -784,7 +784,14 @@ public class ASTxUtils {
             try {
                 val = RContext.getEngine().parseAndEval(source, frame, false);
                 if (val instanceof RVector) {
-                    scopes.add(val);
+
+                    if (val instanceof RDoubleVector) {
+                        scopes.add(((RDoubleVector) val).getDataCopy());
+                    } else if (val instanceof RIntVector) {
+                        scopes.add(((RIntVector) val).getDataCopy());
+                    } else {
+                        throw new RuntimeException("Data type not supported yet");
+                    }
                 }
             } catch (ParseException e) {
                 e.printStackTrace();
