@@ -1,3 +1,7 @@
+## astx-0.6
+	* Graph (GraalIR) phases with node simplification.
+	* KMeans suported
+	* Basic scope supported for KMeans and general pattern detection in the IR
 
 ## astx-0.5 
 	* Benchmarks saxpy, montecarlo and blackscholes provided. There is an assumption in montecarlo for random numbers (still working on it).
