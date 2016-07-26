@@ -52,6 +52,7 @@ import com.oracle.truffle.r.library.gpu.phases.GPUCheckCastRemovalPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUFixedGuardRemovalPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUFrameStateEliminationPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUInstanceOfRemovePhase;
+import com.oracle.truffle.r.library.gpu.phases.ScopeArraysDetectionPhase;
 import com.oracle.truffle.r.library.gpu.phases.ScopeDetectionPhase;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
@@ -92,11 +93,11 @@ public final class GPUSApply extends RExternalBuiltinNode {
         scopeDetection.apply(graph);
 
         // Experimental Phase - scope based on a set of nodes in the IR (common pattern).
-        // if (scopeDetection.getDataArray().length == 0) {
-        // // we can try to analyze for R<T>Vector#data
-        // ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
-        // arraysDetectionPhase.apply(graph);
-        // }
+        if (scopeDetection.getDataArray().length == 0) {
+            // we can try to analyze for R<T>Vector#data
+            ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
+            arraysDetectionPhase.apply(graph);
+        }
 
         ScopeData scopeData = new ScopeData(scopeDetection.getDataArray());
         return scopeData;
