@@ -25,7 +25,8 @@ LOCAL  MEMORY    : 32768
 ENDIANESS        : LITTLE_ENDIAN
 
 
-> marawacc.map( 1:100000, function(x, y) x * y, 1:100000) 
+> # Use the GPU when the function is JIT 
+> marawacc.gpusapply(1:100000, function(x, y) x * y, 1:100000) 
 
 ```
 
