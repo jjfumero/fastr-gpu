@@ -91,6 +91,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
     }
 
     private GraalGPUExecutor executor;
+    ArrayList<com.oracle.graal.graph.Node> scopedNodes;
 
     private static ScopeData scopeArrayDetection(StructuredGraph graph) {
         ScopeDetectionPhase scopeDetection = new ScopeDetectionPhase();
@@ -99,7 +100,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return scopeData;
     }
 
-    private static void applyCompilationPhasesForGPU(StructuredGraph graph) {
+    private void applyCompilationPhasesForGPU(StructuredGraph graph) {
 
         CompilerUtils.dumpGraph(graph, "beforeOptomisations");
 
@@ -121,6 +122,10 @@ public final class GPUSApply extends RExternalBuiltinNode {
         // we can try to analyze for R<T>Vector#data
         ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
         arraysDetectionPhase.apply(graph);
+
+        if (arraysDetectionPhase.isScopeDetected()) {
+            scopedNodes = arraysDetectionPhase.getScopedNodes();
+        }
     }
 
     /**
@@ -152,8 +157,9 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         // Compilation to the GPU
         boolean ISTRUFFLE = true;
-        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData());
+        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData(), scopedNodes);
         gpuCompilationUnit.setScopeArrays(scopeData.getData());
+        gpuCompilationUnit.setScopeNodes(scopedNodes);
 
         // Insert graph into cache
         InternalGraphCache.INSTANCE.installGPUBinaryIntoCache(graphToCompile, gpuCompilationUnit);
