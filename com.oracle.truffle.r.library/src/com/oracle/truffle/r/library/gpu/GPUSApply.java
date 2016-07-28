@@ -53,6 +53,7 @@ import com.oracle.truffle.r.library.gpu.phases.GPUFixedGuardRemovalPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUFrameStateEliminationPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUInstanceOfRemovePhase;
 import com.oracle.truffle.r.library.gpu.phases.ScopeArraysDetectionPhase;
+import com.oracle.truffle.r.library.gpu.phases.ScopeCleanPhase;
 import com.oracle.truffle.r.library.gpu.phases.ScopeDetectionPhase;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
@@ -126,6 +127,10 @@ public final class GPUSApply extends RExternalBuiltinNode {
         if (arraysDetectionPhase.isScopeDetected()) {
             scopedNodes = arraysDetectionPhase.getScopedNodes();
         }
+
+        ScopeCleanPhase cleanPhase = new ScopeCleanPhase(scopedNodes);
+        cleanPhase.apply(graph);
+        CompilerUtils.dumpGraph(graph, "ScopeCleanPhase");
     }
 
     /**

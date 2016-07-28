@@ -120,7 +120,7 @@ public class ScopeArraysDetectionPhase extends Phase {
     }
 
     public boolean isScopeDetected() {
-        return notValidNodes.isEmpty();
+        return !notValidNodes.isEmpty();
     }
 
     public ArrayList<Node> getScopedNodes() {
