@@ -71,7 +71,7 @@ benchmark <- function(inputSize) {
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
-		result <- marawacc.testGPU(x, montecarloGPUFunction);
+		result <- marawacc.gpusapply(x, montecarloGPUFunction);
 		end <- nanotime()
 		total <- end - start
 		print(total)

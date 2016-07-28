@@ -27,7 +27,7 @@ vectorData <- runif(size)
 
 for (i in 1:REPETITIONS) {
 	start <- nanotime()
-	result <- marawacc.testGPU(input, gpuFunction);
+	result <- marawacc.gpusapply(input, gpuFunction);
 	end <- nanotime()
 	total <- end - start
 	print(total)
