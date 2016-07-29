@@ -44,7 +44,7 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
         // assert length > 0;
         this.start = start;
         this.stride = stride;
-        createPArray(length);
+        // createPArray(length);
     }
 
     @TruffleBoundary

@@ -631,11 +631,22 @@ public class ASTxUtils {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static RAbstractVector unMarshallResultFromPArrays(TypeInfo type, PArray result) {
+    public static RAbstractVector unMarshallFromFullPArrays(TypeInfo type, PArray result) {
         if (type == TypeInfo.INT) {
             return getIntVectorFromPArray(result);
         } else if (type == TypeInfo.DOUBLE) {
             return getDoubleVectorFromPArray(result);
+        } else {
+            throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
+        }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static RAbstractVector unMarshallResultFromPArrays(TypeInfo type, PArray result) {
+        if (type == TypeInfo.INT) {
+            return getIntVector(result);
+        } else if (type == TypeInfo.DOUBLE) {
+            return getDoubleVector(result);
         } else if (type == TypeInfo.LIST) {
             return getRList(result);
         } else if (type == TypeInfo.TUPLE2) {

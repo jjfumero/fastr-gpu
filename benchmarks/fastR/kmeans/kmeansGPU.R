@@ -26,7 +26,7 @@ benchmark <- function(inputSize) {
 			if (currentDist < minDist) {
 				minDist <- currentDist
 				id <- i
-			}			
+			}	
 		}
 		return(id)
 	}

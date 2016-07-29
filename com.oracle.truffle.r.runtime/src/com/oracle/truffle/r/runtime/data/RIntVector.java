@@ -43,7 +43,7 @@ public final class RIntVector extends RVector implements RAbstractIntVector {
     RIntVector(int[] data, boolean complete, int[] dims, RStringVector names) {
         super(complete, data.length, dims, names);
         this.data = data;
-        createPArray(data.length);
+        // createPArray(data.length);
         assert verify();
     }
 

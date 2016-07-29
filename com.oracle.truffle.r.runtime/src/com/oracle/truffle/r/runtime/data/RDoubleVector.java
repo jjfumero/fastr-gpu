@@ -47,7 +47,7 @@ public final class RDoubleVector extends RVector implements RAbstractDoubleVecto
     RDoubleVector(double[] data, boolean complete, int[] dims, RStringVector names) {
         super(complete, data.length, dims, names);
         this.data = data;
-        createPArray(data.length);
+        // createPArray(data.length);
         assert verify();
     }
 
