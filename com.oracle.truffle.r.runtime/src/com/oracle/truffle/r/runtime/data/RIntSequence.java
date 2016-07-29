@@ -44,7 +44,9 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
         // assert length > 0;
         this.start = start;
         this.stride = stride;
-        // createPArray(length);
+        if (RVector.WITH_PARRAYS) {
+            createPArray(length);
+        }
     }
 
     @TruffleBoundary
@@ -52,8 +54,6 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
         if (size > 0) {
             this.parray = new PArray<>(size, TypeFactory.Integer());
             materialize();
-        } else {
-            this.parray = new PArray<>(1, TypeFactory.Integer());
         }
     }
 

@@ -62,6 +62,7 @@ import com.oracle.truffle.r.nodes.function.FunctionDefinitionNode;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
 import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.RList;
+import com.oracle.truffle.r.runtime.data.RVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 import com.oracle.truffle.r.runtime.nodes.RSyntaxNode;
 
@@ -418,6 +419,10 @@ public final class GPUSApply extends RExternalBuiltinNode {
     public Object call(RArgsValuesAndNames args) {
 
         Profiler.getInstance().print("\nIteration: " + iteration++);
+
+        if (ASTxOptions.usePArrays) {
+            RVector.WITH_PARRAYS = true;
+        }
 
         long start = System.nanoTime();
         RAbstractVector input = (RAbstractVector) args.getArgument(0);

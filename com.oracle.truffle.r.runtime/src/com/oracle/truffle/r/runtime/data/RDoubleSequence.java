@@ -44,7 +44,9 @@ public final class RDoubleSequence extends RSequence implements RAbstractDoubleV
         assert length > 0;
         this.start = start;
         this.stride = stride;
-        // createPArray(length);
+        if (RVector.WITH_PARRAYS) {
+            createPArray(length);
+        }
     }
 
     @TruffleBoundary
