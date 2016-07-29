@@ -9,6 +9,8 @@
 Disable with: 
 -Dastx.marawacc.threads=false
 
+Enable PArrays in marshal and unmarshal
+-Dastx.marawacc.usePArrays=true
 
 2. Print R AST to be executed on the GPU.
 
