@@ -24,6 +24,10 @@ package com.oracle.truffle.r.runtime.data;
 
 import java.util.*;
 
+import uk.ac.ed.datastructures.common.PArray;
+import uk.ac.ed.datastructures.common.TypeFactory;
+
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.r.runtime.*;
 import com.oracle.truffle.r.runtime.data.closures.*;
 import com.oracle.truffle.r.runtime.data.model.*;
@@ -34,15 +38,33 @@ public final class RIntVector extends RVector implements RAbstractIntVector {
     public static final RStringVector implicitClassHeader = RDataFactory.createStringVectorFromScalar(RType.Integer.getName());
 
     private final int[] data;
+    private PArray<Integer> parray;
 
     RIntVector(int[] data, boolean complete, int[] dims, RStringVector names) {
         super(complete, data.length, dims, names);
         this.data = data;
+        createPArray(data.length);
         assert verify();
+    }
+
+    @TruffleBoundary
+    private void createPArray(int size) {
+        if (size >= 1) {
+            parray = new PArray<>(size, TypeFactory.Integer());
+            for (int i = 0; i < size; i++) {
+                parray.put(i, data[i]);
+            }
+        } else {
+            parray = new PArray<>(1, TypeFactory.Integer());
+        }
     }
 
     private RIntVector(int[] data, boolean complete, int[] dims) {
         this(data, complete, dims, null);
+    }
+
+    public PArray<Integer> getPArray() {
+        return parray;
     }
 
     public RAbstractVector castSafe(RType type) {

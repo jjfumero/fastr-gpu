@@ -337,6 +337,17 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return inputTypeList;
     }
 
+    private static TypeInfoList createTypeInfoListForInputWithPArrays(RAbstractVector input, RAbstractVector[] additionalArgs) {
+        TypeInfoList inputTypeList = null;
+        try {
+            inputTypeList = ASTxUtils.typeInferenceWithPArray(input, additionalArgs);
+        } catch (MarawaccTypeException e) {
+            // TODO: DEOPTIMIZE
+            e.printStackTrace();
+        }
+        return inputTypeList;
+    }
+
     @SuppressWarnings("rawtypes")
     private RAbstractVector computeSApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes) {
 
@@ -352,7 +363,13 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         Class<?>[] typeObject = createListSubTypes(interop, value);
         Interoperable interoperable = (interop != null) ? new Interoperable(interop, typeObject) : null;
-        TypeInfoList inputTypeList = createTypeInfoListForInput(input, additionalArgs);
+
+        TypeInfoList inputTypeList = null;
+        if (ASTxOptions.usePArrays) {
+            inputTypeList = createTypeInfoListForInputWithPArrays(input, additionalArgs);
+        } else {
+            inputTypeList = createTypeInfoListForInput(input, additionalArgs);
+        }
 
         // Create PArrays
         long startMarshal = System.nanoTime();

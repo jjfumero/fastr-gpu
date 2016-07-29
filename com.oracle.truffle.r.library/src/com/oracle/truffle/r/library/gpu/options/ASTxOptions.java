@@ -63,6 +63,8 @@ public class ASTxOptions {
      */
     public static boolean printAST = getBoolean("astx.marawacc.printast", false);
 
+    public static boolean usePArrays = getBoolean("astx.marawacc.usePArrays", false);
+
     /**
      * Get profiler information and show when the R VM is finalising.
      */

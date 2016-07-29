@@ -24,6 +24,9 @@ package com.oracle.truffle.r.runtime.data;
 
 import java.util.*;
 
+import uk.ac.ed.datastructures.common.PArray;
+import uk.ac.ed.datastructures.common.TypeFactory;
+
 import com.oracle.truffle.r.runtime.*;
 import com.oracle.truffle.r.runtime.data.closures.*;
 import com.oracle.truffle.r.runtime.data.model.*;

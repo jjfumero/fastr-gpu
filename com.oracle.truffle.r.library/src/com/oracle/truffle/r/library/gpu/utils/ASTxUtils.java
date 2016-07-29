@@ -22,6 +22,9 @@
  */
 package com.oracle.truffle.r.library.gpu.utils;
 
+import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
@@ -51,8 +54,8 @@ import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.runtime.ArgumentsSignature;
 import com.oracle.truffle.r.runtime.RArguments;
 import com.oracle.truffle.r.runtime.RRuntime;
-import com.oracle.truffle.r.runtime.context.RContext;
 import com.oracle.truffle.r.runtime.context.Engine.ParseException;
+import com.oracle.truffle.r.runtime.context.RContext;
 import com.oracle.truffle.r.runtime.data.RDataFactory;
 import com.oracle.truffle.r.runtime.data.RDoubleSequence;
 import com.oracle.truffle.r.runtime.data.RDoubleVector;
@@ -293,6 +296,24 @@ public class ASTxUtils {
         return source;
     }
 
+    public static TypeInfo typeInferenceWithPArrays(RAbstractVector input) throws MarawaccTypeException {
+        TypeInfo type = null;
+        if (input instanceof RIntSequence) {
+            type = TypeInfo.RIntegerSequence;
+        } else if (input instanceof RIntVector) {
+            type = TypeInfo.RIntVector;
+        } else if (input instanceof RDoubleSequence) {
+            type = TypeInfo.RDoubleSequence;
+        } else if (input instanceof RDoubleVector) {
+            type = TypeInfo.RDoubleVector;
+        } else if (input instanceof RLogicalVector) {
+            type = TypeInfo.BOOLEAN;
+        } else {
+            throw new MarawaccTypeException("Data type not supported: " + input.getClass());
+        }
+        return type;
+    }
+
     public static TypeInfo typeInference(RAbstractVector input) throws MarawaccTypeException {
         TypeInfo type = null;
         if (input instanceof RIntSequence) {
@@ -317,6 +338,17 @@ public class ASTxUtils {
         if (additionalArgs != null) {
             for (int i = 0; i < additionalArgs.length; i++) {
                 list.add(typeInference(additionalArgs[i]));
+            }
+        }
+        return list;
+    }
+
+    public static TypeInfoList typeInferenceWithPArray(RAbstractVector input, RAbstractVector[] additionalArgs) throws MarawaccTypeException {
+        TypeInfoList list = new TypeInfoList();
+        list.add(typeInferenceWithPArrays(input));
+        if (additionalArgs != null) {
+            for (int i = 0; i < additionalArgs.length; i++) {
+                list.add(typeInferenceWithPArrays(additionalArgs[i]));
             }
         }
         return list;
@@ -561,6 +593,17 @@ public class ASTxUtils {
     }
 
     /**
+     * Un-marshal to {@link RIntVector} from {@link PArray} of Integers.
+     *
+     * @param array
+     * @return {@link RIntVector}
+     */
+    public static RIntVector getIntVectorFromPArray(PArray<Integer> array) {
+        int[] output = ((IntBuffer) array.getArrayReference()).array();
+        return RDataFactory.createIntVector(output, false);
+    }
+
+    /**
      * Un-marshal to {@link RDoubleVector} from {@link PArray} of Doubles.
      *
      * @param array
@@ -574,12 +617,25 @@ public class ASTxUtils {
         return RDataFactory.createDoubleVector(output, false);
     }
 
+    /**
+     * Un-marshal to {@link RDoubleVector} from {@link PArray} of Doubles.
+     *
+     * @param array
+     * @return {@link RDoubleVector}
+     */
+    public static RDoubleVector getDoubleVectorFromPArray(PArray<Double> array) {
+        DoubleBuffer buffer = ((ByteBuffer) array.getArrayReference()).asDoubleBuffer();
+        double output[] = new double[buffer.remaining()];
+        buffer.get(output);
+        return RDataFactory.createDoubleVector(output, false);
+    }
+
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static RAbstractVector unMarshallResultFromPArrays(TypeInfo type, PArray result) {
         if (type == TypeInfo.INT) {
-            return getIntVector(result);
+            return getIntVectorFromPArray(result);
         } else if (type == TypeInfo.DOUBLE) {
-            return getDoubleVector(result);
+            return getDoubleVectorFromPArray(result);
         } else if (type == TypeInfo.LIST) {
             return getRList(result);
         } else if (type == TypeInfo.TUPLE2) {
@@ -623,6 +679,23 @@ public class ASTxUtils {
         System.out.println(result);
     }
 
+    // XXX: How to combine with the full info List
+    public static PArray<?> getReferencePArray(TypeInfoList infoList, RAbstractVector input) {
+        TypeInfo type = infoList.get(0);
+        switch (type) {
+            case RIntegerSequence:
+                return ((RIntSequence) input).getPArray();
+            case RDoubleSequence:
+                return ((RDoubleSequence) input).getPArray();
+            case RIntVector:
+                return ((RIntVector) input).getPArray();
+            case RDoubleVector:
+                return ((RDoubleVector) input).getPArray();
+            default:
+                throw new MarawaccRuntimeTypeException("Data type not supported: " + input.getClass() + " [ " + __LINE__.print() + "]");
+        }
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static PArray<?> marshalSimplePArrays(TypeInfoList infoList, RAbstractVector input) {
         PArray parray = null;
@@ -630,25 +703,22 @@ public class ASTxUtils {
         switch (type) {
             case INT:
                 parray = new PArray<>(input.getLength(), TypeFactory.Integer());
-                for (int k = 0; k < parray.size(); k++) {
-                    parray.put(k, input.getDataAtAsObject(k));
-                }
-                return parray;
+                break;
             case DOUBLE:
                 parray = new PArray<>(input.getLength(), TypeFactory.Double());
-                for (int k = 0; k < parray.size(); k++) {
-                    parray.put(k, input.getDataAtAsObject(k));
-                }
-                return parray;
+                break;
             case BOOLEAN:
                 parray = new PArray<>(input.getLength(), TypeFactory.Boolean());
-                for (int k = 0; k < parray.size(); k++) {
-                    parray.put(k, input.getDataAtAsObject(k));
-                }
-                return parray;
+                break;
             default:
                 throw new MarawaccRuntimeTypeException("Data type not supported: " + input.getClass() + " [ " + __LINE__.print() + "]");
         }
+
+        for (int k = 0; k < parray.size(); k++) {
+            parray.put(k, input.getDataAtAsObject(k));
+        }
+        return parray;
+
     }
 
     public static String composeReturnType(TypeInfoList infoList) {

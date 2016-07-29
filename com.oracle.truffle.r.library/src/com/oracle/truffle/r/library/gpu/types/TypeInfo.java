@@ -24,6 +24,11 @@ package com.oracle.truffle.r.library.gpu.types;
 
 public enum TypeInfo {
 
+    RIntegerSequence("Integer", "int"),
+    RIntVector("Integer", "int"),
+    RDoubleSequence("Double", "double"),
+    RDoubleVector("Double", "double"),
+
     INT("Integer", "int"),
     DOUBLE("Double", "double"),
     DOUBLE_VECTOR("Double[]", "double[]"),

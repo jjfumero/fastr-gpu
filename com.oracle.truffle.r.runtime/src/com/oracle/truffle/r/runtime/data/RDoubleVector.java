@@ -22,27 +22,60 @@
  */
 package com.oracle.truffle.r.runtime.data;
 
-import java.util.*;
+import java.nio.DoubleBuffer;
+import java.util.Arrays;
 
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.data.closures.*;
-import com.oracle.truffle.r.runtime.data.model.*;
-import com.oracle.truffle.r.runtime.ops.na.*;
+import uk.ac.ed.datastructures.common.PArray;
+import uk.ac.ed.datastructures.common.TypeFactory;
+
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.r.runtime.RRuntime;
+import com.oracle.truffle.r.runtime.RType;
+import com.oracle.truffle.r.runtime.Utils;
+import com.oracle.truffle.r.runtime.data.closures.RClosures;
+import com.oracle.truffle.r.runtime.data.model.RAbstractDoubleVector;
+import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
+import com.oracle.truffle.r.runtime.ops.na.NACheck;
 
 public final class RDoubleVector extends RVector implements RAbstractDoubleVector {
 
     public static final RStringVector implicitClassHeader = RDataFactory.createStringVectorFromScalar(RType.Numeric.getName());
 
     private final double[] data;
+    private PArray<Double> parray;
 
     RDoubleVector(double[] data, boolean complete, int[] dims, RStringVector names) {
         super(complete, data.length, dims, names);
         this.data = data;
+        createPArray(data.length);
+        assert verify();
+    }
+
+    @TruffleBoundary
+    private void createPArray(int size) {
+        if (size > 0) {
+            parray = new PArray<>(size, TypeFactory.Double());
+            for (int i = 0; i < size; i++) {
+                parray.put(i, data[i]);
+            }
+        } else {
+            parray = new PArray<>(1, TypeFactory.Double());
+        }
+    }
+
+    RDoubleVector(PArray<Double> parray, boolean complete, int[] dims, RStringVector names) {
+        super(complete, parray.size(), dims, names);
+        this.parray = parray;
+        this.data = ((DoubleBuffer) parray.getArrayReference()).array();
         assert verify();
     }
 
     private RDoubleVector(double[] data, boolean complete, int[] dims) {
         this(data, complete, dims, null);
+    }
+
+    public PArray<Double> getPArray() {
+        return parray;
     }
 
     public RAbstractVector castSafe(RType type) {

@@ -22,21 +22,39 @@
  */
 package com.oracle.truffle.r.runtime.data;
 
-import com.oracle.truffle.api.*;
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.data.closures.*;
-import com.oracle.truffle.r.runtime.data.model.*;
+import uk.ac.ed.datastructures.common.PArray;
+import uk.ac.ed.datastructures.common.TypeFactory;
+
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.r.runtime.RType;
+import com.oracle.truffle.r.runtime.data.closures.RClosures;
+import com.oracle.truffle.r.runtime.data.model.RAbstractIntVector;
+import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 public final class RIntSequence extends RSequence implements RAbstractIntVector {
 
     private final int start;
     private final int stride;
 
+    private PArray<Integer> parray;
+
     RIntSequence(int start, int stride, int length) {
         super(length);
         // assert length > 0;
         this.start = start;
         this.stride = stride;
+        createPArray(length);
+    }
+
+    @TruffleBoundary
+    public void createPArray(int size) {
+        if (size > 0) {
+            this.parray = new PArray<>(size, TypeFactory.Integer());
+            materialize();
+        } else {
+            this.parray = new PArray<>(1, TypeFactory.Integer());
+        }
     }
 
     public int getDataAt(int index) {
@@ -80,10 +98,15 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
         return stride;
     }
 
+    public PArray<Integer> getPArray() {
+        return parray;
+    }
+
     private RIntVector populateVectorData(int[] result) {
         int current = start;
         for (int i = 0; i < getLength(); i++) {
             result[i] = current;
+            parray.put(i, current);
             current += stride;
         }
         return RDataFactory.createIntVector(result, RDataFactory.COMPLETE_VECTOR);

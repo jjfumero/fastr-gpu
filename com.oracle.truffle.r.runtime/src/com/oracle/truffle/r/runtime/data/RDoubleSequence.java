@@ -22,21 +22,34 @@
  */
 package com.oracle.truffle.r.runtime.data;
 
-import com.oracle.truffle.api.*;
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.data.closures.*;
-import com.oracle.truffle.r.runtime.data.model.*;
+import uk.ac.ed.datastructures.common.PArray;
+import uk.ac.ed.datastructures.common.TypeFactory;
+
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.r.runtime.RType;
+import com.oracle.truffle.r.runtime.data.closures.RClosures;
+import com.oracle.truffle.r.runtime.data.model.RAbstractDoubleVector;
+import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 public final class RDoubleSequence extends RSequence implements RAbstractDoubleVector {
 
     private final double start;
     private final double stride;
 
+    private PArray<Double> parray;
+
     RDoubleSequence(double start, double stride, int length) {
         super(length);
         assert length > 0;
         this.start = start;
         this.stride = stride;
+        createPArray(length);
+    }
+
+    @TruffleBoundary
+    private void createPArray(int size) {
+        this.parray = new PArray<>(size, TypeFactory.Double());
     }
 
     @Override
@@ -90,9 +103,14 @@ public final class RDoubleSequence extends RSequence implements RAbstractDoubleV
         double current = start;
         for (int i = 0; i < getLength(); i++) {
             result[i] = current;
+            parray.put(i, current);
             current += stride;
         }
         return RDataFactory.createDoubleVector(result, RDataFactory.COMPLETE_VECTOR);
+    }
+
+    public PArray<Double> getPArray() {
+        return parray;
     }
 
     @Override

@@ -9,7 +9,7 @@ g <- function(x) {
 }
 
 
-seqResult <- sapply(a, f)
+seqResult <- sapply(a, g)
 
 for (i in seq(1,20)) {
 
@@ -26,10 +26,7 @@ for (i in seq(1,20)) {
 				break;
 			}
 		}	
-	} else {
-		print(nonError) 
-	}
-
+	} 
 }
 
 for (i in seq(1,20)) {
