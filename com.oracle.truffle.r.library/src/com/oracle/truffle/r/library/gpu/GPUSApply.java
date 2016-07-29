@@ -386,13 +386,12 @@ public final class GPUSApply extends RExternalBuiltinNode {
         // Result
         if (!gpuExecution) {
             resultFastR = ASTxUtils.unMarshallResultFromArrayList(outputType, result);
+        } else if (ASTxOptions.usePArrays) {
+            resultFastR = ASTxUtils.unMarshallFromFullPArrays(outputType, (PArray) result.get(0));
         } else {
-            if (ASTxOptions.usePArrays) {
-                resultFastR = ASTxUtils.unMarshallFromFullPArrays(outputType, (PArray) result.get(0));
-            } else {
-                resultFastR = ASTxUtils.unMarshallResultFromPArrays(outputType, (PArray) result.get(0));
-            }
+            resultFastR = ASTxUtils.unMarshallResultFromPArrays(outputType, (PArray) result.get(0));
         }
+
         long endUnmarshal = System.nanoTime();
 
         // Print profiler
