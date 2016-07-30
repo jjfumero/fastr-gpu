@@ -54,7 +54,7 @@ public final class RDoubleVector extends RVector implements RAbstractDoubleVecto
     }
 
     @TruffleBoundary
-    private void createPArray(int size) {
+    public RDoubleVector createPArray(int size) {
         if (size > 0) {
             parray = new PArray<>(size, TypeFactory.Double());
             for (int i = 0; i < size; i++) {
@@ -63,6 +63,7 @@ public final class RDoubleVector extends RVector implements RAbstractDoubleVecto
         } else {
             parray = new PArray<>(1, TypeFactory.Double());
         }
+        return this;
     }
 
     RDoubleVector(PArray<Double> parray, boolean complete, int[] dims, RStringVector names) {

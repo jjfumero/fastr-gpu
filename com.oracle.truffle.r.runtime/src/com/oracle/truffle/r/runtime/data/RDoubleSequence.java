@@ -50,8 +50,9 @@ public final class RDoubleSequence extends RSequence implements RAbstractDoubleV
     }
 
     @TruffleBoundary
-    private void createPArray(int size) {
+    public RDoubleSequence createPArray(int size) {
         this.parray = new PArray<>(size, TypeFactory.Double());
+        return this;
     }
 
     @Override

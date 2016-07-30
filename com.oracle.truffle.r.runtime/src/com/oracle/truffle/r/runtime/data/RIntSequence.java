@@ -50,11 +50,12 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
     }
 
     @TruffleBoundary
-    public void createPArray(int size) {
+    public RIntSequence createPArray(int size) {
         if (size > 0) {
             this.parray = new PArray<>(size, TypeFactory.Integer());
             materialize();
         }
+        return this;
     }
 
     public int getDataAt(int index) {
@@ -98,6 +99,7 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
         return stride;
     }
 
+    @Override
     public PArray<Integer> getPArray() {
         return parray;
     }

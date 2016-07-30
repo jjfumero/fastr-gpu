@@ -599,7 +599,9 @@ public class ASTxUtils {
      * @return {@link RIntVector}
      */
     public static RIntVector getIntVectorFromPArray(PArray<Integer> array) {
-        int[] output = ((IntBuffer) array.getArrayReference()).array();
+        IntBuffer buffer = ((ByteBuffer) array.getArrayReference()).asIntBuffer();
+        int output[] = new int[buffer.remaining()];
+        buffer.get(output);
         return RDataFactory.createIntVector(output, false);
     }
 
@@ -690,7 +692,6 @@ public class ASTxUtils {
         System.out.println(result);
     }
 
-    // XXX: How to combine with the full info List
     public static PArray<?> getReferencePArray(TypeInfo type, RAbstractVector input) {
         switch (type) {
             case RIntegerSequence:
@@ -826,6 +827,30 @@ public class ASTxUtils {
     }
 
     /**
+     * Ideally the R data structure will contain the parray itself (so it will be prepared and this
+     * is just to return the buffer).
+     *
+     * @param input
+     * @param additionalArgs
+     * @param infoList
+     * @return {@link PArray}
+     */
+    @SuppressWarnings({"rawtypes"})
+    public static PArray<?> marshalUpdateReferenceWithTuples(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
+        String returns = composeReturnType(infoList);
+        PArray parray = new PArray<>(input.getLength(), TypeFactory.Tuple(returns), false);
+        switch (infoList.size()) {
+            case 2:
+                System.out.println("Reference of TWO");
+                parray.setBuffer(0, input.getPArray().getArrayReference());
+                parray.setBuffer(1, additionalArgs[0].getPArray().getArrayReference());
+                return parray;
+            default:
+                throw new MarawaccRuntimeTypeException("Tuple not supported yet: " + infoList.size() + " [ " + __LINE__.print() + "]");
+        }
+    }
+
+    /**
      * Given the RVector, it creates the PArray. For future work is to extend the R data types to
      * include in the object layout the PArray information.
      *
@@ -860,7 +885,7 @@ public class ASTxUtils {
         if (additionalArgs == null) {
             parray = getReferencePArray(infoList.get(0), input);
         } else {
-            parray = marshalWithTuples(input, additionalArgs, infoList);
+            parray = marshalUpdateReferenceWithTuples(input, additionalArgs, infoList);
         }
         return parray;
     }

@@ -22,6 +22,8 @@
  */
 package com.oracle.truffle.r.runtime.data.model;
 
+import uk.ac.ed.datastructures.common.PArray;
+
 import com.oracle.truffle.api.interop.*;
 import com.oracle.truffle.r.runtime.*;
 import com.oracle.truffle.r.runtime.context.*;
@@ -82,5 +84,9 @@ public interface RAbstractVector extends RAbstractContainer, TruffleObject {
 
     default ForeignAccess getForeignAccess() {
         return RContext.getEngine().getForeignAccess(this);
+    }
+
+    default PArray<?> getPArray() {
+        return null;
     }
 }

@@ -425,6 +425,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         Profiler.getInstance().print("\nIteration: " + iteration++);
 
         if (ASTxOptions.usePArrays) {
+            System.out.println("SETTING TO TRUE");
             RVector.WITH_PARRAYS = true;
         }
 

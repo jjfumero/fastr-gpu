@@ -50,7 +50,7 @@ public final class RIntVector extends RVector implements RAbstractIntVector {
     }
 
     @TruffleBoundary
-    private void createPArray(int size) {
+    public RIntVector createPArray(int size) {
         if (size >= 1) {
             parray = new PArray<>(size, TypeFactory.Integer());
             for (int i = 0; i < size; i++) {
@@ -59,6 +59,7 @@ public final class RIntVector extends RVector implements RAbstractIntVector {
         } else {
             parray = new PArray<>(1, TypeFactory.Integer());
         }
+        return this;
     }
 
     private RIntVector(int[] data, boolean complete, int[] dims) {
