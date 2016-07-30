@@ -691,8 +691,7 @@ public class ASTxUtils {
     }
 
     // XXX: How to combine with the full info List
-    public static PArray<?> getReferencePArray(TypeInfoList infoList, RAbstractVector input) {
-        TypeInfo type = infoList.get(0);
+    public static PArray<?> getReferencePArray(TypeInfo type, RAbstractVector input) {
         switch (type) {
             case RIntegerSequence:
                 return ((RIntSequence) input).getPArray();
@@ -708,9 +707,8 @@ public class ASTxUtils {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static PArray<?> marshalSimplePArrays(TypeInfoList infoList, RAbstractVector input) {
+    public static PArray<?> marshalSimplePArrays(TypeInfo type, RAbstractVector input) {
         PArray parray = null;
-        TypeInfo type = infoList.get(0);
         switch (type) {
             case INT:
                 parray = new PArray<>(input.getLength(), TypeFactory.Integer());
@@ -725,11 +723,11 @@ public class ASTxUtils {
                 throw new MarawaccRuntimeTypeException("Data type not supported: " + input.getClass() + " [ " + __LINE__.print() + "]");
         }
 
+        // Real marshal
         for (int k = 0; k < parray.size(); k++) {
             parray.put(k, input.getDataAtAsObject(k));
         }
         return parray;
-
     }
 
     public static String composeReturnType(TypeInfoList infoList) {
@@ -840,9 +838,29 @@ public class ASTxUtils {
     public static PArray<?> marshal(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
         PArray parray = null;
         if (additionalArgs == null) {
-            parray = ASTxUtils.marshalSimplePArrays(infoList, input);
+            parray = marshalSimplePArrays(infoList.get(0), input);
         } else {
-            parray = ASTxUtils.marshalWithTuples(input, additionalArgs, infoList);
+            parray = marshalWithTuples(input, additionalArgs, infoList);
+        }
+        return parray;
+    }
+
+    /**
+     * Given the RVector, it creates the PArray. For future work is to extend the R data types to
+     * include in the object layout the PArray information.
+     *
+     * @param input
+     * @param additionalArgs
+     * @param infoList
+     * @return {@link PArray}
+     */
+    @SuppressWarnings("rawtypes")
+    public static PArray<?> marshalWithReferences(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
+        PArray parray = null;
+        if (additionalArgs == null) {
+            parray = getReferencePArray(infoList.get(0), input);
+        } else {
+            parray = marshalWithTuples(input, additionalArgs, infoList);
         }
         return parray;
     }
@@ -855,7 +873,7 @@ public class ASTxUtils {
      * @param function
      * @return Object[]
      */
-    public static Object[] getScopeArrays(String[] scopeVars, RFunction function) {
+    public static Object[] getValueOfScopeArrays(String[] scopeVars, RFunction function) {
         LinkedList<Object> scopes = new LinkedList<>();
         for (String var : scopeVars) {
             StringBuffer scopeVar = new StringBuffer(var);

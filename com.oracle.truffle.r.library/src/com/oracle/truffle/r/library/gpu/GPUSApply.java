@@ -373,7 +373,12 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         // Create PArrays
         long startMarshal = System.nanoTime();
-        PArray<?> inputPArrayFormat = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
+        PArray<?> inputPArrayFormat = null;
+        if (ASTxOptions.usePArrays) {
+            inputPArrayFormat = ASTxUtils.marshalWithReferences(input, additionalArgs, inputTypeList);
+        } else {
+            inputPArrayFormat = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
+        }
         long endMarshal = System.nanoTime();
 
         // Execution
@@ -433,7 +438,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         // Lexical scoping from the AST level
         String[] scopeVars = lexicalScopingAST(function);
-        Object[] lexicalScopes = ASTxUtils.getScopeArrays(scopeVars, function);
+        Object[] lexicalScopes = ASTxUtils.getValueOfScopeArrays(scopeVars, function);
 
         // Get the callTarget from the cache
         RootCallTarget target = RGPUCache.INSTANCE.lookup(function);
