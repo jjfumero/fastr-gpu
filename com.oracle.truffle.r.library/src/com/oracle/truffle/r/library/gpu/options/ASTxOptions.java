@@ -68,7 +68,7 @@ public class ASTxOptions {
     /**
      * Use the references provided in the PArray to avoid marshal and unmarshal
      */
-    @CompilationFinal public static boolean usePArrays = getBoolean("astx.marawacc.usePArrays", false);
+    @CompilationFinal public static boolean usePArrays = getBoolean("astx.marawacc.usePArrays", true);
 
     /**
      * Get profiler information and show when the R VM is finalising.
