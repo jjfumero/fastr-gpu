@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.TypeFactory;
 import uk.ac.ed.datastructures.tuples.Tuple;
@@ -585,11 +586,7 @@ public class ASTxUtils {
      * @return {@link RIntVector}
      */
     public static RIntVector getIntVector(PArray<Integer> array) {
-        int[] output = new int[array.size()];
-        for (int i = 0; i < output.length; i++) {
-            output[i] = array.get(i);
-        }
-        return RDataFactory.createIntVector(output, false);
+        return RDataFactory.createIntVector(array.asIntegerArray(), false);
     }
 
     /**
@@ -599,10 +596,7 @@ public class ASTxUtils {
      * @return {@link RIntVector}
      */
     public static RIntVector getIntVectorFromPArray(PArray<Integer> array) {
-        IntBuffer buffer = ((ByteBuffer) array.getArrayReference()).asIntBuffer();
-        int output[] = new int[buffer.remaining()];
-        buffer.get(output);
-        return RDataFactory.createIntVector(output, false);
+        return RDataFactory.createIntVector(array.asIntegerArray(), false);
     }
 
     /**
@@ -612,11 +606,7 @@ public class ASTxUtils {
      * @return {@link RDoubleVector}
      */
     public static RDoubleVector getDoubleVector(PArray<Double> array) {
-        double[] output = new double[array.size()];
-        for (int i = 0; i < output.length; i++) {
-            output[i] = array.get(i);
-        }
-        return RDataFactory.createDoubleVector(output, false);
+        return RDataFactory.createDoubleVector(array.asDoubleArray(), false);
     }
 
     /**
@@ -626,10 +616,7 @@ public class ASTxUtils {
      * @return {@link RDoubleVector}
      */
     public static RDoubleVector getDoubleVectorFromPArray(PArray<Double> array) {
-        DoubleBuffer buffer = ((ByteBuffer) array.getArrayReference()).asDoubleBuffer();
-        double output[] = new double[buffer.remaining()];
-        buffer.get(output);
-        return RDataFactory.createDoubleVector(output, false);
+        return RDataFactory.createDoubleVector(array.asDoubleArray(), false);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
