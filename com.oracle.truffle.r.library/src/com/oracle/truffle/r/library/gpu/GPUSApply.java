@@ -69,7 +69,6 @@ import com.oracle.truffle.r.runtime.nodes.RSyntaxNode;
 
 /**
  * AST Node to check the connection with Marawacc. This is just a proof of concept.
- *
  */
 public final class GPUSApply extends RExternalBuiltinNode {
 
@@ -136,7 +135,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
         }
     }
 
-    public static boolean isCleanPhaseEnabled() {
+    private static boolean isCleanPhaseEnabled() {
+        // It has to be disabled by now
         return false;
     }
 
