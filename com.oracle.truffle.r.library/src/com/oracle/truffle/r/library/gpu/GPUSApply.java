@@ -356,7 +356,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings("rawtypes")
-    private RAbstractVector computeSApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes) {
+    private RAbstractVector computeOpenCLSApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes) {
 
         // Type inference - execution of the first element
         int nArgs = ASTxUtils.getNumberOfArguments(function);
@@ -432,7 +432,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
         Profiler.getInstance().print("\nIteration: " + iteration++);
 
         if (ASTxOptions.usePArrays) {
-            System.out.println("SETTING TO TRUE");
             RVector.WITH_PARRAYS = true;
         }
 
@@ -460,7 +459,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
             }
         }
 
-        RAbstractVector mapResult = computeSApply(input, function, target, additionalInputs, lexicalScopes);
+        RAbstractVector mapResult = computeOpenCLSApply(input, function, target, additionalInputs, lexicalScopes);
         long end = System.nanoTime();
 
         if (ASTxOptions.profiler) {
