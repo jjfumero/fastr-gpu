@@ -202,7 +202,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         ArrayList<Object> arrayList = new ArrayList<>();
         arrayList.add(result);
-
         return arrayList;
     }
 
@@ -219,7 +218,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return scopeVars;
     }
 
-    private ArrayList<Object> runJavaJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
+    private ArrayList<Object> runJavaOpenCLJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes) {
 
         ArrayList<Object> output = new ArrayList<>(input.getLength());
@@ -355,7 +354,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return inputTypeList;
     }
 
-    private static PArray<?> createPArrays(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList inputTypeList) {
+    @SuppressWarnings("static-method")
+    private PArray<?> createPArrays(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList inputTypeList) {
         PArray<?> inputPArrayFormat = null;
         if (ASTxOptions.usePArrays) {
             if (ASTxOptions.optimizeRSequence) {
@@ -389,13 +389,13 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
     private RAbstractVector computeOpenCLSApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes) {
 
-        // Type inference - execution of the first element
+        // Type inference -> execution of the first element
         int nArgs = ASTxUtils.getNumberOfArguments(function);
         String[] argsName = ASTxUtils.getArgumentsNames(function);
         Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, 0);
         Object value = function.getTarget().call(argsPackage);
 
-        // Interorable objects
+        // Inter-operable objects
         TypeInfo outputType = obtainTypeInfo(value);
         InteropTable interop = obtainInterop(outputType);
 
@@ -416,7 +416,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         // Execution
         long startExecution = System.nanoTime();
-        ArrayList<Object> result = runJavaJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes);
+        ArrayList<Object> result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes);
         long endExecution = System.nanoTime();
 
         // Get the result ((un)marshal)
