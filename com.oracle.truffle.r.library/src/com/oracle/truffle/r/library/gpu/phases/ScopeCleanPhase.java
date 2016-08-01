@@ -79,9 +79,9 @@ public class ScopeCleanPhase extends Phase {
 
     @Override
     protected void run(StructuredGraph graph) {
-        // if (scopedNodes != null) {
-        // removeNodes(graph);
-        // }
-        removeUnsafeLoad(graph);
+        if (scopedNodes != null) {
+            removeNodes(graph);
+        }
+        // removeUnsafeLoad(graph);
     }
 }

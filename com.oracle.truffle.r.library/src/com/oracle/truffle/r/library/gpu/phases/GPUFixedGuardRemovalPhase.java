@@ -28,5 +28,4 @@ public class GPUFixedGuardRemovalPhase extends Phase {
         new CanonicalizerPhase().apply(graph, new PhaseContext(providers));
         new DeadCodeEliminationPhase().apply(graph);
     }
-
 }
