@@ -685,6 +685,8 @@ public class ASTxUtils {
                 PArray<Integer> parray = new PArray<>(2, TypeFactory.Integer());
                 int start = ((RIntSequence) input).start();
                 int stride = ((RIntSequence) input).stride();
+                parray.setSequence(true);
+                parray.setTotalSize(input.getLength());
                 parray.put(0, start);
                 parray.put(1, stride);
                 return parray;
@@ -694,6 +696,8 @@ public class ASTxUtils {
                 double stride1 = ((RDoubleSequence) input).stride();
                 parray1.put(0, start1);
                 parray1.put(1, stride1);
+                parray1.setTotalSize(input.getLength());
+                parray1.setSequence(true);
                 return parray1;
             case RIntVector:
                 return ((RIntVector) input).getPArray();
