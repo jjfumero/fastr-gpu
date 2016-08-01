@@ -49,6 +49,14 @@ public final class RDoubleSequence extends RSequence implements RAbstractDoubleV
         }
     }
 
+    public double start() {
+        return start;
+    }
+
+    public double stride() {
+        return stride;
+    }
+
     @TruffleBoundary
     public RDoubleSequence createPArray(int size) {
         this.parray = new PArray<>(size, TypeFactory.Double());

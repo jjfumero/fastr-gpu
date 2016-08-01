@@ -49,6 +49,14 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
         }
     }
 
+    public int start() {
+        return start;
+    }
+
+    public int stride() {
+        return stride;
+    }
+
     @TruffleBoundary
     public RIntSequence createPArray(int size) {
         if (size > 0) {

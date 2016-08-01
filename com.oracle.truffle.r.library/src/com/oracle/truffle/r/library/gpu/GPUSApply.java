@@ -355,7 +355,38 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return inputTypeList;
     }
 
-    @SuppressWarnings("rawtypes")
+    private static PArray<?> createPArrays(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList inputTypeList) {
+        PArray<?> inputPArrayFormat = null;
+        if (ASTxOptions.usePArrays) {
+            if (ASTxOptions.optimizeRSequence) {
+                // Optimise with RSequences data types (openCL logic to compute the data) and no
+                // input copy.
+                inputPArrayFormat = ASTxUtils.marshalWithReferencesAndSequenceOptimize(input, additionalArgs, inputTypeList);
+            } else {
+                // RTypes with PArray information
+                inputPArrayFormat = ASTxUtils.marshalWithReferences(input, additionalArgs, inputTypeList);
+            }
+        } else {
+            // real marshal
+            inputPArrayFormat = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
+        }
+        return inputPArrayFormat;
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    private RAbstractVector getResult(TypeInfo outputType, ArrayList<Object> result) {
+        if (!gpuExecution) {
+            // get the output in R-Type format
+            return ASTxUtils.unMarshallResultFromArrayList(outputType, result);
+        } else if (ASTxOptions.usePArrays) {
+            // get the references
+            return ASTxUtils.unMarshallFromFullPArrays(outputType, (PArray) result.get(0));
+        } else {
+            // Real un-marshal
+            return ASTxUtils.unMarshallResultFromPArrays(outputType, (PArray) result.get(0));
+        }
+    }
+
     private RAbstractVector computeOpenCLSApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes) {
 
         // Type inference - execution of the first element
@@ -378,14 +409,9 @@ public final class GPUSApply extends RExternalBuiltinNode {
             inputTypeList = createTypeInfoListForInput(input, additionalArgs);
         }
 
-        // Create PArrays
+        // Marshal
         long startMarshal = System.nanoTime();
-        PArray<?> inputPArrayFormat = null;
-        if (ASTxOptions.usePArrays) {
-            inputPArrayFormat = ASTxUtils.marshalWithReferences(input, additionalArgs, inputTypeList);
-        } else {
-            inputPArrayFormat = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
-        }
+        PArray<?> inputPArrayFormat = createPArrays(input, additionalArgs, inputTypeList);
         long endMarshal = System.nanoTime();
 
         // Execution
@@ -393,17 +419,9 @@ public final class GPUSApply extends RExternalBuiltinNode {
         ArrayList<Object> result = runJavaJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes);
         long endExecution = System.nanoTime();
 
+        // Get the result ((un)marshal)
         long startUnmarshal = System.nanoTime();
-        RAbstractVector resultFastR = null;
-        // Result
-        if (!gpuExecution) {
-            resultFastR = ASTxUtils.unMarshallResultFromArrayList(outputType, result);
-        } else if (ASTxOptions.usePArrays) {
-            resultFastR = ASTxUtils.unMarshallFromFullPArrays(outputType, (PArray) result.get(0));
-        } else {
-            resultFastR = ASTxUtils.unMarshallResultFromPArrays(outputType, (PArray) result.get(0));
-        }
-
+        RAbstractVector resultFastR = getResult(outputType, result);
         long endUnmarshal = System.nanoTime();
 
         // Print profiler

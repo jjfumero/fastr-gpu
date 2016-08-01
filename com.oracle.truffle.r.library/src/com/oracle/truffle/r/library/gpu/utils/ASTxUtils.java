@@ -679,6 +679,31 @@ public class ASTxUtils {
         System.out.println(result);
     }
 
+    public static PArray<?> getReferencePArrayWithOptimizationsSequence(TypeInfo type, RAbstractVector input) {
+        switch (type) {
+            case RIntegerSequence:
+                PArray<Integer> parray = new PArray<>(2, TypeFactory.Integer());
+                int start = ((RIntSequence) input).start();
+                int stride = ((RIntSequence) input).stride();
+                parray.put(0, start);
+                parray.put(1, stride);
+                return parray;
+            case RDoubleSequence:
+                PArray<Double> parray1 = new PArray<>(2, TypeFactory.Double());
+                double start1 = ((RDoubleSequence) input).start();
+                double stride1 = ((RDoubleSequence) input).stride();
+                parray1.put(0, start1);
+                parray1.put(1, stride1);
+                return parray1;
+            case RIntVector:
+                return ((RIntVector) input).getPArray();
+            case RDoubleVector:
+                return ((RDoubleVector) input).getPArray();
+            default:
+                throw new MarawaccRuntimeTypeException("Data type not supported: " + input.getClass() + " [ " + __LINE__.print() + "]");
+        }
+    }
+
     public static PArray<?> getReferencePArray(TypeInfo type, RAbstractVector input) {
         switch (type) {
             case RIntegerSequence:
@@ -871,6 +896,26 @@ public class ASTxUtils {
         PArray parray = null;
         if (additionalArgs == null) {
             parray = getReferencePArray(infoList.get(0), input);
+        } else {
+            parray = marshalUpdateReferenceWithTuples(input, additionalArgs, infoList);
+        }
+        return parray;
+    }
+
+    /**
+     * Given the RVector, it creates the PArray. For future work is to extend the R data types to
+     * include in the object layout the PArray information.
+     *
+     * @param input
+     * @param additionalArgs
+     * @param infoList
+     * @return {@link PArray}
+     */
+    @SuppressWarnings("rawtypes")
+    public static PArray<?> marshalWithReferencesAndSequenceOptimize(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
+        PArray parray = null;
+        if (additionalArgs == null) {
+            parray = getReferencePArrayWithOptimizationsSequence(infoList.get(0), input);
         } else {
             parray = marshalUpdateReferenceWithTuples(input, additionalArgs, infoList);
         }

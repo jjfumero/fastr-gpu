@@ -23,6 +23,7 @@
 package com.oracle.truffle.r.library.gpu.options;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.r.runtime.data.RSequence;
 
 /**
  * ASTx runtime options.
@@ -69,6 +70,12 @@ public class ASTxOptions {
      * Use the references provided in the PArray to avoid marshal and unmarshal
      */
     @CompilationFinal public static boolean usePArrays = getBoolean("astx.marawacc.usePArrays", false);
+
+    /**
+     * Optimise {@link RSequence} for OpenCL. No buffer copy, just logic for computing elements from
+     * start and stride.
+     */
+    public static boolean optimizeRSequence = getBoolean("astx.marawacc.optimizeRSequence", true);
 
     /**
      * Get profiler information and show when the R VM is finalising.
