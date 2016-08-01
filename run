@@ -4,5 +4,5 @@
 #mx Rscript --J @'-DR:+IgnoreVisibility -G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilation -XX:+TraceClassLoading -XX:+TraceClassUnloading -XX:-UseJVMCIClassLoader' $* 
 
 # Normal one 
-mx Rscript --J @'-DR:+IgnoreVisibility -G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilation  -XX:-UseJVMCIClassLoader -Dmarawacc.printOCLInfo=true -Dmarawacc.dumpGraph=true -Dastx.marawacc.profiler=true -Dmarawacc.copy.parray=true ' $* 
+mx Rscript --J @'-DR:+IgnoreVisibility -G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilation  -XX:-UseJVMCIClassLoader -Dmarawacc.printOCLInfo=true -Dmarawacc.dumpGraph=true -Dastx.marawacc.profiler=false ' $* 
 

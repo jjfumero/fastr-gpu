@@ -69,7 +69,7 @@ public class ASTxOptions {
     /**
      * Use the references provided in the PArray to avoid marshal and unmarshal
      */
-    @CompilationFinal public static boolean usePArrays = getBoolean("astx.marawacc.usePArrays", false);
+    @CompilationFinal public static boolean usePArrays = getBoolean("astx.marawacc.usePArrays", true);
 
     /**
      * Optimise {@link RSequence} for OpenCL. No buffer copy, just logic for computing elements from

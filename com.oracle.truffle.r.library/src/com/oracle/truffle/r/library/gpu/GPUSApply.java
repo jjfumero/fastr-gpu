@@ -193,6 +193,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalGPUCompilationUnit gpuCompilationUnit) {
+
         if (executor == null) {
             executor = new GraalGPUExecutor();
         }
@@ -354,8 +355,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return inputTypeList;
     }
 
-    @SuppressWarnings("static-method")
-    private PArray<?> createPArrays(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList inputTypeList) {
+    private static PArray<?> createPArrays(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList inputTypeList) {
         PArray<?> inputPArrayFormat = null;
         if (ASTxOptions.usePArrays) {
             if (ASTxOptions.optimizeRSequence) {
