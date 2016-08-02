@@ -676,9 +676,6 @@ public class ASTxUtils {
     }
 
     public static PArray<?> buildIntPArrayForSequence(RAbstractVector input) {
-
-        System.out.println("BUILDING THE PARRAY FOR SEQUENCE");
-
         PArray<Integer> parray = new PArray<>(2, TypeFactory.Integer());
         int start = ((RIntSequence) input).start();
         int stride = ((RIntSequence) input).stride();
@@ -686,10 +683,6 @@ public class ASTxUtils {
         parray.setTotalSize(input.getLength());
         parray.put(0, start);
         parray.put(1, stride);
-
-        System.out.println(parray);
-        System.out.println(" --------------------- ");
-
         return parray;
     }
 
@@ -866,13 +859,17 @@ public class ASTxUtils {
     public static PArray<?> marshalUpdateReferenceWithTuples(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
         String returns = composeReturnType(infoList);
         PArray parray = new PArray<>(input.getLength(), TypeFactory.Tuple(returns), false);
+        boolean sequence = false;
+
         switch (infoList.size()) {
             case 2:
                 PArray a = null;
                 if (input instanceof RIntSequence) {
                     a = buildIntPArrayForSequence(input);
+                    sequence = true;
                 } else if (input instanceof RDoubleSequence) {
                     a = buildDoublePArrayForSequence(input);
+                    sequence = true;
                 } else {
                     a = input.getPArray();
                 }
@@ -880,14 +877,19 @@ public class ASTxUtils {
                 PArray b = null;
                 if (additionalArgs[0] instanceof RIntSequence) {
                     b = buildIntPArrayForSequence(additionalArgs[0]);
+                    sequence = true;
                 } else if (additionalArgs[0] instanceof RDoubleSequence) {
                     b = buildDoublePArrayForSequence(additionalArgs[0]);
+                    sequence = true;
                 } else {
                     b = input.getPArray();
                 }
 
                 parray.setBuffer(0, a.getArrayReference(), a.isSequence());
                 parray.setBuffer(1, b.getArrayReference(), b.isSequence());
+
+                parray.setSequence(sequence);
+                parray.setTotalSize(input.getLength());
 
                 return parray;
             default:

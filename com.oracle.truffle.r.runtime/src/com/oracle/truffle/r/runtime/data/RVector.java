@@ -62,7 +62,7 @@ public abstract class RVector extends RAttributeStorage implements RShareable, R
     private Object rowNames;
     private int refCount;
 
-    @CompilationFinal public static boolean WITH_PARRAYS = false;
+    @CompilationFinal public static boolean WITH_PARRAYS = true;
 
     private static final int TEMPORARY = 0x1;
     private static final int SHARED = 0x2;
