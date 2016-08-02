@@ -24,10 +24,10 @@ package com.oracle.truffle.r.library.gpu.types;
 
 public enum TypeInfo {
 
-    RIntegerSequence("Integer", "int"),
-    RIntVector("Integer", "int"),
-    RDoubleSequence("Double", "double"),
-    RDoubleVector("Double", "double"),
+    RIntegerSequence("Integer", "RIntSequence"),
+    RIntVector("Integer", "RIntVector"),
+    RDoubleSequence("Double", "RDoubleSequence"),
+    RDoubleVector("Double", "RDoubleVector"),
 
     INT("Integer", "int"),
     DOUBLE("Double", "double"),
@@ -51,16 +51,16 @@ public enum TypeInfo {
 
     NULL("null", "null"); // Not used, just from R side
 
-    private String javaTypeString;
+    private String openCLTypeString;
     private String genericType;
 
     TypeInfo(String name, String type) {
-        this.javaTypeString = name;
+        this.openCLTypeString = name;
         this.genericType = type;
     }
 
     public String getJavaType() {
-        return this.javaTypeString;
+        return this.openCLTypeString;
     }
 
     public String getGenericType() {
@@ -69,6 +69,6 @@ public enum TypeInfo {
 
     @Override
     public String toString() {
-        return this.javaTypeString;
+        return openCLTypeString + " : " + genericType;
     }
 }

@@ -22,15 +22,11 @@
  */
 package com.oracle.truffle.r.library.gpu.utils;
 
-import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.TypeFactory;
 import uk.ac.ed.datastructures.tuples.Tuple;
@@ -679,26 +675,41 @@ public class ASTxUtils {
         System.out.println(result);
     }
 
+    public static PArray<?> buildIntPArrayForSequence(RAbstractVector input) {
+
+        System.out.println("BUILDING THE PARRAY FOR SEQUENCE");
+
+        PArray<Integer> parray = new PArray<>(2, TypeFactory.Integer());
+        int start = ((RIntSequence) input).start();
+        int stride = ((RIntSequence) input).stride();
+        parray.setSequence(true);
+        parray.setTotalSize(input.getLength());
+        parray.put(0, start);
+        parray.put(1, stride);
+
+        System.out.println(parray);
+        System.out.println(" --------------------- ");
+
+        return parray;
+    }
+
+    public static PArray<?> buildDoublePArrayForSequence(RAbstractVector input) {
+        PArray<Double> parray = new PArray<>(2, TypeFactory.Double());
+        double start = ((RDoubleSequence) input).start();
+        double stride = ((RDoubleSequence) input).stride();
+        parray.put(0, start);
+        parray.put(1, stride);
+        parray.setTotalSize(input.getLength());
+        parray.setSequence(true);
+        return parray;
+    }
+
     public static PArray<?> getReferencePArrayWithOptimizationsSequence(TypeInfo type, RAbstractVector input) {
         switch (type) {
             case RIntegerSequence:
-                PArray<Integer> parray = new PArray<>(2, TypeFactory.Integer());
-                int start = ((RIntSequence) input).start();
-                int stride = ((RIntSequence) input).stride();
-                parray.setSequence(true);
-                parray.setTotalSize(input.getLength());
-                parray.put(0, start);
-                parray.put(1, stride);
-                return parray;
+                return buildIntPArrayForSequence(input);
             case RDoubleSequence:
-                PArray<Double> parray1 = new PArray<>(2, TypeFactory.Double());
-                double start1 = ((RDoubleSequence) input).start();
-                double stride1 = ((RDoubleSequence) input).stride();
-                parray1.put(0, start1);
-                parray1.put(1, stride1);
-                parray1.setTotalSize(input.getLength());
-                parray1.setSequence(true);
-                return parray1;
+                return buildDoublePArrayForSequence(input);
             case RIntVector:
                 return ((RIntVector) input).getPArray();
             case RDoubleVector:
@@ -857,9 +868,27 @@ public class ASTxUtils {
         PArray parray = new PArray<>(input.getLength(), TypeFactory.Tuple(returns), false);
         switch (infoList.size()) {
             case 2:
-                System.out.println("Reference of TWO");
-                parray.setBuffer(0, input.getPArray().getArrayReference());
-                parray.setBuffer(1, additionalArgs[0].getPArray().getArrayReference());
+                PArray a = null;
+                if (input instanceof RIntSequence) {
+                    a = buildIntPArrayForSequence(input);
+                } else if (input instanceof RDoubleSequence) {
+                    a = buildDoublePArrayForSequence(input);
+                } else {
+                    a = input.getPArray();
+                }
+
+                PArray b = null;
+                if (additionalArgs[0] instanceof RIntSequence) {
+                    b = buildIntPArrayForSequence(additionalArgs[0]);
+                } else if (additionalArgs[0] instanceof RDoubleSequence) {
+                    b = buildDoublePArrayForSequence(additionalArgs[0]);
+                } else {
+                    b = input.getPArray();
+                }
+
+                parray.setBuffer(0, a.getArrayReference(), a.isSequence());
+                parray.setBuffer(1, b.getArrayReference(), b.isSequence());
+
                 return parray;
             default:
                 throw new MarawaccRuntimeTypeException("Tuple not supported yet: " + infoList.size() + " [ " + __LINE__.print() + "]");

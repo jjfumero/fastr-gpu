@@ -49,21 +49,23 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
         }
     }
 
+    @TruffleBoundary
+    public RIntSequence createPArray(int size) {
+        if (size >= 1) {
+            parray = new PArray<>(size, TypeFactory.Integer());
+            materialize();
+        } else {
+            parray = new PArray<>(1, TypeFactory.Integer());
+        }
+        return this;
+    }
+
     public int start() {
         return start;
     }
 
     public int stride() {
         return stride;
-    }
-
-    @TruffleBoundary
-    public RIntSequence createPArray(int size) {
-        if (size > 0) {
-            this.parray = new PArray<>(size, TypeFactory.Integer());
-            materialize();
-        }
-        return this;
     }
 
     public int getDataAt(int index) {

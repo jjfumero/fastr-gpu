@@ -419,7 +419,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         ArrayList<Object> result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes);
         long endExecution = System.nanoTime();
 
-        // Get the result ((un)marshal)
+        // Get the result (un-marshal)
         long startUnmarshal = System.nanoTime();
         RAbstractVector resultFastR = getResult(outputType, result);
         long endUnmarshal = System.nanoTime();
