@@ -465,8 +465,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
         // Lexical scoping from the AST level
         String[] scopeVars = lexicalScopingAST(function);
         Object[] lexicalScopes = ASTxUtils.getValueOfScopeArrays(scopeVars, function);
-        System.out.println(" --> Lexical scopes");
-        System.out.println(Arrays.toString(lexicalScopes));
 
         // Get the callTarget from the cache
         RootCallTarget target = RGPUCache.INSTANCE.lookup(function);
