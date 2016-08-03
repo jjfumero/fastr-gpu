@@ -23,6 +23,7 @@
 package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.accelerator.profiler.Profiler;
@@ -136,8 +137,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
     }
 
     private static boolean isCleanPhaseEnabled() {
-        // It has to be disabled by now
-        return false;
+        return true;
     }
 
     /**
@@ -275,7 +275,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
     private static InteropTable obtainInterop(TypeInfo outputType) {
         InteropTable interop = null;
-        if (outputType != null && outputType.getGenericType().equals(TypeInfo.TUPLE_GENERIC_TYPE.toString())) {
+        if (outputType != null && outputType.getGenericType().equals(TypeInfo.TUPLE_GENERIC_TYPE.getGenericType())) {
             if (outputType == TypeInfo.TUPLE2) {
                 interop = InteropTable.T2;
             } else if (outputType == TypeInfo.TUPLE3) {
@@ -286,8 +286,9 @@ public final class GPUSApply extends RExternalBuiltinNode {
                 interop = InteropTable.T5;
             } else if (outputType == TypeInfo.TUPLE6) {
                 interop = InteropTable.T6;
+            } else {
+                throw new RuntimeException("Interop data type not supported yet");
             }
-
         } else if (outputType == null) {
             // TODO: DEOPTIMIZATION
             throw new RuntimeException("Interop data type not supported yet");
@@ -464,6 +465,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
         // Lexical scoping from the AST level
         String[] scopeVars = lexicalScopingAST(function);
         Object[] lexicalScopes = ASTxUtils.getValueOfScopeArrays(scopeVars, function);
+        System.out.println(" --> Lexical scopes");
+        System.out.println(Arrays.toString(lexicalScopes));
 
         // Get the callTarget from the cache
         RootCallTarget target = RGPUCache.INSTANCE.lookup(function);

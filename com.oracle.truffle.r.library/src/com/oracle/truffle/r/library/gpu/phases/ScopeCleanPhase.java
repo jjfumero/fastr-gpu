@@ -24,18 +24,9 @@ package com.oracle.truffle.r.library.gpu.phases;
 
 import java.util.ArrayList;
 
-import uk.ac.ed.marawacc.graal.GraalOCLBackendConnector;
-
 import com.oracle.graal.graph.Node;
-import com.oracle.graal.nodes.FixedWithNextNode;
 import com.oracle.graal.nodes.StructuredGraph;
-import com.oracle.graal.nodes.calc.FloatingNode;
-import com.oracle.graal.nodes.extended.UnsafeLoadNode;
 import com.oracle.graal.phases.Phase;
-import com.oracle.graal.phases.common.CanonicalizerPhase;
-import com.oracle.graal.phases.common.DeadCodeEliminationPhase;
-import com.oracle.graal.phases.tiers.PhaseContext;
-import com.oracle.graal.phases.util.Providers;
 
 public class ScopeCleanPhase extends Phase {
 
@@ -51,30 +42,21 @@ public class ScopeCleanPhase extends Phase {
 
             for (Node s : scopedNodes) {
                 if (s.equals(node)) {
-                    if (node instanceof FixedWithNextNode) {
-                        node.replaceAtUsages(null);
-                        graph.removeFixed((FixedWithNextNode) node);
 
-                    } else if (node instanceof FloatingNode) {
-                        node.replaceAtUsages(null);
-                        node.safeDelete();
-                    }
+                    System.out.println("Trying to remove: " + node);
+
+// if (node instanceof FixedWithNextNode) {
+// node.replaceAtUsages(null);
+// graph.removeFixed((FixedWithNextNode) node);
+//
+// } else if (node instanceof FloatingNode) {
+// node.replaceAtUsages(null);
+// node.safeDelete();
+// }
                     break;
                 }
             }
         }
-    }
-
-    private void removeUnsafeLoad(StructuredGraph graph) {
-        for (Node node : graph.getNodes()) {
-            if (node instanceof UnsafeLoadNode) {
-                node.replaceAtUsages(null);
-                node.safeDelete();
-            }
-        }
-        Providers providers = GraalOCLBackendConnector.getProviders();
-        new CanonicalizerPhase().apply(graph, new PhaseContext(providers));
-        new DeadCodeEliminationPhase().apply(graph);
     }
 
     @Override
@@ -82,6 +64,5 @@ public class ScopeCleanPhase extends Phase {
         if (scopedNodes != null) {
             removeNodes(graph);
         }
-        // removeUnsafeLoad(graph);
     }
 }
