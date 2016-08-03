@@ -25,12 +25,9 @@ package com.oracle.truffle.r.library.gpu.phases;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import com.oracle.graal.compiler.common.type.Stamp;
 import com.oracle.graal.graph.Node;
 import com.oracle.graal.graph.iterators.NodeIterable;
-import com.oracle.graal.nodes.PiNode;
 import com.oracle.graal.nodes.StructuredGraph;
-import com.oracle.graal.nodes.ValueNode;
 import com.oracle.graal.nodes.extended.UnsafeLoadNode;
 import com.oracle.graal.nodes.java.ArrayLengthNode;
 import com.oracle.graal.nodes.java.LoadFieldNode;
@@ -56,44 +53,6 @@ public class ScopeArraysDetectionPhase extends Phase {
         scopePattern.add(LoadFieldNode.class);
     }
 
-    @SuppressWarnings("unused")
-    private static void oldDetection(StructuredGraph graph) {
-        NodeIterable<Node> nodes = graph.getNodes();
-        Iterator<Node> iterator = nodes.iterator();
-        while (iterator.hasNext()) {
-
-            Node node = iterator.next();
-
-            if (node instanceof LoadFieldNode) {
-                // inspect loadFieldNode
-                LoadFieldNode loadFieldNode = (LoadFieldNode) node;
-
-                String fieldName = loadFieldNode.field().getName();
-                ValueNode value = loadFieldNode.getValue();
-                String stamp = value.stamp().toString();
-
-                Stamp stampLoad = loadFieldNode.stamp();
-                // System.out.println("STAMP FIELD: " + stampLoad);
-
-                if (value instanceof PiNode) {
-
-                    PiNode piNode = (PiNode) value;
-                    ValueNode object = piNode.object();
-                    System.out.println(object);
-                    if (object instanceof UnsafeLoadNode) {
-                        UnsafeLoadNode unsafe = (UnsafeLoadNode) object;
-                    }
-                }
-
-                if (stamp.endsWith("RDoubleVector;")) {
-                    if (fieldName.equals("data")) {
-                        System.out.println("Scope Var found");
-                    }
-                }
-            }
-        }
-    }
-
     @Override
     protected void run(StructuredGraph graph) {
         NodeIterable<Node> nodes = graph.getNodes();
@@ -105,8 +64,8 @@ public class ScopeArraysDetectionPhase extends Phase {
                 ArrayList<Node> auxNotValid = new ArrayList<>();
                 for (Class<?> comp : scopePattern) {
                     if (node.getClass() == comp) {
-                        node = node.successors().first();
                         auxNotValid.add(node);
+                        node = node.successors().first();
                     } else {
                         clear = true;
                         break;

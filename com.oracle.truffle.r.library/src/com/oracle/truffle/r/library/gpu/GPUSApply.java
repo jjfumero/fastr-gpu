@@ -128,6 +128,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
             scopedNodes = arraysDetectionPhase.getScopedNodes();
         }
 
+        System.out.println(scopedNodes);
+
         if (isCleanPhaseEnabled()) {
             ScopeCleanPhase cleanPhase = new ScopeCleanPhase(scopedNodes);
             cleanPhase.apply(graph);
@@ -136,7 +138,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
     }
 
     private static boolean isCleanPhaseEnabled() {
-        return true;
+        return false;
     }
 
     /**
