@@ -24,12 +24,10 @@ package com.oracle.truffle.r.library.gpu.phases;
 
 import java.util.ArrayList;
 
-import jdk.vm.ci.meta.JavaConstant;
-
-import com.oracle.graal.compiler.common.type.StampFactory;
 import com.oracle.graal.graph.Node;
 import com.oracle.graal.nodes.ConstantNode;
 import com.oracle.graal.nodes.StructuredGraph;
+import com.oracle.graal.nodes.ValueNode;
 import com.oracle.graal.nodes.java.LoadFieldNode;
 import com.oracle.graal.phases.Phase;
 
@@ -47,21 +45,13 @@ public class ScopeCleanPhase extends Phase {
 
             for (Node s : scopedNodes) {
                 if (s.equals(node)) {
-
                     System.out.println("Trying to remove: " + node);
                     if (s instanceof LoadFieldNode) {
-                        ConstantNode constantNode = new ConstantNode(JavaConstant.NULL_POINTER, StampFactory.object());
-                        node.replaceAtUsages(constantNode);
+                        LoadFieldNode f = (LoadFieldNode) s;
+                        ValueNode value = f.getValue();
+                        ConstantNode constantNode = new ConstantNode(value.asConstant(), value.stamp());
+                        // node.replaceAtUsages(value);
                     }
-
-// if (node instanceof FixedWithNextNode) {
-// node.replaceAtUsages(null);
-// graph.removeFixed((FixedWithNextNode) node);
-//
-// } else if (node instanceof FloatingNode) {
-// node.replaceAtUsages(null);
-// node.safeDelete();
-// }
                     break;
                 }
             }
