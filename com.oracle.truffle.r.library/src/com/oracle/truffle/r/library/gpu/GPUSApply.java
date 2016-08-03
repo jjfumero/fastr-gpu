@@ -23,7 +23,6 @@
 package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.accelerator.profiler.Profiler;
