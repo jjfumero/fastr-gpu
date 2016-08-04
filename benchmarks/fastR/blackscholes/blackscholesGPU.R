@@ -181,10 +181,10 @@ benchmark <- function(inputSize) {
 		print(total)
 
 		# Check result
-		i <- 1
+		k <- 1
 		j <- 1
-		while (i < size) {
-			lseq <- c(seq[[i]], seq[[i+1]])
+		while (k < size) {
+			lseq <- c(seq[[k]], seq[[k+1]])
 			lgpu <- c(result[[j]][[1]], result[[j]][[2]])
 
 			# check the elements for the tuple
@@ -197,7 +197,7 @@ benchmark <- function(inputSize) {
                 break;
             }
 
-			i <- i + 2
+			k <- k + 2
 			j <- j + 1
 		}
 
