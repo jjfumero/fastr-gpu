@@ -41,6 +41,7 @@ import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.truffle.OptimizedCallTarget;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.r.library.gpu.cache.CacheGPUExecutor;
 import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
@@ -91,7 +92,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
         }
     }
 
-    private GraalGPUExecutor executor;
     ArrayList<com.oracle.graal.graph.Node> scopedNodes;
 
     private static ScopeData scopeArrayDetection(StructuredGraph graph) {
@@ -128,9 +128,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
             scopedNodes = arraysDetectionPhase.getScopedNodes();
         }
 
-        System.out.println(scopedNodes);
-
         if (isCleanPhaseEnabled()) {
+            // Just for testing when needed
             ScopeCleanPhase cleanPhase = new ScopeCleanPhase(scopedNodes);
             cleanPhase.apply(graph);
             CompilerUtils.dumpGraph(graph, "ScopeCleanPhase");
@@ -193,10 +192,12 @@ public final class GPUSApply extends RExternalBuiltinNode {
      * @return {@link ArrayList}
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalGPUCompilationUnit gpuCompilationUnit) {
+    private static ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalGPUCompilationUnit gpuCompilationUnit) {
 
+        GraalGPUExecutor executor = CacheGPUExecutor.INSTANCE.getExecutor(gpuCompilationUnit);
         if (executor == null) {
             executor = new GraalGPUExecutor();
+            CacheGPUExecutor.INSTANCE.insert(gpuCompilationUnit, executor);
         }
         AcceleratorPArray copyToDevice = executor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
         AcceleratorPArray executeOnTheDevice = executor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType(), gpuCompilationUnit.getScopeArrays());
