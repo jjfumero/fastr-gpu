@@ -22,7 +22,7 @@ benchmark <- function(inputSize) {
 		sum <- 0
 		for (j in 1:size) {
 			evalAPrime <- (i + j) * (i + j + 1)
-			evalA <- bitwShiftR(evalAPrime, 1)
+			evalA <- evalAPrime / 2
 			evalA <- evalA + i + 1
 			evalA <- 1.0/ evalA
 			partial <- evalA * v[j]

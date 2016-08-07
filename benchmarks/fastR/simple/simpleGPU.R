@@ -17,6 +17,7 @@ gpuFunction <- function(px) {
 	dist <- 0
 	for (i in 1:size) {
 		x <- px * vectorData[i]
+		x <- x / 2
 		dist <- dist + x	
 	}
 	return(dist)	
