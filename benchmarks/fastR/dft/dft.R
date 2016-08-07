@@ -30,9 +30,9 @@ benchmark <- function(inputSize) {
 		return(l)
 	}	
 
-	x <- 0:size;
-	inreal <<- runif(1:size)
-	inimag <<- runif(1:size)
+	x <- 1:size;
+	inreal <<- runif(size)
+	inimag <<- runif(size)
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
