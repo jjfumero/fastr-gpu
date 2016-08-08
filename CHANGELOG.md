@@ -1,3 +1,5 @@
+# ChangeLog ASTx GPU Compiler Framework
+
 ## astx-0.7
 	* NBody, SpectralNorm, DFT and Euler benchmarks supported
 	* Scope by pattern in the IR detected and use it in the code generation
@@ -31,7 +33,7 @@
 	* Graph simplification phases. It removes FrameState nodes from the original graph.
 	* Boxing and UnBoxing elimination. 
 
-## astx-0.21
+## astx-0.2a
 	* Basic support for kernel generation (simple expressions) and non-generic.
       This is a proof of concept.
 	* Interception from the Partial Evaluator to the GPU backend
