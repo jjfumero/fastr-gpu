@@ -1,3 +1,9 @@
+## astx-0.7
+	* NBody, SpectralNorm, DFT and Euler benchmarks supported
+	* Scope by pattern in the IR detected and use it in the code generation
+	* PArrays introduced 
+	* RSequence optimisation 
+
 ## astx-0.6
 	* Graph (GraalIR) phases with node simplification.
 	* KMeans suported
