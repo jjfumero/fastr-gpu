@@ -37,6 +37,7 @@ import uk.ac.ed.jpai.graal.GraalGPUExecutor;
 import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
 import uk.ac.ed.marawacc.graal.CompilerUtils;
 
+import com.oracle.graal.nodes.ConstantNode;
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.truffle.OptimizedCallTarget;
 import com.oracle.truffle.api.RootCallTarget;
@@ -169,7 +170,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         // Compilation to the GPU
         boolean ISTRUFFLE = true;
-        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData(), scopedNodes);
+        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData(),
+                        scopedNodes);
         gpuCompilationUnit.setScopeArrays(scopeData.getData());
         gpuCompilationUnit.setScopeNodes(scopedNodes);
 

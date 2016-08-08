@@ -23,7 +23,6 @@
 package com.oracle.truffle.r.library.gpu.phases;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import jdk.vm.ci.hotspot.HotSpotObjectConstant;
 import jdk.vm.ci.hotspot.HotSpotObjectConstantImpl;
@@ -47,15 +46,15 @@ import com.oracle.graal.phases.Phase;
 public class ScopeDetectionPhase extends Phase {
 
     private ArrayList<Object> rawData;
-    private HashSet<ConstantNode> set;
+    private ArrayList<ConstantNode> arrayConstantNodes;
 
     @Override
     protected void run(StructuredGraph graph) {
         if (rawData == null) {
             rawData = new ArrayList<>();
         }
-        if (set == null) {
-            set = new HashSet<>();
+        if (arrayConstantNodes == null) {
+            arrayConstantNodes = new ArrayList<>();
         }
         checkLoadIndexedNodes(graph);
     }
@@ -64,11 +63,17 @@ public class ScopeDetectionPhase extends Phase {
         return rawData.toArray();
     }
 
-    private void analyseConstant(Constant value) {
+    public ArrayList<ConstantNode> getConstantNodes() {
+        return arrayConstantNodes;
+    }
+
+    private void analyseConstant(Node node) {
+        Constant value = ((ConstantNode) node).getValue();
         if (value instanceof HotSpotObjectConstant) {
             HotSpotObjectConstantImpl constantValue = (HotSpotObjectConstantImpl) value;
             Object object = constantValue.object();
             rawData.add(object);
+            arrayConstantNodes.add((ConstantNode) node);
         }
     }
 
@@ -76,9 +81,8 @@ public class ScopeDetectionPhase extends Phase {
         while (iterator.hasNext()) {
             Node scopeNode = iterator.next();
             if (scopeNode instanceof ConstantNode) {
-                if (!set.contains(scopeNode)) {
-                    analyseConstant(((ConstantNode) scopeNode).getValue());
-                    set.add((ConstantNode) scopeNode);
+                if (!arrayConstantNodes.contains(scopeNode)) {
+                    analyseConstant(scopeNode);
                 }
             }
         }
