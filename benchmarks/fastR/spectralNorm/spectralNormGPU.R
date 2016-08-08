@@ -6,7 +6,7 @@
 args <- commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
-	stop("No input size passed. Usage: ./spectralNorm.R <size> ")
+	stop("No input size passed. Usage: ./spectralNormGPU.R <size> ")
 } 
 
 size <- as.integer(args[1])
@@ -48,9 +48,9 @@ benchmark <- function(inputSize) {
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
 
-		resultA <- mapply(spectralNorm1, x);
+		resultA <- marawacc.testGPU(x, spectralNorm1);
 		v <<- resultA
-		resultB <- mapply(spectralNorm2, x) 
+		resultB <- marawacc.testGPU(x, spectralNorm2) 
 
 		end <- nanotime()
 		total <- end - start
