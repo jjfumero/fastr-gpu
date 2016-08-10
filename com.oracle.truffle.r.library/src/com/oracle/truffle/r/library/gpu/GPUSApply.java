@@ -37,7 +37,6 @@ import uk.ac.ed.jpai.graal.GraalGPUExecutor;
 import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
 import uk.ac.ed.marawacc.graal.CompilerUtils;
 
-import com.oracle.graal.nodes.ConstantNode;
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.truffle.OptimizedCallTarget;
 import com.oracle.truffle.api.RootCallTarget;
