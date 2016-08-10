@@ -396,7 +396,7 @@ public final class FunctionDefinitionNode extends RRootNode implements RSyntaxNo
     private Object gpuExecution(VirtualFrame vf) {
         try {
             Object result = body.execute(vf);
-            normalExit.enter();
+            // normalExit.enter();
             return result;
         } catch (ReturnException ex) {
             return ex.getResult();

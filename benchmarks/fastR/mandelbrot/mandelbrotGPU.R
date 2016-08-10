@@ -21,23 +21,20 @@ benchmark <- function(inputSize) {
 	mandelbrotFunction <- function(indexIDX, indexJDX) {
 
 		Zr <- 0
-        Zi <- 0;
+        Zi <- 0
         Cr <- (1 * indexJDX * space - 1.5)
-        Ci <- (1 * indexIDX * space - 1.0);
+        Ci <- (1 * indexIDX * space - 1.0)
 
         ZrN <- 0
         ZiN <- 0
         y <- 0
 
-		for (i in 1:iterations) {
-			if (ZiN + ZrN <= 4.0) {
-				break;
-			}
-			Zi <- 2.0 * Zr * Zi + Ci;
-            Zr <- 1 * ZrN - ZiN + Cr;
-            ZiN <- Zi * Zi;
-            ZrN <- Zr * Zr;
-			y <<- i
+		while ((y < iterations) && ((ZiN + ZrN) <= 4.0)) { 
+			Zi <- 2.0 * Zr * Zi + Ci
+            Zr <- 1 * ZrN - ZiN + Cr
+            ZiN <- Zi * Zi
+            ZrN <- Zr * Zr
+			y <- y + 1
 		}
 
 		result <- ((y * 255) / iterations);
