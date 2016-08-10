@@ -62,6 +62,15 @@ function runDFT {
     done
 }
 
+function runSpectralNorm {
+	logFile=$1
+    for size in 4194304 8388608 16777216 33554432 
+    do
+        echo "Running dft with : $size" 
+        ./runbench benchmarks/fastR/spectralNorm/$2 $size >> $logFile
+    done
+}
+
 function runCPU() {
 	echo "SAXPY"
 	getDate
@@ -92,6 +101,11 @@ function runCPU() {
 	getDate
     	logFile="fastr_dftLogs_$NOW.log"	
 	runDFT $logFile dft.R
+
+	echo "SpectralNorm"
+	getDate
+    	logFile="fastr_spectralNormLogs_$NOW.log"	
+	runSpectralNorm $logFile spectralNorm.R
 }
 
 function runGPU() {
@@ -124,7 +138,12 @@ function runGPU() {
 	echo "DFT"
 	getDate
 	logFile="astx_dftLogs_$NOW.log"
-	runNBody $logFile dftGPU.R
+	runDFT $logFile dftGPU.R
+
+	echo "SpectralNorm"
+	getDate
+	logFile="astx_spectralNormLogs_$NOW.log"
+	runSpectralNorm $logFile spectralNormGPU.R
 }
 
 # ###############################################
