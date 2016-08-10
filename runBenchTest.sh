@@ -5,4 +5,6 @@
 ./run benchmarks/fastR/nbody/nbodyGPU.R 100
 ./run benchmarks/fastR/dft/dftGPU.R 100
 ./run benchmarks/fastR/spectralNorm/spectralNormGPU.R 100
-
+./run benchmarks/fastR/pi/piGPU.R 100
+./run benchmarks/fastR/euler/eulerGPU.R 100
+./run benchmarks/fastR/mandelbrot/mandelbrotGPU.R 100
