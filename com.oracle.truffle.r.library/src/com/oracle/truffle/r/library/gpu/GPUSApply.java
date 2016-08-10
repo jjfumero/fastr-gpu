@@ -22,6 +22,7 @@
  */
 package com.oracle.truffle.r.library.gpu;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
@@ -245,8 +246,12 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         for (int i = 1; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
-            Object val = callTarget.call(argsPackage);
-            output.add(val);
+            try {
+                Object val = callTarget.call(argsPackage);
+                output.add(val);
+            } catch (Exception e) {
+                System.out.println("parse exception");
+            }
 
             /*
              * Check if the graph is prepared for GPU compilation and invoke the compilation.

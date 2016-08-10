@@ -36,7 +36,8 @@ public class ASTLexicalScoping {
         LIST("list"),
         RETURN("return"),
         RPAREN("["),
-        RDOUBLEPAREN("[[");
+        RDOUBLEPAREN("[["),
+        AMPERSAND("&&");
 
         String lexeme;
 
