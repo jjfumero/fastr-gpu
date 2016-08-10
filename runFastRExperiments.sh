@@ -66,12 +66,32 @@ function runSpectralNorm {
 	logFile=$1
     for size in 4194304 8388608 16777216 33554432 
     do
-        echo "Running dft with : $size" 
+        echo "Running spectralNorm with : $size" 
         ./runbench benchmarks/fastR/spectralNorm/$2 $size >> $logFile
     done
 }
 
+function runEuler {
+	logFile=$1
+    for size in 32 64 128 256 512 
+    do
+        echo "Running euler with : $size" 
+        ./runbench benchmarks/fastR/euler/$2 $size >> $logFile
+    done
+}
+
+function runMandelbrot {
+	logFile=$1
+    for size in 262144 524288 1048576 2097152
+    do
+        echo "Running mandelbrot with : $size" 
+        ./runbench benchmarks/fastR/mandelbrot/$2 $size >> $logFile
+    done
+}
+
 function runCPU() {
+	echo " ====================================" 
+	echo "CPU"
 	echo "SAXPY"
 	getDate
 	logFile="fastr_saxpyLogs_$NOW.log"	
@@ -106,9 +126,21 @@ function runCPU() {
 	getDate
     	logFile="fastr_spectralNormLogs_$NOW.log"	
 	runSpectralNorm $logFile spectralNorm.R
+
+	echo "Euler"
+	getDate
+    	logFile="fastr_eulerLogs_$NOW.log"	
+	runEuler $logFile euler.R
+
+	echo "Mandelbrot"
+	getDate
+    	logFile="fastr_mandelbrotLogs_$NOW.log"	
+	runMandelbrot $logFile mandelbrot.R
 }
 
 function runGPU() {
+	echo " ====================================" 
+	echo "GPU - OpenCL"
 	echo "SAXPY"
 	getDate
     	logFile="astx_saxpyLogs_$NOW.log"
@@ -144,6 +176,11 @@ function runGPU() {
 	getDate
 	logFile="astx_spectralNormLogs_$NOW.log"
 	runSpectralNorm $logFile spectralNormGPU.R
+
+	echo "Mandelbrot"
+	getDate
+	logFile="astx_mandelbrotLogs_$NOW.log"
+	runMandelbrot $logFile mandelbrotGPU.R
 }
 
 # ###############################################
