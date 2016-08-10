@@ -22,7 +22,6 @@
  */
 package com.oracle.truffle.r.library.gpu;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
