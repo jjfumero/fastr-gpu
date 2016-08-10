@@ -312,11 +312,91 @@ public final class FunctionDefinitionNode extends RRootNode implements RSyntaxNo
         }
     }
 
-    private Object gpuExecution(VirtualFrame vf) {
-
+    @SuppressWarnings("unused")
+    private Object gpuExecutionExperimental(VirtualFrame vf) {
+        /*
+         * It might be possible to only record this iff a handler is installed, by using the
+         * RArguments array.
+         */
+        Object handlerStack = RErrorHandling.getHandlerStack();
+        Object restartStack = RErrorHandling.getRestartStack();
+        boolean runOnExitHandlers = true;
         try {
+            // verifyEnclosingAssumptions(vf);
+            // setupS3Slots(vf);
             Object result = body.execute(vf);
             // normalExit.enter();
+            return result;
+        } catch (ReturnException ex) {
+            // returnProfile.enter();
+            int depth = ex.getDepth();
+            if (depth != -1 && RArguments.getDepth(vf) != depth) {
+                throw ex;
+            } else {
+                return ex.getResult();
+            }
+        } catch (BreakException e) {
+            // breakProfile.enter();
+            throw e;
+        } catch (NextException e) {
+            // nextProfile.enter();
+            throw e;
+        } catch (RError e) {
+            // CompilerDirectives.transferToInterpreter();
+            throw e;
+        } catch (DebugExitException | QuitException | BrowserQuitException e) {
+            /*
+             * These relate to the debugging support. exitHandlers must be suppressed and the
+             * exceptions must pass through unchanged; they are not errors
+             */
+            // CompilerDirectives.transferToInterpreter();
+            runOnExitHandlers = false;
+            throw e;
+        } catch (Throwable e) {
+            // CompilerDirectives.transferToInterpreter();
+            runOnExitHandlers = false;
+            throw e instanceof RInternalError ? (RInternalError) e : new RInternalError(e, e.toString());
+        } finally {
+            /*
+             * Although a user function may throw an exception from an onExit handler, all
+             * evaluations are wrapped in an anonymous function (see REngine.makeCallTarget) that
+             * has no exit handlers (by fiat), so any exceptions from onExits handlers will be
+             * caught above.
+             */
+            if (argPostProcess != null) {
+                // resetArgs.enter();
+                argPostProcess.execute(vf);
+            }
+            if (runOnExitHandlers) {
+                RErrorHandling.restoreStacks(handlerStack, restartStack);
+                if (onExitSlot != null && onExitProfile.profile(onExitSlot.hasValue(vf))) {
+                    if (onExitExpressionCache == null) {
+                        // CompilerDirectives.transferToInterpreterAndInvalidate();
+                        onExitExpressionCache = insert(InlineCacheNode.createExpression(3));
+                    }
+                    ArrayList<Object> current = getCurrentOnExitList(vf, onExitSlot.executeFrameSlot(vf));
+                    // Preserve the visibility state as may be changed by the on.exit
+                    boolean isVisible = RContext.getInstance().isVisible();
+                    try {
+                        for (Object expr : current) {
+                            if (!(expr instanceof RNode)) {
+                                RInternalError.shouldNotReachHere("unexpected type for on.exit entry");
+                            }
+                            RNode node = (RNode) expr;
+                            onExitExpressionCache.execute(vf, node);
+                        }
+                    } finally {
+                        RContext.getInstance().setVisible(isVisible);
+                    }
+                }
+            }
+        }
+    }
+
+    private Object gpuExecution(VirtualFrame vf) {
+        try {
+            Object result = body.execute(vf);
+            normalExit.enter();
             return result;
         } catch (ReturnException ex) {
             return ex.getResult();
@@ -335,6 +415,7 @@ public final class FunctionDefinitionNode extends RRootNode implements RSyntaxNo
         VirtualFrame vf = substituteFrame ? new SubstituteVirtualFrame((MaterializedFrame) frame.getArguments()[0]) : frame;
 
         if (gpuExecution) {
+            // return gpuExecutionExperimental(vf);
             return gpuExecution(vf);
         } else {
             return cpuExecution(vf);
