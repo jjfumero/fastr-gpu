@@ -53,6 +53,7 @@ import com.oracle.truffle.r.library.gpu.MarawaccReduceBuiltin;
 import com.oracle.truffle.r.library.gpu.MarawaccSapplyBuiltin;
 import com.oracle.truffle.r.library.gpu.MarawaccTerminalReduceBuiltin;
 import com.oracle.truffle.r.library.gpu.OCLVectorMulBuiltinNodeGen;
+import com.oracle.truffle.r.library.gpu.PArrayBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.intrinsics.RRandomBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.nodes.utils.RNanoTimeBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.tuples.ASTxTuple2NodeGen;
@@ -177,9 +178,16 @@ public abstract class FastR extends RBuiltinNode {
                 return OCLVectorMulBuiltinNodeGen.create();
             case "marawacc.init":
                 return MarawaccInitilizationNodeGen.create();
-
             case "builtin.random":
                 return RRandomBuiltinNodeGen.create();
+
+                /*
+                 * ***************************************************
+                 * PArrays: interface for marawacc parrays
+                 * ***************************************************
+                 */
+            case "marawacc.parray":
+                return PArrayBuiltinNodeGen.create();
 
                 /*
                  * ***************************************************

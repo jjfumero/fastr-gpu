@@ -40,6 +40,7 @@ export(marawacc.reduction)	# Blocking reduction
 export(marawacc.vectorMul)
 export(marawacc.testGPU)
 export(marawacc.gpusapply)
+export(marawacc.parray)		# PArray transformation
 
 # Utilities
 export(nanotime)

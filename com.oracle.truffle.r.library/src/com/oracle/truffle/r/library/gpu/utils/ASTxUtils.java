@@ -732,9 +732,13 @@ public class ASTxUtils {
         PArray parray = null;
         switch (type) {
             case INT:
+            case RIntegerSequence:
+            case RIntVector:
                 parray = new PArray<>(input.getLength(), TypeFactory.Integer());
                 break;
             case DOUBLE:
+            case RDoubleSequence:
+            case RDoubleVector:
                 parray = new PArray<>(input.getLength(), TypeFactory.Double());
                 break;
             case BOOLEAN:

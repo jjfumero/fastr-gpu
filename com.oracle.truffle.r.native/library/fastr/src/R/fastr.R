@@ -149,6 +149,8 @@ fastr.trace <- function(what, tracer, exit, at, print, signature, where, edit) {
 #  ################################################################
 #	  		        Marawacc- GPU/CPU Intrinsics 		          #
 #  ################################################################
+
+# Generic builtins (utils)
 nanotime <- function() {
 	.FastR(.NAME="builtin.nanotime")
 }
@@ -157,6 +159,7 @@ random <- function(x) {
 	.FastR(.NAME="builtin.random", x)
 }
 
+# OpenCL functions
 marawacc.init <- function() {
 	.FastR(.NAME="marawacc.init")
 }
@@ -177,6 +180,11 @@ marawacc.gpusapply <- function(input, userFunction, ...) {
 	.FastR(.NAME="marawacc.testGPU", input, userFunction, ...)
 }
 
+marawacc.parray <- function(rArray) {
+	.FastR(.NAME="marawacc.parray", rArray)
+}
+
+# Multi-thread marawacc interface 
 marawacc.map <- function(input, userFunction, nThreads=1, ...) {
 	.FastR(.NAME="marawacc.map", input, userFunction, nThreads, ...)
 }
