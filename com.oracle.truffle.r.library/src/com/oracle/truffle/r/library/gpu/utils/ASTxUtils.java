@@ -181,8 +181,7 @@ public class ASTxUtils {
         }
     }
 
-    @SuppressWarnings("rawtypes")
-    public static Object[] createRArguments(int nArgs, RFunction function, PArray input, PArray[] args, String[] nameArgs, int idx) {
+    public static Object[] createRArguments(int nArgs, RFunction function, PArray<?> input, PArray<?>[] args, String[] nameArgs, int idx) {
         // prepare args for the function with varargs
         Object[] argsRFunction = new Object[nArgs];
         argsRFunction[0] = input.get(idx);
@@ -968,14 +967,13 @@ public class ASTxUtils {
         return isPArray;
     }
 
-    @SuppressWarnings("rawtypes")
-    public static PArray<?> marshalUpdateReferenceWithTuples(PArray input, PArray[] additionalArgs, TypeInfoList infoList, int totalSize) {
+    public static PArray<?> marshalUpdateReferenceWithTuples(PArray<?> input, PArray<?>[] additionalArgs, TypeInfoList infoList, int totalSize) {
         String returns = composeReturnType(infoList);
-        PArray parray = new PArray<>(totalSize, TypeFactory.Tuple(returns), false);
+        PArray<?> parray = new PArray<>(totalSize, TypeFactory.Tuple(returns), false);
         boolean sequence = isFullPArraySequence(input, additionalArgs);
         switch (infoList.size()) {
             case 2:
-                PArray b = additionalArgs[0];
+                PArray<?> b = additionalArgs[0];
                 parray.setBuffer(0, input.getArrayReference(), input.isSequence());
                 parray.setBuffer(1, b.getArrayReference(), b.isSequence());
                 parray.setSequence(sequence);
@@ -1026,8 +1024,7 @@ public class ASTxUtils {
         return parray;
     }
 
-    @SuppressWarnings("rawtypes")
-    public static PArray<?> marshalWithReferences(PArray input, PArray[] additionalArgs, TypeInfoList infoList, int totalSize) {
+    public static PArray<?> marshalWithReferences(PArray<?> input, PArray<?>[] additionalArgs, TypeInfoList infoList, int totalSize) {
         if (additionalArgs == null) {
             return input;
         } else {
