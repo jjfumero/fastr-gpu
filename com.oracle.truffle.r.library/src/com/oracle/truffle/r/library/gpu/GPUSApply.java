@@ -445,7 +445,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         int totalSize = input.size();
         if (input.isSequence()) {
             totalSize = input.getTotalSize();
-        } else {
+        } else if (additionalArgs != null) {
             for (PArray<?> p : additionalArgs) {
                 if (p.isSequence()) {
                     totalSize = p.getTotalSize();
