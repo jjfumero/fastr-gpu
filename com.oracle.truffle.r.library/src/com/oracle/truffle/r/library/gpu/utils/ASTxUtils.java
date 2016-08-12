@@ -167,6 +167,35 @@ public class ASTxUtils {
         return argsPackage;
     }
 
+    public static Object getFromSequence(PArray<?> input, int idx) {
+        if (input.getClassObject() == Integer.class) {
+            @SuppressWarnings("unchecked")
+            int value = ((PArray<Integer>) input).get(0) + ((PArray<Integer>) input).get(1) * idx;
+            return value;
+        } else if (input.getClassObject() == Double.class) {
+            @SuppressWarnings("unchecked")
+            double value = ((PArray<Double>) input).get(0) + ((PArray<Double>) input).get(1) * idx;
+            return value;
+        } else {
+            throw new RuntimeException("Error, data type not supported yet");
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static Object[] createRArguments(int nArgs, RFunction function, PArray input, PArray[] args, String[] nameArgs, int idx) {
+        // prepare args for the function with varargs
+        Object[] argsRFunction = new Object[nArgs];
+        argsRFunction[0] = input.get(idx);
+        if (args != null) {
+            for (int i = 0; i < args.length; i++) {
+                argsRFunction[i + 1] = args[i].get(idx);
+            }
+        }
+        // Create the package
+        Object[] argsPackage = RArguments.create(function, null, null, 0, argsRFunction, ArgumentsSignature.get(nameArgs), null);
+        return argsPackage;
+    }
+
     public static Object[] createRArguments(int nArgs, RFunction function, Object input, RAbstractVector[] args, String[] nameArgs, int idx) {
         // prepare args for the function with varargs
         Object[] argsRFunction = new Object[nArgs];
@@ -311,6 +340,20 @@ public class ASTxUtils {
         return type;
     }
 
+    public static TypeInfo typeInferenceWithPArrays(PArray<?> input) throws MarawaccTypeException {
+        TypeInfo type = null;
+        if (input.getClassObject() == Integer.class) {
+            type = TypeInfo.INT;
+        } else if (input.getClassObject() == Double.class) {
+            type = TypeInfo.DOUBLE;
+        } else if (input.getClassObject() == Boolean.class) {
+            type = TypeInfo.BOOLEAN;
+        } else {
+            throw new MarawaccTypeException("Data type not supported: " + input.getClass());
+        }
+        return type;
+    }
+
     public static TypeInfo typeInference(RAbstractVector input) throws MarawaccTypeException {
         TypeInfo type = null;
         if (input instanceof RIntSequence) {
@@ -341,6 +384,17 @@ public class ASTxUtils {
     }
 
     public static TypeInfoList typeInferenceWithPArray(RAbstractVector input, RAbstractVector[] additionalArgs) throws MarawaccTypeException {
+        TypeInfoList list = new TypeInfoList();
+        list.add(typeInferenceWithPArrays(input));
+        if (additionalArgs != null) {
+            for (int i = 0; i < additionalArgs.length; i++) {
+                list.add(typeInferenceWithPArrays(additionalArgs[i]));
+            }
+        }
+        return list;
+    }
+
+    public static TypeInfoList typeInferenceWithPArray(PArray<?> input, PArray<?>[] additionalArgs) throws MarawaccTypeException {
         TypeInfoList list = new TypeInfoList();
         list.add(typeInferenceWithPArrays(input));
         if (additionalArgs != null) {
@@ -901,6 +955,37 @@ public class ASTxUtils {
         }
     }
 
+    public static boolean isPArraySequence(PArray<?> array) {
+        return array.isSequence();
+    }
+
+    public static boolean isFullPArraySequence(PArray<?> array, PArray<?>[] additionalArgs) {
+        boolean isPArray = false;
+        isPArray |= isPArraySequence(array);
+        for (PArray<?> p : additionalArgs) {
+            isPArray |= isPArraySequence(p);
+        }
+        return isPArray;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static PArray<?> marshalUpdateReferenceWithTuples(PArray input, PArray[] additionalArgs, TypeInfoList infoList, int totalSize) {
+        String returns = composeReturnType(infoList);
+        PArray parray = new PArray<>(totalSize, TypeFactory.Tuple(returns), false);
+        boolean sequence = isFullPArraySequence(input, additionalArgs);
+        switch (infoList.size()) {
+            case 2:
+                PArray b = additionalArgs[0];
+                parray.setBuffer(0, input.getArrayReference(), input.isSequence());
+                parray.setBuffer(1, b.getArrayReference(), b.isSequence());
+                parray.setSequence(sequence);
+                parray.setTotalSize(totalSize);
+                return parray;
+            default:
+                throw new MarawaccRuntimeTypeException("Tuple not supported yet: " + infoList.size() + " [ " + __LINE__.print() + "]");
+        }
+    }
+
     /**
      * Given the RVector, it creates the PArray. For future work is to extend the R data types to
      * include in the object layout the PArray information.
@@ -939,6 +1024,15 @@ public class ASTxUtils {
             parray = marshalUpdateReferenceWithTuples(input, additionalArgs, infoList);
         }
         return parray;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static PArray<?> marshalWithReferences(PArray input, PArray[] additionalArgs, TypeInfoList infoList, int totalSize) {
+        if (additionalArgs == null) {
+            return input;
+        } else {
+            return marshalUpdateReferenceWithTuples(input, additionalArgs, infoList, totalSize);
+        }
     }
 
     /**

@@ -269,6 +269,54 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return output;
     }
 
+    @SuppressWarnings("rawtypes")
+    private ArrayList<Object> runJavaOpenCLJIT(PArray input, RootCallTarget callTarget, RFunction function, int nArgs, PArray[] additionalArgs, String[] argsName,
+                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int totalSize) {
+
+        ArrayList<Object> output = new ArrayList<>();
+        output.add(firstValue);
+
+        callTarget.generateIDForGPU();
+        // Set the GPU execution to true;
+        ((FunctionDefinitionNode) function.getRootNode()).setGPUFlag(true);
+
+        StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
+        GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
+
+        if (graphToCompile != null && gpuCompilationUnit != null) {
+            // Get the compiled code from the cache
+            if (ASTxOptions.debugCache) {
+                System.out.println("[MARAWACC-ASTX] Getting the GPU binary from the cache");
+            }
+            return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
+        }
+
+        for (int i = 1; i < totalSize; i++) {
+            Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
+            try {
+                Object val = callTarget.call(argsPackage);
+                output.add(val);
+            } catch (Exception e) {
+                System.out.println("parse exception");
+            }
+
+            /*
+             * Check if the graph is prepared for GPU compilation and invoke the compilation.
+             */
+            if (graphToCompile != null && gpuCompilationUnit == null) {
+                // Get the Structured Graph and compile it for GPU
+
+                if (ASTxOptions.debug) {
+                    System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU");
+                }
+
+                gpuCompilationUnit = compileForMarawaccBackend(inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, firstValue, interoperable, lexicalScopes);
+                return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
+            }
+        }
+        return output;
+    }
+
     private static TypeInfo obtainTypeInfo(Object value) {
         TypeInfo outputType = null;
         try {
@@ -363,6 +411,17 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return inputTypeList;
     }
 
+    private static TypeInfoList createTypeInfoListForInputWithPArrays(PArray<?> input, PArray<?>[] additionalArgs) {
+        TypeInfoList inputTypeList = null;
+        try {
+            inputTypeList = ASTxUtils.typeInferenceWithPArray(input, additionalArgs);
+        } catch (MarawaccTypeException e) {
+            // TODO: DEOPTIMIZE
+            e.printStackTrace();
+        }
+        return inputTypeList;
+    }
+
     private static PArray<?> createPArrays(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList inputTypeList) {
         PArray<?> inputPArrayFormat = null;
         if (ASTxOptions.usePArrays) {
@@ -381,6 +440,29 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return inputPArrayFormat;
     }
 
+    @SuppressWarnings("rawtypes")
+    private static int getSize(PArray input, PArray[] additionalArgs) {
+        int totalSize = input.size();
+        if (input.isSequence()) {
+            totalSize = input.getTotalSize();
+        } else {
+            for (PArray<?> p : additionalArgs) {
+                if (p.isSequence()) {
+                    totalSize = p.getTotalSize();
+                    break;
+                }
+            }
+        }
+        return totalSize;
+    }
+
+    @SuppressWarnings("rawtypes")
+    private static PArray<?> createPArrays(PArray input, PArray[] additionalArgs, TypeInfoList inputTypeList) {
+        int totalSize = getSize(input, additionalArgs);
+        PArray<?> inputPArrayFormat = ASTxUtils.marshalWithReferences(input, additionalArgs, inputTypeList, totalSize);
+        return inputPArrayFormat;
+    }
+
     @SuppressWarnings({"rawtypes"})
     private RAbstractVector getResult(TypeInfo outputType, ArrayList<Object> result) {
         if (!gpuExecution) {
@@ -393,6 +475,60 @@ public final class GPUSApply extends RExternalBuiltinNode {
             // Real un-marshal
             return ASTxUtils.unMarshallResultFromPArrays(outputType, (PArray) result.get(0));
         }
+    }
+
+    private RAbstractVector computeOpenCLSApply(PArray<?> input, RFunction function, RootCallTarget target, PArray<?>[] additionalArgs, Object[] lexicalScopes) {
+
+        // Type inference -> execution of the first element
+        int nArgs = ASTxUtils.getNumberOfArguments(function);
+        String[] argsName = ASTxUtils.getArgumentsNames(function);
+        Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, 0);
+        Object value = function.getTarget().call(argsPackage);
+
+        // Inter-operable objects
+        TypeInfo outputType = obtainTypeInfo(value);
+        InteropTable interop = obtainInterop(outputType);
+
+        Class<?>[] typeObject = createListSubTypes(interop, value);
+        Interoperable interoperable = (interop != null) ? new Interoperable(interop, typeObject) : null;
+
+        int totalSize = getSize(input, additionalArgs);
+
+        TypeInfoList inputTypeList = createTypeInfoListForInputWithPArrays(input, additionalArgs);
+
+        // Marshal
+        long startMarshal = System.nanoTime();
+        PArray<?> inputPArrayFormat = createPArrays(input, additionalArgs, inputTypeList);
+        long endMarshal = System.nanoTime();
+
+        // Execution
+        long startExecution = System.nanoTime();
+        ArrayList<Object> result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes, totalSize);
+        long endExecution = System.nanoTime();
+
+        // Get the result (un-marshal)
+        long startUnmarshal = System.nanoTime();
+        RAbstractVector resultFastR = getResult(outputType, result);
+        long endUnmarshal = System.nanoTime();
+
+        // Print profiler
+        if (ASTxOptions.profiler) {
+            // Marshal
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "start", startMarshal);
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end", endMarshal);
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end-start", (endMarshal - startMarshal));
+
+            // Execution
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "start", startExecution);
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "end", endExecution);
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "end-start", (endExecution - startExecution));
+
+            // Unmarshal
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "start", startUnmarshal);
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "end", endUnmarshal);
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "end-start", (endUnmarshal - startUnmarshal));
+        }
+        return resultFastR;
     }
 
     private RAbstractVector computeOpenCLSApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes) {
@@ -452,6 +588,28 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return resultFastR;
     }
 
+    private static RAbstractVector[] getRArrayWithAdditionalArguments(RArgsValuesAndNames args) {
+        RAbstractVector[] additionalInputs = null;
+        if (args.getLength() > 2) {
+            additionalInputs = new RAbstractVector[args.getLength() - 2];
+            for (int i = 0; i < additionalInputs.length; i++) {
+                additionalInputs[i] = (RAbstractVector) args.getArgument(i + 2);
+            }
+        }
+        return additionalInputs;
+    }
+
+    private static PArray<?>[] getPArrayWithAdditionalArguments(RArgsValuesAndNames args) {
+        PArray<?>[] additionalInputs = null;
+        if (args.getLength() > 2) {
+            additionalInputs = new PArray[args.getLength() - 2];
+            for (int i = 0; i < additionalInputs.length; i++) {
+                additionalInputs[i] = (PArray<?>) args.getArgument(i + 2);
+            }
+        }
+        return additionalInputs;
+    }
+
     @Override
     public Object call(RArgsValuesAndNames args) {
 
@@ -462,8 +620,21 @@ public final class GPUSApply extends RExternalBuiltinNode {
         }
 
         long start = System.nanoTime();
-        RAbstractVector input = (RAbstractVector) args.getArgument(0);
+        Object firstParam = args.getArgument(0);
         RFunction function = (RFunction) args.getArgument(1);
+
+        RAbstractVector input = null;
+        PArray<?> parrayInput = null;
+        boolean parrayFormat = false;
+
+        if (firstParam instanceof RAbstractVector) {
+            input = (RAbstractVector) firstParam;
+        } else if (firstParam instanceof PArray) {
+            parrayFormat = true;
+            parrayInput = (PArray<?>) firstParam;
+        } else {
+            throw new RuntimeException("Vector expected");
+        }
 
         if (ASTxOptions.printAST) {
             printAST(function);
@@ -476,16 +647,16 @@ public final class GPUSApply extends RExternalBuiltinNode {
         // Get the callTarget from the cache
         RootCallTarget target = RGPUCache.INSTANCE.lookup(function);
 
+        RAbstractVector mapResult = null;
         // Prepare all inputs in an array of Objects
-        RAbstractVector[] additionalInputs = null;
-        if (args.getLength() > 2) {
-            additionalInputs = new RAbstractVector[args.getLength() - 2];
-            for (int i = 0; i < additionalInputs.length; i++) {
-                additionalInputs[i] = (RAbstractVector) args.getArgument(i + 2);
-            }
+        if (!parrayFormat) {
+            RAbstractVector[] additionalInputs = getRArrayWithAdditionalArguments(args);
+            mapResult = computeOpenCLSApply(input, function, target, additionalInputs, lexicalScopes);
+        } else {
+            PArray<?>[] additionalInputs = getPArrayWithAdditionalArguments(args);
+            mapResult = computeOpenCLSApply(parrayInput, function, target, additionalInputs, lexicalScopes);
         }
 
-        RAbstractVector mapResult = computeOpenCLSApply(input, function, target, additionalInputs, lexicalScopes);
         long end = System.nanoTime();
 
         if (ASTxOptions.profiler) {

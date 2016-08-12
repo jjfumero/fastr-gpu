@@ -24,16 +24,21 @@ package com.oracle.truffle.r.library.gpu.types;
 
 public enum TypeInfo {
 
+    // FastR specific
     RIntegerSequence("Integer", "RIntSequence"),
     RIntVector("Integer", "RIntVector"),
     RDoubleSequence("Double", "RDoubleSequence"),
     RDoubleVector("Double", "RDoubleVector"),
+    LIST("RList", "list"),
 
+    // Basic data types
     INT("Integer", "int"),
     DOUBLE("Double", "double"),
+    FLOAT("Float", "float"),
+    SHORT("Short", "short"),
+    LONG("Long", "long"),
     DOUBLE_VECTOR("Double[]", "double[]"),
     BOOLEAN("Boolean", "boolean"),
-    LIST("RList", "list"),
 
     // Tuples
     TUPLE2("Tuple2", "T"),
@@ -51,16 +56,16 @@ public enum TypeInfo {
 
     NULL("null", "null"); // Not used, just from R side
 
-    private String openCLTypeString;
+    private String javaTypeString;
     private String genericType;
 
     TypeInfo(String name, String type) {
-        this.openCLTypeString = name;
+        this.javaTypeString = name;
         this.genericType = type;
     }
 
     public String getJavaType() {
-        return this.openCLTypeString;
+        return this.javaTypeString;
     }
 
     public String getGenericType() {
@@ -69,6 +74,6 @@ public enum TypeInfo {
 
     @Override
     public String toString() {
-        return openCLTypeString + " : " + genericType;
+        return javaTypeString + " : " + genericType;
     }
 }

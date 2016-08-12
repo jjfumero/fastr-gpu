@@ -75,7 +75,7 @@ public class ASTxOptions {
      * Optimise {@link RSequence} for OpenCL. No buffer copy, just logic for computing elements from
      * start and stride.
      */
-    public static boolean optimizeRSequence = getBoolean("astx.marawacc.optimizeRSequence", true);
+    public static boolean optimizeRSequence = getBoolean("astx.marawacc.optimizeRSequence", false);
 
     /**
      * Get profiler information and show when the R VM is finalising.
