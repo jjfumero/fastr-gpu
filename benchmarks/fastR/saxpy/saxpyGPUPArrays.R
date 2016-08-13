@@ -1,12 +1,12 @@
 
 ## AST-X Compiler
-## Saxpy benchmark, baseline 
+## Saxpy benchmark, GPU version
 
 ## Parse arguments
 args <- commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
-	stop("No input size passed. Usage: ./saxpy.R <size> ")
+	stop("No input size passed. Usage: ./saxpyGPU.R <size> ")
 } 
 
 size <- as.integer(args[1])
@@ -17,27 +17,28 @@ REPETITIONS <- 11
 benchmark <- function(inputSize) {
 
 	saxpyFunction <- function(x, y) {
-		result <- (alpha * x) + y;
+		result <- (0.12 * x) + y;
 		return (result);
 	}	
 
-	alpha <- 0.12
-
-	x <- 0:size;
-	y <- 0:size;
+	x <- 1:size;
+	y <- 1:size
 
 	# Seq code
-	resultSeq <- alpha * x + y
-	correct <- TRUE
+	resultSeq <- 0.12 * x + y
+
+	x <- marawacc.parray(x)
+	y <- marawacc.parray(y)
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
-		result <- mapply(saxpyFunction, x, y);
+		result <- marawacc.gpusapply(x, saxpyFunction, y);
 		total <- nanotime() - start
 		print(paste("Total Time: ", total))
 
 		# check result
 		nonError <- identical(resultSeq, result)
+		correct <- TRUE
 		if (!nonError) {
 			for (i in seq(result)) {
 				if (abs(resultSeq[i] - result[i]) > 0.1) {
@@ -48,7 +49,8 @@ benchmark <- function(inputSize) {
 			}
 			if (correct) {
 				print("Result is correct")
-			}	
+			}
+				
 		} else {
 			print("Result is correct")
 		}
@@ -57,7 +59,7 @@ benchmark <- function(inputSize) {
 }
 
 ## Main 
-print("FASTR CPU")
+print("ASTx GPU PARRAY")
 print(paste("SIZE:", size))
 benchmark(size)
 

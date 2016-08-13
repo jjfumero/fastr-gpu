@@ -80,7 +80,7 @@ public class ASTxOptions {
     /**
      * Get profiler information and show when the R VM is finalising.
      */
-    public static boolean profiler = getBoolean("astx.marawacc.profiler", false);
+    public static boolean profiler = getBoolean("astx.marawacc.profiler", true);
 
     private static boolean getBoolean(String property, boolean defaultValue) {
         if (System.getProperty(property) == null) {

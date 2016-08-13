@@ -11,7 +11,7 @@ if (length(args) == 0) {
 
 size <- as.integer(args[1])
 
-REPETITIONS <- 10
+REPETITIONS <- 11
 
 ## Lambda expression for the computation
 benchmark <- function(inputSize) {
@@ -31,7 +31,7 @@ benchmark <- function(inputSize) {
 		start <- nanotime()
 		result <- marawacc.gpusapply(x, saxpyFunction, y);
 		total <- nanotime() - start
-		print(total)
+		print(paste("Total Time: ", total))
 
 		# check result
 		nonError <- identical(resultSeq, result)

@@ -50,10 +50,10 @@ public abstract class PArrayBuiltinNode extends RExternalBuiltinNode.Arg1 {
             // Rsequence optimization
             parray = ASTxUtils.marshalWithReferencesAndSequenceOptimize(input, additionalArgs, inputTypeList);
         } else {
+            // Normal marshal (from RAbstractVector to PArray)
             parray = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
         }
 
-        System.out.println(parray);
         return parray;
     }
 }
