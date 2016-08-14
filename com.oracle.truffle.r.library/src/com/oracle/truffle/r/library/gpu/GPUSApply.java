@@ -483,11 +483,13 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
     private RAbstractVector computeOpenCLSApply(PArray<?> input, RFunction function, RootCallTarget target, PArray<?>[] additionalArgs, Object[] lexicalScopes) {
 
+        long s = System.nanoTime();
         // Type inference -> execution of the first element
         int nArgs = ASTxUtils.getNumberOfArguments(function);
         String[] argsName = ASTxUtils.getArgumentsNames(function);
         Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, 0);
         Object value = function.getTarget().call(argsPackage);
+        long e = System.nanoTime();
 
         // Inter-operable objects
         TypeInfo outputType = obtainTypeInfo(value);
@@ -499,6 +501,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
         int totalSize = getSize(input, additionalArgs);
 
         TypeInfoList inputTypeList = createTypeInfoListForInputWithPArrays(input, additionalArgs);
+
+        long e2 = System.nanoTime();
 
         // Marshal
         long startMarshal = System.nanoTime();
@@ -517,6 +521,10 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         // Print profiler
         if (ASTxOptions.profiler) {
+
+            Profiler.getInstance().writeInBuffer("FIRST", (e - s));
+            Profiler.getInstance().writeInBuffer("SECOND", (e2 - e));
+
             // Marshal
             Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "start", startMarshal);
             Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end", endMarshal);
@@ -574,6 +582,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         // Print profiler
         if (ASTxOptions.profiler) {
+
             // Marshal
             Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "start", startMarshal);
             Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end", endMarshal);
@@ -659,6 +668,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
             lexicalScopes = RGPUCache.INSTANCE.getCachedObjects(function).getLexicalScopeVars();
         }
 
+        long gpuCalling = System.nanoTime();
+
         RAbstractVector mapResult = null;
         // Prepare all inputs in an array of Objects
         if (!parrayFormat) {
@@ -672,6 +683,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         long end = System.nanoTime();
 
         if (ASTxOptions.profiler) {
+            Profiler.getInstance().writeInBuffer("gpu calling", (gpuCalling - start));
             Profiler.getInstance().writeInBuffer("gpu start-end", (end - start));
             Profiler.getInstance().writeInBuffer("gpu start", start);
             Profiler.getInstance().writeInBuffer("gpu end", end);
