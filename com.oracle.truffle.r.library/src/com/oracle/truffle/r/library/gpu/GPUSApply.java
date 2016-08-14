@@ -44,6 +44,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.r.library.gpu.cache.CacheGPUExecutor;
 import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
 import com.oracle.truffle.r.library.gpu.cache.RCacheObjects;
+import com.oracle.truffle.r.library.gpu.cache.RFunctionMetadata;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.nodes.utils.ASTLexicalScoping;
@@ -481,22 +482,38 @@ public final class GPUSApply extends RExternalBuiltinNode {
         }
     }
 
+    private static RFunctionMetadata getCachedFunctionMetadata(PArray<?> input, RFunction function, PArray<?>[] additionalArgs) {
+        if (RGPUCache.INSTANCE.getCachedObjects(function).getRFunctionMetadata() == null) {
+            // Type inference -> execution of the first element
+            int nArgs = ASTxUtils.getNumberOfArguments(function);
+            String[] argsName = ASTxUtils.getArgumentsNames(function);
+            Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, 0);
+            Object value = function.getTarget().call(argsPackage);
+
+            // Inter-operable objects
+            TypeInfo outputType = obtainTypeInfo(value);
+            InteropTable interop = obtainInterop(outputType);
+
+            Class<?>[] typeObject = createListSubTypes(interop, value);
+            Interoperable interoperable = (interop != null) ? new Interoperable(interop, typeObject) : null;
+
+            RFunctionMetadata metadata = new RFunctionMetadata(nArgs, argsName, argsPackage, value, outputType, interop, typeObject, interoperable);
+            RGPUCache.INSTANCE.getCachedObjects(function).insertRFuctionMetadata(metadata);
+            return metadata;
+        } else {
+            return RGPUCache.INSTANCE.getCachedObjects(function).getRFunctionMetadata();
+        }
+    }
+
     private RAbstractVector computeOpenCLSApply(PArray<?> input, RFunction function, RootCallTarget target, PArray<?>[] additionalArgs, Object[] lexicalScopes) {
 
         long s = System.nanoTime();
-        // Type inference -> execution of the first element
-        int nArgs = ASTxUtils.getNumberOfArguments(function);
-        String[] argsName = ASTxUtils.getArgumentsNames(function);
-        Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, 0);
-        Object value = function.getTarget().call(argsPackage);
-        long e = System.nanoTime();
-
-        // Inter-operable objects
-        TypeInfo outputType = obtainTypeInfo(value);
-        InteropTable interop = obtainInterop(outputType);
-
-        Class<?>[] typeObject = createListSubTypes(interop, value);
-        Interoperable interoperable = (interop != null) ? new Interoperable(interop, typeObject) : null;
+        RFunctionMetadata cachedFunctionMetadata = getCachedFunctionMetadata(input, function, additionalArgs);
+        int nArgs = cachedFunctionMetadata.getnArgs();
+        String[] argsName = cachedFunctionMetadata.getArgsName();
+        Object value = cachedFunctionMetadata.getFirstValue();
+        TypeInfo outputType = cachedFunctionMetadata.getOutputType();
+        Interoperable interoperable = cachedFunctionMetadata.getInteroperable();
 
         int totalSize = getSize(input, additionalArgs);
 
@@ -522,8 +539,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         // Print profiler
         if (ASTxOptions.profiler) {
 
-            Profiler.getInstance().writeInBuffer("FIRST", (e - s));
-            Profiler.getInstance().writeInBuffer("SECOND", (e2 - e));
+            Profiler.getInstance().writeInBuffer("FIRST", (e2 - s));
 
             // Marshal
             Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "start", startMarshal);

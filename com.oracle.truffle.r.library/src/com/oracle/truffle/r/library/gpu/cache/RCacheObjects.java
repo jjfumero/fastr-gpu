@@ -8,6 +8,8 @@ public class RCacheObjects {
     private String[] scopeVars;
     private Object[] lexicalScopeVars;
 
+    private RFunctionMetadata rfunctionMetadata;
+
     public RCacheObjects(RootCallTarget rootCallTarget) {
         this.rootCallTarget = rootCallTarget;
     }
@@ -30,4 +32,11 @@ public class RCacheObjects {
         return lexicalScopeVars;
     }
 
+    public void insertRFuctionMetadata(RFunctionMetadata metadata) {
+        this.rfunctionMetadata = metadata;
+    }
+
+    public RFunctionMetadata getRFunctionMetadata() {
+        return this.rfunctionMetadata;
+    }
 }
