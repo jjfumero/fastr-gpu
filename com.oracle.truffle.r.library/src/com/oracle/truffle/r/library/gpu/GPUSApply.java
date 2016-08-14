@@ -43,6 +43,7 @@ import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.r.library.gpu.cache.CacheGPUExecutor;
 import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
+import com.oracle.truffle.r.library.gpu.cache.RCacheObjects;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.nodes.utils.ASTLexicalScoping;
@@ -222,6 +223,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return scopeVars;
     }
 
+    // Run in the interpreter
     private ArrayList<Object> runJavaOpenCLJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes) {
 
@@ -243,6 +245,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
             return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
         }
 
+        // Run in the AST interpreter
         for (int i = 1; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             try {
@@ -255,9 +258,9 @@ public final class GPUSApply extends RExternalBuiltinNode {
             /*
              * Check if the graph is prepared for GPU compilation and invoke the compilation.
              */
+            graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
             if (graphToCompile != null && gpuCompilationUnit == null) {
                 // Get the Structured Graph and compile it for GPU
-
                 if (ASTxOptions.debug) {
                     System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU");
                 }
@@ -266,6 +269,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
                 return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
             }
         }
+
         return output;
     }
 
@@ -640,12 +644,20 @@ public final class GPUSApply extends RExternalBuiltinNode {
             printAST(function);
         }
 
-        // Lexical scoping from the AST level
-        String[] scopeVars = lexicalScopingAST(function);
-        Object[] lexicalScopes = ASTxUtils.getValueOfScopeArrays(scopeVars, function);
+        RootCallTarget target = null;
+        Object[] lexicalScopes = null;
 
         // Get the callTarget from the cache
-        RootCallTarget target = RGPUCache.INSTANCE.lookup(function);
+        if (!RGPUCache.INSTANCE.contains(function)) {
+            // Lexical scoping from the AST level
+            String[] scopeVars = lexicalScopingAST(function);
+            lexicalScopes = ASTxUtils.getValueOfScopeArrays(scopeVars, function);
+            RCacheObjects cachedObjects = new RCacheObjects(function.getTarget(), scopeVars, lexicalScopes);
+            target = RGPUCache.INSTANCE.updateCacheObjects(function, cachedObjects);
+        } else {
+            target = RGPUCache.INSTANCE.getCallTarget(function);
+            lexicalScopes = RGPUCache.INSTANCE.getCachedObjects(function).getLexicalScopeVars();
+        }
 
         RAbstractVector mapResult = null;
         // Prepare all inputs in an array of Objects

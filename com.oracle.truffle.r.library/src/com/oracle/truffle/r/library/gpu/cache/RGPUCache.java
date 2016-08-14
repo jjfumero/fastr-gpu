@@ -29,7 +29,7 @@ import com.oracle.truffle.r.runtime.data.RFunction;
 
 public class RGPUCache {
 
-    private HashMap<RFunction, RootCallTarget> cache;
+    private HashMap<RFunction, RCacheObjects> cache;
 
     public static final RGPUCache INSTANCE = new RGPUCache();
 
@@ -39,21 +39,39 @@ public class RGPUCache {
 
     public void insertFunction(RFunction function, RootCallTarget target) {
         if (!cache.containsKey(function)) {
-            cache.put(function, target);
+            RCacheObjects cachedObject = new RCacheObjects(target);
+            cache.put(function, cachedObject);
         }
     }
 
     public RootCallTarget lookup(RFunction function) {
         if (!cache.containsKey(function)) {
-            cache.put(function, function.getTarget());
+            RCacheObjects cachedObject = new RCacheObjects(function.getTarget());
+            cache.put(function, cachedObject);
         }
-        return cache.get(function);
+        return cache.get(function).getRootCallTarget();
     }
 
     public RootCallTarget getCallTarget(RFunction function) {
         if (cache.containsKey(function)) {
+            return cache.get(function).getRootCallTarget();
+        }
+        return null;
+    }
+
+    public boolean contains(RFunction function) {
+        return cache.containsKey(function);
+    }
+
+    public RCacheObjects getCachedObjects(RFunction function) {
+        if (cache.containsKey(function)) {
             return cache.get(function);
         }
         return null;
+    }
+
+    public RootCallTarget updateCacheObjects(RFunction function, RCacheObjects cachedObjects) {
+        cache.put(function, cachedObjects);
+        return cachedObjects.getRootCallTarget();
     }
 }

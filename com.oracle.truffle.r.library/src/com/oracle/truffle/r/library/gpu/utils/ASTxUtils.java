@@ -181,16 +181,48 @@ public class ASTxUtils {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    private static Object getSequence(PArray<?> parray, int idx) {
+        if (parray.getClassObject() == Integer.class) {
+            return (((PArray<Integer>) parray).get(0) + ((PArray<Integer>) parray).get(1) * idx);
+        } else if (parray.getClassObject() == Double.class) {
+            return (((PArray<Double>) parray).get(0) + ((PArray<Double>) parray).get(1) * idx);
+        } else {
+            throw new RuntimeException("");
+        }
+    }
+
+    /**
+     * Prepare {@link RArguments} for the function.
+     *
+     * @param nArgs
+     * @param function
+     * @param input
+     * @param args
+     * @param nameArgs
+     * @param idx
+     * @return Object[]
+     */
     public static Object[] createRArguments(int nArgs, RFunction function, PArray<?> input, PArray<?>[] args, String[] nameArgs, int idx) {
         // prepare args for the function with varargs
         Object[] argsRFunction = new Object[nArgs];
-        argsRFunction[0] = input.get(idx);
+
+        if (!input.isSequence()) {
+            argsRFunction[0] = input.get(idx);
+        } else {
+            argsRFunction[0] = getSequence(input, idx);
+        }
+
         if (args != null) {
             for (int i = 0; i < args.length; i++) {
-                argsRFunction[i + 1] = args[i].get(idx);
+                if (!args[i].isSequence()) {
+                    argsRFunction[i + 1] = args[i].get(idx);
+                } else {
+                    argsRFunction[i + 1] = getSequence(args[i], idx);
+                }
             }
         }
-        // Create the package
+
         Object[] argsPackage = RArguments.create(function, null, null, 0, argsRFunction, ArgumentsSignature.get(nameArgs), null);
         return argsPackage;
     }
@@ -916,30 +948,28 @@ public class ASTxUtils {
     public static PArray<?> marshalUpdateReferenceWithTuples(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
         String returns = composeReturnType(infoList);
         PArray parray = new PArray<>(input.getLength(), TypeFactory.Tuple(returns), false);
-        boolean sequence = false;
+        boolean sequence = true;
 
         switch (infoList.size()) {
             case 2:
                 PArray a = null;
                 if (input instanceof RIntSequence) {
                     a = buildIntPArrayForSequence(input);
-                    sequence = true;
                 } else if (input instanceof RDoubleSequence) {
                     a = buildDoublePArrayForSequence(input);
-                    sequence = true;
                 } else {
                     a = input.getPArray();
+                    sequence = false;
                 }
 
                 PArray b = null;
                 if (additionalArgs[0] instanceof RIntSequence) {
                     b = buildIntPArrayForSequence(additionalArgs[0]);
-                    sequence = true;
                 } else if (additionalArgs[0] instanceof RDoubleSequence) {
                     b = buildDoublePArrayForSequence(additionalArgs[0]);
-                    sequence = true;
                 } else {
                     b = input.getPArray();
+                    sequence = false;
                 }
 
                 parray.setBuffer(0, a.getArrayReference(), a.isSequence());

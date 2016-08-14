@@ -41,19 +41,16 @@ benchmark <- function(inputSize) {
 		correct <- TRUE
 		if (!nonError) {
 			for (i in seq(result)) {
-				if (abs(resultSeq[i] - result[i]) > 0.1) {
+				if (abs(resultSeq[i] - result[i]) > 0.5) {
 					print(nonError)
+					print(i)
+					print(resultSeq[i])
+					print(result[i])
 					correct <- FALSE
 					break;
 				}
-			}
-			if (correct) {
-				print("Result is correct")
-			}
-				
-		} else {
-			print("Result is correct")
-		}
+			}		
+		} 
 		#print(result);
 	}
 }

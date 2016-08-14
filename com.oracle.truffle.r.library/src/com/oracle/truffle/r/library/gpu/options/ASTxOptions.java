@@ -64,7 +64,7 @@ public class ASTxOptions {
     /**
      * Print AST for the R function to be executed on the GPU
      */
-    public static boolean printAST = getBoolean("astx.marawacc.printast", false);
+    @CompilationFinal public static boolean printAST = getBoolean("astx.marawacc.printast", false);
 
     /**
      * Use the references provided in the PArray to avoid marshal and unmarshal
@@ -75,7 +75,7 @@ public class ASTxOptions {
      * Optimise {@link RSequence} for OpenCL. No buffer copy, just logic for computing elements from
      * start and stride.
      */
-    public static boolean optimizeRSequence = getBoolean("astx.marawacc.optimizeRSequence", false);
+    public static boolean optimizeRSequence = getBoolean("astx.marawacc.optimizeRSequence", true);
 
     /**
      * Get profiler information and show when the R VM is finalising.
