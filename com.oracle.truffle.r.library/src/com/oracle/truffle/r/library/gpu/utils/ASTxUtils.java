@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import uk.ac.ed.datastructures.common.PArray;
+import uk.ac.ed.datastructures.common.PArray.StorageMode;
 import uk.ac.ed.datastructures.common.TypeFactory;
 import uk.ac.ed.datastructures.tuples.Tuple;
 import uk.ac.ed.datastructures.tuples.Tuple10;
@@ -761,7 +762,7 @@ public class ASTxUtils {
     }
 
     public static PArray<?> buildIntPArrayForSequence(RAbstractVector input) {
-        PArray<Integer> parray = new PArray<>(2, TypeFactory.Integer());
+        PArray<Integer> parray = new PArray<>(2, TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER);
         int start = ((RIntSequence) input).start();
         int stride = ((RIntSequence) input).stride();
         parray.setSequence(true);
@@ -772,7 +773,7 @@ public class ASTxUtils {
     }
 
     public static PArray<?> buildDoublePArrayForSequence(RAbstractVector input) {
-        PArray<Double> parray = new PArray<>(2, TypeFactory.Double());
+        PArray<Double> parray = new PArray<>(2, TypeFactory.Double(), StorageMode.OPENCL_BYTE_BUFFER);
         double start = ((RDoubleSequence) input).start();
         double stride = ((RDoubleSequence) input).stride();
         parray.put(0, start);
@@ -819,15 +820,15 @@ public class ASTxUtils {
             case INT:
             case RIntegerSequence:
             case RIntVector:
-                parray = new PArray<>(input.getLength(), TypeFactory.Integer());
+                parray = new PArray<>(input.getLength(), TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER);
                 break;
             case DOUBLE:
             case RDoubleSequence:
             case RDoubleVector:
-                parray = new PArray<>(input.getLength(), TypeFactory.Double());
+                parray = new PArray<>(input.getLength(), TypeFactory.Double(), StorageMode.OPENCL_BYTE_BUFFER);
                 break;
             case BOOLEAN:
-                parray = new PArray<>(input.getLength(), TypeFactory.Boolean());
+                parray = new PArray<>(input.getLength(), TypeFactory.Boolean(), StorageMode.OPENCL_BYTE_BUFFER);
                 break;
             default:
                 throw new MarawaccRuntimeTypeException("Data type not supported: " + input.getClass() + " [ " + __LINE__.print() + "]");
@@ -862,7 +863,7 @@ public class ASTxUtils {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static PArray<?> marshalWithTuples(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
         String returns = composeReturnType(infoList);
-        PArray parray = new PArray<>(input.getLength(), TypeFactory.Tuple(returns));
+        PArray parray = new PArray<>(input.getLength(), TypeFactory.Tuple(returns), StorageMode.OPENCL_BYTE_BUFFER);
         switch (infoList.size()) {
             case 2:
                 for (int k = 0; k < parray.size(); k++) {
