@@ -59,7 +59,7 @@ public class ASTxOptions {
     /**
      * Print information related to the cache system.
      */
-    public static boolean debugCache = false;
+    public static boolean debugCache = true;
 
     /**
      * Print AST for the R function to be executed on the GPU
