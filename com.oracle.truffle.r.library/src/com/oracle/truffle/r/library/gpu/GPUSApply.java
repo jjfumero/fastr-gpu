@@ -538,7 +538,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         // Print profiler
         if (ASTxOptions.profiler) {
-
             // Marshal
             Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "start", startMarshal);
             Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end", endMarshal);
