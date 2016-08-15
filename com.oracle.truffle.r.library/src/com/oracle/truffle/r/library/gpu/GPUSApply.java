@@ -211,10 +211,12 @@ public final class GPUSApply extends RExternalBuiltinNode {
         long tend = System.nanoTime();
         gpuExecution = true;
 
-        Profiler.getInstance().writeInBuffer("copyIN total", (texecute - tcopyIN));
-        Profiler.getInstance().writeInBuffer("execute total", (tcopyOUT - texecute));
-        Profiler.getInstance().writeInBuffer("tOUT total", (tend - tcopyOUT));
-        Profiler.getInstance().writeInBuffer("runWithMarawaccAccelerator total", (tend - tcopyIN));
+        if (ASTxOptions.profiler) {
+            Profiler.getInstance().writeInBuffer("copyIN total", (texecute - tcopyIN));
+            Profiler.getInstance().writeInBuffer("execute total", (tcopyOUT - texecute));
+            Profiler.getInstance().writeInBuffer("tOUT total", (tend - tcopyOUT));
+            Profiler.getInstance().writeInBuffer("runWithMarawaccAccelerator total", (tend - tcopyIN));
+        }
 
         ArrayList<Object> arrayList = new ArrayList<>();
         arrayList.add(result);
