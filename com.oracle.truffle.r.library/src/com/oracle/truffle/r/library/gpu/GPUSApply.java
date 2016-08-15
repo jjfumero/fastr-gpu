@@ -639,7 +639,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
     private static PArray<?>[] getPArrayWithAdditionalArguments(RArgsValuesAndNames args) {
         PArray<?>[] additionalInputs = null;
         if (args.getLength() > 2) {
-            additionalInputs = new PArray[args.getLength() - 2];
+            additionalInputs = new PArray<?>[args.getLength() - 2];
             for (int i = 0; i < additionalInputs.length; i++) {
                 additionalInputs[i] = (PArray<?>) args.getArgument(i + 2);
             }

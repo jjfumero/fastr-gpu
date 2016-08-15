@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import uk.ac.ed.accelerator.profiler.Profiler;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.PArray.StorageMode;
 import uk.ac.ed.datastructures.common.TypeFactory;
@@ -47,6 +48,7 @@ import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccRuntimeTypeException;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
+import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.runtime.ArgumentsSignature;
@@ -698,7 +700,18 @@ public class ASTxUtils {
      * @return {@link RDoubleVector}
      */
     public static RDoubleVector getDoubleVectorFromPArray(PArray<Double> array) {
-        return RDataFactory.createDoubleVector(array.asDoubleArray(), false);
+        long s1 = System.nanoTime();
+        double[] asDoubleArray = array.asDoubleArray();
+        long s2 = System.nanoTime();
+        RDoubleVector createDoubleVector = RDataFactory.createDoubleVector(asDoubleArray, false);
+        long s3 = System.nanoTime();
+
+        if (ASTxOptions.profiler) {
+            Profiler.getInstance().writeInBuffer("UNMARSHAL asArray", (s2 - s1));
+            Profiler.getInstance().writeInBuffer("UNMARHALL rdataFactory", (s3 - s2));
+        }
+
+        return createDoubleVector;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
