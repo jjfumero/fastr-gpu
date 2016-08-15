@@ -179,7 +179,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
         // Insert graph into cache
         InternalGraphCache.INSTANCE.installGPUBinaryIntoCache(graphToCompile, gpuCompilationUnit);
 
-        gpuExecution = true;
         return gpuCompilationUnit;
     }
 
@@ -195,7 +194,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
      * @return {@link ArrayList}
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalGPUCompilationUnit gpuCompilationUnit) {
+    private ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalGPUCompilationUnit gpuCompilationUnit) {
 
         GraalGPUExecutor executor = CacheGPUExecutor.INSTANCE.getExecutor(gpuCompilationUnit);
         if (executor == null) {
@@ -205,6 +204,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         AcceleratorPArray copyToDevice = executor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
         AcceleratorPArray executeOnTheDevice = executor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType(), gpuCompilationUnit.getScopeArrays());
         PArray result = executor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
+        gpuExecution = true;
 
         ArrayList<Object> arrayList = new ArrayList<>();
         arrayList.add(result);
@@ -231,9 +231,12 @@ public final class GPUSApply extends RExternalBuiltinNode {
         ArrayList<Object> output = new ArrayList<>(input.getLength());
         output.add(firstValue);
 
-        callTarget.generateIDForGPU();
-        // Set the GPU execution to true;
-        ((FunctionDefinitionNode) function.getRootNode()).setGPUFlag(true);
+        if (RGPUCache.INSTANCE.getCachedObjects(function).getIDExecution() == 0) {
+            callTarget.generateIDForGPU();
+            // Set the GPU execution to true;
+            ((FunctionDefinitionNode) function.getRootNode()).setGPUFlag(true);
+            RGPUCache.INSTANCE.getCachedObjects(function).incID();
+        }
 
         StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
         GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
@@ -257,7 +260,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
             }
 
             /*
-             * Check if the graph is prepared for GPU compilation and invoke the compilation.
+             * Check if the graph is prepared for GPU compilation and invoke the compilation. On
+             * Stack Replacement: switch to compiled GPU code
              */
             graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
             if (graphToCompile != null && gpuCompilationUnit == null) {
@@ -274,28 +278,27 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return output;
     }
 
-    @SuppressWarnings("rawtypes")
-    private ArrayList<Object> runJavaOpenCLJIT(PArray input, RootCallTarget callTarget, RFunction function, int nArgs, PArray[] additionalArgs, String[] argsName,
+    private ArrayList<Object> runJavaOpenCLJIT(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int totalSize) {
 
         ArrayList<Object> output = new ArrayList<>();
         output.add(firstValue);
 
-        callTarget.generateIDForGPU();
-        // Set the GPU execution to true;
-        ((FunctionDefinitionNode) function.getRootNode()).setGPUFlag(true);
+        if (RGPUCache.INSTANCE.getCachedObjects(function).getIDExecution() == 0) {
+            callTarget.generateIDForGPU();
+            // Set the GPU execution to true;
+            ((FunctionDefinitionNode) function.getRootNode()).setGPUFlag(true);
+            RGPUCache.INSTANCE.getCachedObjects(function).incID();
+        }
 
         StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
         GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
         if (graphToCompile != null && gpuCompilationUnit != null) {
-            // Get the compiled code from the cache
-            if (ASTxOptions.debugCache) {
-                System.out.println("[MARAWACC-ASTX] Getting the GPU binary from the cache");
-            }
             return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
         }
 
+        // Interpreter mode
         for (int i = 1; i < totalSize; i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             try {
@@ -306,7 +309,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
             }
 
             /*
-             * Check if the graph is prepared for GPU compilation and invoke the compilation.
+             * Check if the graph is prepared for GPU compilation and invoke the compilation. On
+             * Stack Replacement: switch to compiled GPU code
              */
             if (graphToCompile != null && gpuCompilationUnit == null) {
                 // Get the Structured Graph and compile it for GPU
@@ -507,7 +511,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
     private RAbstractVector computeOpenCLSApply(PArray<?> input, RFunction function, RootCallTarget target, PArray<?>[] additionalArgs, Object[] lexicalScopes) {
 
-        long s = System.nanoTime();
         RFunctionMetadata cachedFunctionMetadata = getCachedFunctionMetadata(input, function, additionalArgs);
         int nArgs = cachedFunctionMetadata.getnArgs();
         String[] argsName = cachedFunctionMetadata.getArgsName();
@@ -516,10 +519,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         Interoperable interoperable = cachedFunctionMetadata.getInteroperable();
 
         int totalSize = getSize(input, additionalArgs);
-
         TypeInfoList inputTypeList = createTypeInfoListForInputWithPArrays(input, additionalArgs);
-
-        long e2 = System.nanoTime();
 
         // Marshal
         long startMarshal = System.nanoTime();
@@ -538,8 +538,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         // Print profiler
         if (ASTxOptions.profiler) {
-
-            Profiler.getInstance().writeInBuffer("FIRST", (e2 - s));
 
             // Marshal
             Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "start", startMarshal);

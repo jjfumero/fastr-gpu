@@ -9,9 +9,11 @@ public class RCacheObjects {
     private Object[] lexicalScopeVars;
 
     private RFunctionMetadata rfunctionMetadata;
+    private int idExecution;
 
     public RCacheObjects(RootCallTarget rootCallTarget) {
         this.rootCallTarget = rootCallTarget;
+        this.idExecution = 0;
     }
 
     public RCacheObjects(RootCallTarget rootCallTarget, String[] scopeVarsName, Object[] lexicalScopeVars) {
@@ -38,5 +40,13 @@ public class RCacheObjects {
 
     public RFunctionMetadata getRFunctionMetadata() {
         return this.rfunctionMetadata;
+    }
+
+    public void incID() {
+        idExecution++;
+    }
+
+    public int getIDExecution() {
+        return idExecution;
     }
 }
