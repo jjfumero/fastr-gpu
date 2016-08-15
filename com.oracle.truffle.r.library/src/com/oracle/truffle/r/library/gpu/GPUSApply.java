@@ -486,6 +486,17 @@ public final class GPUSApply extends RExternalBuiltinNode {
         }
     }
 
+    @SuppressWarnings({"rawtypes"})
+    private RAbstractVector getResultFromPArray(TypeInfo outputType, ArrayList<Object> result) {
+        if (!gpuExecution) {
+            // get the output in R-Type format
+            return ASTxUtils.unMarshallResultFromArrayList(outputType, result);
+        } else {
+            // get the references
+            return ASTxUtils.unMarshallFromFullPArrays(outputType, (PArray) result.get(0));
+        }
+    }
+
     private static RFunctionMetadata getCachedFunctionMetadata(PArray<?> input, RFunction function, PArray<?>[] additionalArgs) {
         if (RGPUCache.INSTANCE.getCachedObjects(function).getRFunctionMetadata() == null) {
             // Type inference -> execution of the first element
@@ -533,7 +544,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         // Get the result (un-marshal)
         long startUnmarshal = System.nanoTime();
-        RAbstractVector resultFastR = getResult(outputType, result);
+        RAbstractVector resultFastR = getResultFromPArray(outputType, result);
         long endUnmarshal = System.nanoTime();
 
         // Print profiler
