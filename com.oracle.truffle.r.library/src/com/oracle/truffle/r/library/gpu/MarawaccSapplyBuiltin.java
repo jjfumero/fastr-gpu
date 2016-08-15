@@ -86,7 +86,6 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
 
     private static ArrayList<Object> runJavaSequential(RAbstractVector input, RootCallTarget target, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue) {
-        // Java sequential
         ArrayList<Object> output = new ArrayList<>(input.getLength());
         output.add(firstValue);
         for (int i = 1; i < input.getLength(); i++) {
@@ -94,12 +93,6 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
             Object val = target.call(argsPackage);
             output.add(val);
         }
-        // NOTE: force the compilation with no profiling (the lambda should be different)
-        // try {
-        // boolean compileFunction = AccTruffleCompiler.compileFunction(function);
-        // } catch (InvocationTargetException | IllegalAccessException e) {
-        // e.printStackTrace();
-        // }
         return output;
     }
 
@@ -144,7 +137,7 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
      * Built-in from R:
      *
      * <code>
-     * marawacc.sapply(x, function, ...)
+     * marawacc.sapply(x, function, threads=1, ...)
      * </code>
      *
      * This is a blocking operation. Therefore the return Object will contain the result. It invokes

@@ -38,7 +38,7 @@ public class ASTxOptions {
     /**
      * Execute the parallel operations with Marawacc. This is unsafe - running threads inside R.
      */
-    public static boolean runMarawaccThreads = getBoolean("astx.marawacc.threads", true);
+    public static boolean runMarawaccThreads = getBoolean("astx.marawacc.threads", false);
 
     /**
      * Use Java futures for async computation when pattern composition is presented.
