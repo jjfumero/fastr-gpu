@@ -201,10 +201,20 @@ public final class GPUSApply extends RExternalBuiltinNode {
             executor = new GraalGPUExecutor();
             CacheGPUExecutor.INSTANCE.insert(gpuCompilationUnit, executor);
         }
+
+        long tcopyIN = System.nanoTime();
         AcceleratorPArray copyToDevice = executor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
+        long texecute = System.nanoTime();
         AcceleratorPArray executeOnTheDevice = executor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType(), gpuCompilationUnit.getScopeArrays());
+        long tcopyOUT = System.nanoTime();
         PArray result = executor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
+        long tend = System.nanoTime();
         gpuExecution = true;
+
+        Profiler.getInstance().writeInBuffer("copyIN total", (texecute - tcopyIN));
+        Profiler.getInstance().writeInBuffer("execute total", (tcopyOUT - texecute));
+        Profiler.getInstance().writeInBuffer("tOUT total", (tend - tcopyOUT));
+        Profiler.getInstance().writeInBuffer("runWithMarawaccAccelerator total", (tend - tcopyIN));
 
         ArrayList<Object> arrayList = new ArrayList<>();
         arrayList.add(result);
@@ -242,34 +252,24 @@ public final class GPUSApply extends RExternalBuiltinNode {
         GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
         if (graphToCompile != null && gpuCompilationUnit != null) {
-            // Get the compiled code from the cache
-            if (ASTxOptions.debugCache) {
-                System.out.println("[MARAWACC-ASTX] Getting the GPU binary from the cache");
-            }
             return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
         }
 
         // Run in the AST interpreter
         for (int i = 1; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
-            try {
-                Object val = callTarget.call(argsPackage);
-                output.add(val);
-            } catch (Exception e) {
-                System.out.println("parse exception");
-            }
+            Object value = callTarget.call(argsPackage);
+            output.add(value);
 
             /*
-             * Check if the graph is prepared for GPU compilation and invoke the compilation. On
-             * Stack Replacement: switch to compiled GPU code
+             * Check if the graph is prepared for GPU compilation and invoke the compilation + GPU
+             * Execution. On Stack Replacement (OSR): switch to compiled GPU code
              */
             graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
             if (graphToCompile != null && gpuCompilationUnit == null) {
-                // Get the Structured Graph and compile it for GPU
                 if (ASTxOptions.debug) {
-                    System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU");
+                    System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU - Iteration: " + i);
                 }
-
                 gpuCompilationUnit = compileForMarawaccBackend(inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, firstValue, interoperable, lexicalScopes);
                 return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
             }
@@ -280,6 +280,8 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
     private ArrayList<Object> runJavaOpenCLJIT(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int totalSize) {
+
+        long start = System.nanoTime();
 
         ArrayList<Object> output = new ArrayList<>();
         output.add(firstValue);
@@ -295,30 +297,26 @@ public final class GPUSApply extends RExternalBuiltinNode {
         GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
         if (graphToCompile != null && gpuCompilationUnit != null) {
-            return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
+            ArrayList<Object> runWithMarawaccAccelerator = runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
+            long end = System.nanoTime();
+            Profiler.getInstance().writeInBuffer("runJavaOpenCLJIT total", (end - start));
+            return runWithMarawaccAccelerator;
         }
 
         // Interpreter mode
         for (int i = 1; i < totalSize; i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
-            try {
-                Object val = callTarget.call(argsPackage);
-                output.add(val);
-            } catch (Exception e) {
-                System.out.println("parse exception");
-            }
+            Object value = callTarget.call(argsPackage);
+            output.add(value);
 
             /*
-             * Check if the graph is prepared for GPU compilation and invoke the compilation. On
-             * Stack Replacement: switch to compiled GPU code
+             * Check if the graph is prepared for GPU compilation and invoke the compilation and
+             * execution. On Stack Replacement (OSR): switch to compiled GPU code
              */
             if (graphToCompile != null && gpuCompilationUnit == null) {
-                // Get the Structured Graph and compile it for GPU
-
                 if (ASTxOptions.debug) {
-                    System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU");
+                    System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU - Iteration: " + i);
                 }
-
                 gpuCompilationUnit = compileForMarawaccBackend(inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, firstValue, interoperable, lexicalScopes);
                 return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
             }
