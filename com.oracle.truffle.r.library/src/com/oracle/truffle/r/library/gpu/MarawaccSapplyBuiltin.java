@@ -86,7 +86,6 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
 
     private static ArrayList<Object> runJavaSequential(RAbstractVector input, RootCallTarget target, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue) {
-        long s = System.nanoTime();
         ArrayList<Object> output = new ArrayList<>(input.getLength());
         output.add(firstValue);
         for (int i = 1; i < input.getLength(); i++) {
@@ -94,8 +93,6 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
             Object val = target.call(argsPackage);
             output.add(val);
         }
-        long e = System.nanoTime();
-        System.out.println("SEQ: " + (e - s));
         return output;
     }
 
