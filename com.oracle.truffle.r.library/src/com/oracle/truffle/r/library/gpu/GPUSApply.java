@@ -103,7 +103,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         return scopeData;
     }
 
-    private void applyCompilationPhasesForGPU(StructuredGraph graph) {
+    private void applyCompilationPhasesForGPUAndDump(StructuredGraph graph) {
 
         CompilerUtils.dumpGraph(graph, "beforeOptomisations");
 
@@ -138,6 +138,22 @@ public final class GPUSApply extends RExternalBuiltinNode {
         }
     }
 
+    private void applyCompilationPhasesForGPU(StructuredGraph graph) {
+
+        new GPUFrameStateEliminationPhase().apply(graph);
+        new GPUInstanceOfRemovePhase().apply(graph);
+        new GPUCheckCastRemovalPhase().apply(graph);
+        new GPUFixedGuardRemovalPhase().apply(graph);
+        new GPUBoxingEliminationPhase().apply(graph);
+
+        ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
+        arraysDetectionPhase.apply(graph);
+
+        if (arraysDetectionPhase.isScopeDetected()) {
+            scopedNodes = arraysDetectionPhase.getScopedNodes();
+        }
+    }
+
     private static boolean isCleanPhaseEnabled() {
         return false;
     }
@@ -162,11 +178,11 @@ public final class GPUSApply extends RExternalBuiltinNode {
             scopeData.setData(lexicalScope);
         }
 
-        applyCompilationPhasesForGPU(graphToCompile);
-
         if (ASTxOptions.debug) {
-            // Force OpenCL kernel visualisation once generated
+            applyCompilationPhasesForGPUAndDump(graphToCompile);
             GraalAcceleratorOptions.printOffloadKernel = true;
+        } else {
+            applyCompilationPhasesForGPU(graphToCompile);
         }
 
         // Compilation to the GPU
