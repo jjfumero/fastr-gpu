@@ -91,10 +91,7 @@ public final class MarawaccSapplyBuiltin extends RExternalBuiltinNode {
         output.add(firstValue);
         for (int i = 1; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
-            long start = System.nanoTime();
             Object val = target.call(argsPackage);
-            long end = System.nanoTime();
-            System.out.println("CAllTarget: " + (end - start));
             output.add(val);
         }
         long e = System.nanoTime();
