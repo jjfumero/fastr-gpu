@@ -176,6 +176,8 @@ benchmark <- function(inputSize) {
 
 	seq <- mapply(bsCPUFunction, x);
 
+	x <- marawacc.parray(x) 
+
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
 		result <- marawacc.gpusapply(x, bsFunction);
@@ -207,7 +209,6 @@ benchmark <- function(inputSize) {
 			#print(result);
 		}
 	}
-
 }
 
 ## Main

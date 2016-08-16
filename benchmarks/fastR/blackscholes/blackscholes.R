@@ -13,6 +13,8 @@ size <- as.integer(args[1])
 
 REPETITIONS <- 10
 
+CHECK <- FALSE
+
 ## Lambda expression for the computation
 benchmark <- function(inputSize) {
 
@@ -101,11 +103,11 @@ benchmark <- function(inputSize) {
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
 		result <- mapply(bsFunction, x);
-
-		l <- result[1][[2]]
-		print(l)
-
 		end <- nanotime()
+
+		#l <- result[1][[2]]
+		#print(l)
+
 		total <- end - start
 		print(total)
 		#print(result);
