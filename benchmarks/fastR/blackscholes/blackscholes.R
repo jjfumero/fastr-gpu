@@ -11,7 +11,7 @@ if (length(args) == 0) {
 
 size <- as.integer(args[1])
 
-REPETITIONS <- 10
+REPETITIONS <- 11
 
 CHECK <- FALSE
 
@@ -104,13 +104,8 @@ benchmark <- function(inputSize) {
 		start <- nanotime()
 		result <- mapply(bsFunction, x);
 		end <- nanotime()
-
-		#l <- result[1][[2]]
-		#print(l)
-
 		total <- end - start
-		print(total)
-		#print(result);
+		print(paste("Total time: ", total))
 	}
 }
 
