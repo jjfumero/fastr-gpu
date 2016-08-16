@@ -23,7 +23,7 @@ benchmark <- function(inputSize) {
 		return (result);
 	}	
 
-	x <- 1:size;
+	x <- 1:size
 	y <- 1:size
 
 	# Seq code

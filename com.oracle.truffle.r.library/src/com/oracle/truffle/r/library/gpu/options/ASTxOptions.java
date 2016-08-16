@@ -33,33 +33,33 @@ public class ASTxOptions {
     /**
      * Print internal results. Debugging purposes
      */
-    public static boolean printResult = false;
+    @CompilationFinal public static boolean printResult = false;
 
     /**
      * Execute the parallel operations with Marawacc. This is unsafe - running threads inside R.
      */
-    public static boolean runMarawaccThreads = getBoolean("astx.marawacc.threads", false);
+    @CompilationFinal public static boolean runMarawaccThreads = getBoolean("astx.marawacc.threads", false);
 
     /**
      * Use Java futures for async computation when pattern composition is presented.
      */
-    public static boolean useAsyncComputation = true;
+    @CompilationFinal public static boolean useAsyncComputation = true;
 
     /**
      * Do not clean the cache for async functions. It uses the result stored in the array of
      * Futures.
      */
-    public static boolean useAsyncMemoisation = true;
+    @CompilationFinal public static boolean useAsyncMemoisation = true;
 
     /**
      * Print internal messages such as deoptimisations, data types and so on for debugging.
      */
-    public static boolean debug = false;
+    @CompilationFinal public static boolean debug = false;
 
     /**
      * Print information related to the cache system.
      */
-    public static boolean debugCache = false;
+    @CompilationFinal public static boolean debugCache = false;
 
     /**
      * Print AST for the R function to be executed on the GPU
@@ -75,12 +75,12 @@ public class ASTxOptions {
      * Optimise {@link RSequence} for OpenCL. No buffer copy, just logic for computing elements from
      * start and stride.
      */
-    public static boolean optimizeRSequence = getBoolean("astx.marawacc.optimizeRSequence", true);
+    @CompilationFinal public static boolean optimizeRSequence = getBoolean("astx.marawacc.optimizeRSequence", false);
 
     /**
      * Get profiler information and show when the R VM is finalising.
      */
-    public static boolean profiler = getBoolean("astx.marawacc.profiler", true);
+    @CompilationFinal public static boolean profiler = getBoolean("astx.marawacc.profiler", true);
 
     private static boolean getBoolean(String property, boolean defaultValue) {
         if (System.getProperty(property) == null) {

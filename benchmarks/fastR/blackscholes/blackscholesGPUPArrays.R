@@ -167,14 +167,11 @@ benchmark <- function(inputSize) {
 		list(callRes, putRes)	
 	}	
 
-	initialization <- function(size) {
-        x <- runif(size, 0, 1)
-		return (x)
+	x <- runif(size)
+	
+	if (CHECK) {
+		seq <<- mapply(bsCPUFunction, x);
 	}
-
-	x <- initialization(size)
-
-	seq <- mapply(bsCPUFunction, x);
 
 	x <- marawacc.parray(x) 
 
@@ -182,7 +179,7 @@ benchmark <- function(inputSize) {
 		start <- nanotime()
 		result <- marawacc.gpusapply(x, bsFunction);
 		total <- nanotime() - start
-		print(total)
+		print(paste("Total time:", total))
 
 		# Check result
 		if (CHECK) {

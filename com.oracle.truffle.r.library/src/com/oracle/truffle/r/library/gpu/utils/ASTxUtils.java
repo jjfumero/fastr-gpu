@@ -718,6 +718,16 @@ public class ASTxUtils {
             return getIntVectorFromPArray(result);
         } else if (type == TypeInfo.DOUBLE) {
             return getDoubleVectorFromPArray(result);
+        } else if (type == TypeInfo.TUPLE2) {
+            return getRListFromTuple2(result);
+        } else if (type == TypeInfo.TUPLE3) {
+            return getRListFromTuple3(result);
+        } else if (type == TypeInfo.TUPLE4) {
+            return getRListFromTuple4(result);
+        } else if (type == TypeInfo.TUPLE5) {
+            return getRListFromTuple5(result);
+        } else if (type == TypeInfo.TUPLE6) {
+            return getRListFromTuple6(result);
         } else {
             throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
         }
