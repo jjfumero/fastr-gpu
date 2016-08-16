@@ -13,6 +13,8 @@ size <- as.integer(args[1])
 
 REPETITIONS <- 11
 
+CHECK <- FALSE
+
 ## Lambda expression for the computation
 benchmark <- function(inputSize) {
 
@@ -37,22 +39,24 @@ benchmark <- function(inputSize) {
 		print(paste("Total Time: ", total))
 
 		# check result
-		nonError <- identical(resultSeq, result)
-		if (!nonError) {
-			for (i in seq(result)) {
-				if (abs(resultSeq[i] - result[i]) > 0.1) {
-					print(nonError)
-					correct <- FALSE
-					break;
+		if (CHECK) {
+			nonError <- identical(resultSeq, result)
+			if (!nonError) {
+				for (i in seq(result)) {
+					if (abs(resultSeq[i] - result[i]) > 0.1) {
+						print(nonError)
+						correct <- FALSE
+						break;
+					}
 				}
-			}
-			if (correct) {
+				if (correct) {
+					print("Result is correct")
+				}	
+			} else {
 				print("Result is correct")
-			}	
-		} else {
-			print("Result is correct")
+			}
+			#print(result);
 		}
-		#print(result);
 	}
 }
 
