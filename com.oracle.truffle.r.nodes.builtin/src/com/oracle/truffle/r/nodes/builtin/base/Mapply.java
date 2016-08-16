@@ -106,6 +106,7 @@ public abstract class Mapply extends RBuiltinNode {
         protected Object[] cachedMApply(VirtualFrame frame, RList dots, RFunction function, RList moreArgs, @Cached("function.getTarget()") RootCallTarget cachedTarget,
                         @Cached("createElementNodeArray(dots.getLength())") ElementNode[] cachedElementNodeArray,
                         @Cached("createCallNode(cachedTarget, cachedElementNodeArray, moreArgs)") RCallNode callNode) {
+            long s = System.nanoTime();
 
             int dotsLength = dots.getLength();
             int[] lengths = new int[dotsLength];
@@ -145,8 +146,13 @@ public abstract class Mapply extends RBuiltinNode {
                     cachedElementNodeArray[listIndex].writeVectorElementNode.execute(frame, vecElement);
                 }
                 /* Now call the function */
+                long start = System.nanoTime();
                 result[i] = callNode.execute(frame, function);
+                long end = System.nanoTime();
+                System.out.println("CallNode: " + (end - start));
             }
+            long e = System.nanoTime();
+            System.out.println("Total MApply: " + (e - s));
             return result;
         }
 
