@@ -705,12 +705,10 @@ public class ASTxUtils {
         long s2 = System.nanoTime();
         RDoubleVector createDoubleVector = RDataFactory.createDoubleVector(asDoubleArray, false);
         long s3 = System.nanoTime();
-
         if (ASTxOptions.profiler) {
             Profiler.getInstance().writeInBuffer("UNMARSHAL asArray", (s2 - s1));
             Profiler.getInstance().writeInBuffer("UNMARHALL rdataFactory", (s3 - s2));
         }
-
         return createDoubleVector;
     }
 
