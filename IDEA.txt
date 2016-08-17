@@ -1,2 +1,0 @@
-Include autotabulator to identify the methods in the terminal
-
