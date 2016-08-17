@@ -6,12 +6,12 @@
 args <- commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
-	stop("No input size passed. Usage: ./blackcholesGPU.R <size> ")
+	stop("No input size passed. Usage: ./blackcholesGPUPArrays.R <size> ")
 } 
 
 size <- as.integer(args[1])
 
-REPETITIONS <- 10
+REPETITIONS <- 11
 
 CHECK <- FALSE
 
