@@ -111,26 +111,28 @@ public class ASTLexicalScoping {
                     code.replaceAll(": ", "");
                 }
 
-                Scanner scanner = new Scanner(code);
-                String id = null;
-                scanner.useDelimiter("\\[");
-                if (scanner.hasNext()) {
-                    id = scanner.next();
-                }
-
-                if (id.startsWith("\"*anonymous-FOR_RANGE-")) {
+                if (code.startsWith("\"*anonymous-FOR_RANGE-")) {
                     continue;
-                } else if (id.contains("(")) {
-                    scanner = new Scanner(code);
-                    id = null;
+                } else if (code.contains("(")) {
+                    Scanner scanner = new Scanner(code);
+                    String id = null;
                     scanner.useDelimiter("\\(");
                     if (scanner.hasNext()) {
                         id = scanner.next();
                     }
-                }
-
-                if (!primitives.contains(id)) {
-                    scopes.add(id);
+                    if ((id.contains("(")) && (!primitives.contains(id))) {
+                        scopes.add(id);
+                    }
+                } else if (code.contains("[")) {
+                    Scanner scanner = new Scanner(code);
+                    String id = null;
+                    scanner.useDelimiter("\\[");
+                    if (scanner.hasNext()) {
+                        id = scanner.next();
+                    }
+                    if (!primitives.contains(id)) {
+                        scopes.add(id);
+                    }
                 }
             }
         }
