@@ -22,7 +22,6 @@
  */
 package com.oracle.truffle.r.library.gpu.options;
 
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.r.runtime.data.RSequence;
 
 /**
@@ -33,54 +32,54 @@ public class ASTxOptions {
     /**
      * Print internal results. Debugging purposes
      */
-    @CompilationFinal public static boolean printResult = false;
+    public static boolean printResult = false;
 
     /**
      * Execute the parallel operations with Marawacc. This is unsafe - running threads inside R.
      */
-    @CompilationFinal public static boolean runMarawaccThreads = getBoolean("astx.marawacc.threads", false);
+    public static boolean runMarawaccThreads = getBoolean("astx.marawacc.threads", false);
 
     /**
      * Use Java futures for async computation when pattern composition is presented.
      */
-    @CompilationFinal public static boolean useAsyncComputation = true;
+    public static boolean useAsyncComputation = true;
 
     /**
      * Do not clean the cache for async functions. It uses the result stored in the array of
      * Futures.
      */
-    @CompilationFinal public static boolean useAsyncMemoisation = true;
+    public static boolean useAsyncMemoisation = true;
 
     /**
      * Print internal messages such as deoptimisations, data types and so on for debugging.
      */
-    @CompilationFinal public static boolean debug = false;
+    public static boolean debug = true;
 
     /**
      * Print information related to the cache system.
      */
-    @CompilationFinal public static boolean debugCache = false;
+    public static boolean debugCache = false;
 
     /**
      * Print AST for the R function to be executed on the GPU
      */
-    @CompilationFinal public static boolean printAST = getBoolean("astx.marawacc.printast", false);
+    public static boolean printAST = getBoolean("astx.marawacc.printast", false);
 
     /**
      * Use the references provided in the PArray to avoid marshal and unmarshal
      */
-    @CompilationFinal public static boolean usePArrays = getBoolean("astx.marawacc.usePArrays", false);
+    public static boolean usePArrays = getBoolean("astx.marawacc.usePArrays", false);
 
     /**
      * Optimise {@link RSequence} for OpenCL. No buffer copy, just logic for computing elements from
      * start and stride.
      */
-    @CompilationFinal public static boolean optimizeRSequence = getBoolean("astx.marawacc.optimizeRSequence", false);
+    public static boolean optimizeRSequence = getBoolean("astx.marawacc.optimizeRSequence", false);
 
     /**
      * Get profiler information and show when the R VM is finalising.
      */
-    @CompilationFinal public static boolean profiler = getBoolean("astx.marawacc.profiler", true);
+    public static boolean profiler = getBoolean("astx.marawacc.profiler", true);
 
     private static boolean getBoolean(String property, boolean defaultValue) {
         if (System.getProperty(property) == null) {

@@ -9,6 +9,7 @@ import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.nodes.access.WriteCurrentVariableNode;
 import com.oracle.truffle.r.nodes.access.variables.ReadVariableNode;
 import com.oracle.truffle.r.nodes.control.ReplacementNode;
+import com.oracle.truffle.r.nodes.function.RCallNode;
 import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.nodes.RSyntaxNode;
 import com.oracle.truffle.r.runtime.nodes.RSyntaxNodeVisitor;
@@ -100,6 +101,41 @@ public class ASTLexicalScoping {
         }
     }
 
+    private void filterCallNode(ArrayList<Node> allNodes) {
+        for (Node node : allNodes) {
+            if (node.getClass() == RCallNode.class) {
+                RCallNode var = (RCallNode) node;
+                String code = var.getSourceSection().getCode();
+
+                if (code.startsWith(": ")) {
+                    code.replaceAll(": ", "");
+                }
+
+                Scanner scanner = new Scanner(code);
+                String id = null;
+                scanner.useDelimiter("\\[");
+                if (scanner.hasNext()) {
+                    id = scanner.next();
+                }
+
+                if (id.startsWith("\"*anonymous-FOR_RANGE-")) {
+                    continue;
+                } else if (id.contains("(")) {
+                    scanner = new Scanner(code);
+                    id = null;
+                    scanner.useDelimiter("\\(");
+                    if (scanner.hasNext()) {
+                        id = scanner.next();
+                    }
+                }
+
+                if (!primitives.contains(id)) {
+                    scopes.add(id);
+                }
+            }
+        }
+    }
+
     private void filterReplacement(ArrayList<Node> allNodes) {
         for (Node node : allNodes) {
             if (node.getClass() == ReplacementNode.class) {
@@ -114,10 +150,8 @@ public class ASTLexicalScoping {
 
                 if (writes.contains(id)) {
                     replacements.add(id);
-                } else {
-                    if (!primitives.contains(id)) {
-                        scopes.add(id);
-                    }
+                } else if (!primitives.contains(id)) {
+                    scopes.add(id);
                 }
             }
         }
@@ -153,6 +187,7 @@ public class ASTLexicalScoping {
 
         filterWrite(allNodes);
         filterRead(allNodes);
+        filterCallNode(allNodes);
         filterReplacement(allNodes);
 
         System.out.println(scopes);

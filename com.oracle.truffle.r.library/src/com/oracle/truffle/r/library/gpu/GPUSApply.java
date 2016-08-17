@@ -23,6 +23,7 @@
 package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.accelerator.profiler.Profiler;
@@ -56,7 +57,6 @@ import com.oracle.truffle.r.library.gpu.phases.GPUFixedGuardRemovalPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUFrameStateEliminationPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUInstanceOfRemovePhase;
 import com.oracle.truffle.r.library.gpu.phases.ScopeArraysDetectionPhase;
-import com.oracle.truffle.r.library.gpu.phases.ScopeCleanPhase;
 import com.oracle.truffle.r.library.gpu.phases.ScopeDetectionPhase;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
@@ -122,20 +122,14 @@ public final class GPUSApply extends RExternalBuiltinNode {
         new GPUBoxingEliminationPhase().apply(graph);
         CompilerUtils.dumpGraph(graph, "GPUBoxingEliminationPhase");
 
-        // we can try to analyze for R<T>Vector#data
         ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
         arraysDetectionPhase.apply(graph);
 
         if (arraysDetectionPhase.isScopeDetected()) {
             scopedNodes = arraysDetectionPhase.getScopedNodes();
+            System.out.println(scopedNodes);
         }
 
-        if (isCleanPhaseEnabled()) {
-            // Just for testing when needed
-            ScopeCleanPhase cleanPhase = new ScopeCleanPhase(scopedNodes);
-            cleanPhase.apply(graph);
-            CompilerUtils.dumpGraph(graph, "ScopeCleanPhase");
-        }
     }
 
     private void applyCompilationPhasesForGPU(StructuredGraph graph) {
@@ -152,10 +146,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
         if (arraysDetectionPhase.isScopeDetected()) {
             scopedNodes = arraysDetectionPhase.getScopedNodes();
         }
-    }
-
-    private static boolean isCleanPhaseEnabled() {
-        return false;
     }
 
     /**
@@ -177,10 +167,10 @@ public final class GPUSApply extends RExternalBuiltinNode {
         if (lexicalScope != null) {
             scopeData.setData(lexicalScope);
         }
+        GraalAcceleratorOptions.printOffloadKernel = true;
 
         if (ASTxOptions.debug) {
             applyCompilationPhasesForGPUAndDump(graphToCompile);
-            GraalAcceleratorOptions.printOffloadKernel = true;
         } else {
             applyCompilationPhasesForGPU(graphToCompile);
         }
@@ -249,6 +239,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         ASTLexicalScoping lexicalScoping = new ASTLexicalScoping();
         lexicalScoping.apply(function);
         String[] scopeVars = lexicalScoping.scopeVars();
+        System.out.println("LEXICAL SCOPING: " + Arrays.toString(scopeVars));
         return scopeVars;
     }
 
@@ -676,6 +667,10 @@ public final class GPUSApply extends RExternalBuiltinNode {
         Object firstParam = args.getArgument(0);
         RFunction function = (RFunction) args.getArgument(1);
 
+        if (ASTxOptions.printAST) {
+            printAST(function);
+        }
+
         RAbstractVector input = null;
         PArray<?> parrayInput = null;
         boolean parrayFormat = false;
@@ -686,11 +681,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
             parrayFormat = true;
             parrayInput = (PArray<?>) firstParam;
         } else {
-            throw new RuntimeException("Vector expected");
-        }
-
-        if (ASTxOptions.printAST) {
-            printAST(function);
+            throw new RuntimeException("Vector expected: " + firstParam.getClass());
         }
 
         RootCallTarget target = null;
@@ -711,6 +702,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         long gpuCalling = System.nanoTime();
 
         RAbstractVector mapResult = null;
+
         // Prepare all inputs in an array of Objects
         if (!parrayFormat) {
             RAbstractVector[] additionalInputs = getRArrayWithAdditionalArguments(args);
