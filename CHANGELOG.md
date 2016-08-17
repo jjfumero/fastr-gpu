@@ -1,5 +1,11 @@
 # ChangeLog ASTx GPU Compiler Framework
 
+## astx-0.8 
+	* Mandelbrot supported
+	* Lexical scope variables improved
+	* Cache included for all the parameters related to the RFunction
+	* Profiling info added 
+
 ## astx-0.7
 	* NBody, SpectralNorm, DFT and Euler benchmarks supported
 	* Scope by pattern in the IR detected and use it in the code generation
