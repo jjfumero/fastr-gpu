@@ -169,7 +169,6 @@ public class ASTLexicalScoping {
     }
 
     public void apply(RFunction rFunction) {
-
         this.function = rFunction;
         String[] argumentsNames = ASTxUtils.getArgumentsNames(function);
         this.root = rFunction.getRootNode();

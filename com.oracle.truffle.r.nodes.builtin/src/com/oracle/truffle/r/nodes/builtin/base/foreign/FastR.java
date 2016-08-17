@@ -55,6 +55,7 @@ import com.oracle.truffle.r.library.gpu.MarawaccTerminalReduceBuiltin;
 import com.oracle.truffle.r.library.gpu.OCLVectorMulBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.PArrayBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.intrinsics.RRandomBuiltinNodeGen;
+import com.oracle.truffle.r.library.gpu.nodes.utils.RGCBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.nodes.utils.RNanoTimeBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.tuples.ASTxTuple2NodeGen;
 import com.oracle.truffle.r.library.gpu.tuples.ASTxTuple3NodeGen;
@@ -157,6 +158,9 @@ public abstract class FastR extends RBuiltinNode {
                  */
             case "builtin.nanotime":
                 return RNanoTimeBuiltinNodeGen.create();
+            case "system.gc":
+                return RGCBuiltinNodeGen.create();
+
             case "marawacc.deviceInfo":
                 return MarawaccOCLInfoBuiltinNodeGen.create();
             case "marawacc.testGPU":

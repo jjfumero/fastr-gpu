@@ -155,6 +155,10 @@ nanotime <- function() {
 	.FastR(.NAME="builtin.nanotime")
 }
 
+system.gc <- function() {
+	.FastR(.NAME="system.gc")
+}
+
 random <- function(x) {
 	.FastR(.NAME="builtin.random", x)
 }

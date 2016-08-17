@@ -45,6 +45,7 @@ export(marawacc.parray)		# PArray transformation
 # Utilities
 export(nanotime)
 export(random)
+export(system.gc)
 
 # ASTx utilities
 export(astx.async)
