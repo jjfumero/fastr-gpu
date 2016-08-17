@@ -1,4 +1,4 @@
-package com.oracle.truffle.r.library.gpu.nodes.utils;
+package com.oracle.truffle.r.library.gpu.scope;
 
 import java.util.ArrayList;
 import java.util.HashSet;
