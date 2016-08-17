@@ -23,7 +23,6 @@
 package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.accelerator.profiler.Profiler;
@@ -208,21 +207,10 @@ public final class GPUSApply extends RExternalBuiltinNode {
             CacheGPUExecutor.INSTANCE.insert(gpuCompilationUnit, executor);
         }
 
-        long tcopyIN = System.nanoTime();
         AcceleratorPArray copyToDevice = executor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
-        long texecute = System.nanoTime();
         AcceleratorPArray executeOnTheDevice = executor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType(), gpuCompilationUnit.getScopeArrays());
-        long tcopyOUT = System.nanoTime();
         PArray result = executor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
-        long tend = System.nanoTime();
         gpuExecution = true;
-
-        if (ASTxOptions.profiler) {
-            Profiler.getInstance().writeInBuffer("copyIN total", (texecute - tcopyIN));
-            Profiler.getInstance().writeInBuffer("execute total", (tcopyOUT - texecute));
-            Profiler.getInstance().writeInBuffer("tOUT total", (tend - tcopyOUT));
-            Profiler.getInstance().writeInBuffer("runWithMarawaccAccelerator total", (tend - tcopyIN));
-        }
 
         ArrayList<Object> arrayList = new ArrayList<>();
         arrayList.add(result);
@@ -289,8 +277,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
     private ArrayList<Object> runJavaOpenCLJIT(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int totalSize) {
 
-        long start = System.nanoTime();
-
         ArrayList<Object> output = new ArrayList<>();
         output.add(firstValue);
 
@@ -306,8 +292,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         if (graphToCompile != null && gpuCompilationUnit != null) {
             ArrayList<Object> runWithMarawaccAccelerator = runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
-            long end = System.nanoTime();
-            Profiler.getInstance().writeInBuffer("runJavaOpenCLJIT total", (end - start));
             return runWithMarawaccAccelerator;
         }
 
@@ -698,8 +682,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
             lexicalScopes = RGPUCache.INSTANCE.getCachedObjects(function).getLexicalScopeVars();
         }
 
-        long gpuCalling = System.nanoTime();
-
         RAbstractVector mapResult = null;
 
         // Prepare all inputs in an array of Objects
@@ -714,7 +696,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
         long end = System.nanoTime();
 
         if (ASTxOptions.profiler) {
-            Profiler.getInstance().writeInBuffer("gpu calling", (gpuCalling - start));
             Profiler.getInstance().writeInBuffer("gpu start-end", (end - start));
             Profiler.getInstance().writeInBuffer("gpu start", start);
             Profiler.getInstance().writeInBuffer("gpu end", end);
