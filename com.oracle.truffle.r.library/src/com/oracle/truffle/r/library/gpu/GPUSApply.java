@@ -239,7 +239,6 @@ public final class GPUSApply extends RExternalBuiltinNode {
         ASTLexicalScoping lexicalScoping = new ASTLexicalScoping();
         lexicalScoping.apply(function);
         String[] scopeVars = lexicalScoping.scopeVars();
-        System.out.println("LEXICAL SCOPING: " + Arrays.toString(scopeVars));
         return scopeVars;
     }
 

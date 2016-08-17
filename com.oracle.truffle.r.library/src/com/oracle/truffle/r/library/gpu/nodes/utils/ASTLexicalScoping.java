@@ -191,8 +191,5 @@ public class ASTLexicalScoping {
         filterRead(allNodes);
         filterCallNode(allNodes);
         filterReplacement(allNodes);
-
-        System.out.println(scopes);
-
     }
 }
