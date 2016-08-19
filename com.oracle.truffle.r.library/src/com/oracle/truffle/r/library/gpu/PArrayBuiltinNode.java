@@ -36,7 +36,6 @@ public abstract class PArrayBuiltinNode extends RExternalBuiltinNode.Arg1 {
 
     @Specialization
     public PArray<?> createPArray(RAbstractVector input) {
-
         PArray<?> parray = null;
         TypeInfoList inputTypeList = null;
         RAbstractVector[] additionalArgs = null;
@@ -53,7 +52,6 @@ public abstract class PArrayBuiltinNode extends RExternalBuiltinNode.Arg1 {
             // Normal marshal (from RAbstractVector to PArray)
             parray = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
         }
-
         return parray;
     }
 }

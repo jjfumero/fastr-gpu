@@ -96,7 +96,6 @@ public final class RIntVector extends RVector implements RAbstractIntVector {
     public int getDataAt(int index) {
         return data[index];
     }
-
     public int getDataAt(Object store, int index) {
         assert data == store;
         return ((int[]) store)[index];

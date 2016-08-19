@@ -423,15 +423,13 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
     private static PArray<?> createPArrays(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList inputTypeList) {
         PArray<?> inputPArrayFormat = null;
-        if (ASTxOptions.usePArrays) {
-            if (ASTxOptions.optimizeRSequence) {
-                // Optimise with RSequences data types (openCL logic to compute the data) and no
-                // input copy.
-                inputPArrayFormat = ASTxUtils.marshalWithReferencesAndSequenceOptimize(input, additionalArgs, inputTypeList);
-            } else {
-                // RTypes with PArray information
-                inputPArrayFormat = ASTxUtils.marshalWithReferences(input, additionalArgs, inputTypeList);
-            }
+        if (ASTxOptions.usePArrays && ASTxOptions.optimizeRSequence) {
+            // Optimise with RSequences data types (openCL logic to compute the data) and no
+            // input copy.
+            inputPArrayFormat = ASTxUtils.marshalWithReferencesAndSequenceOptimize(input, additionalArgs, inputTypeList);
+        } else if (ASTxOptions.usePArrays && !ASTxOptions.optimizeRSequence) {
+            // RTypes with PArray information
+            inputPArrayFormat = ASTxUtils.marshalWithReferences(input, additionalArgs, inputTypeList);
         } else {
             // real marshal
             inputPArrayFormat = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
@@ -443,11 +441,11 @@ public final class GPUSApply extends RExternalBuiltinNode {
     private static int getSize(PArray input, PArray[] additionalArgs) {
         int totalSize = input.size();
         if (input.isSequence()) {
-            totalSize = input.getTotalSize();
+            totalSize = input.getTotalSizeWhenSequence();
         } else if (additionalArgs != null) {
             for (PArray<?> p : additionalArgs) {
                 if (p.isSequence()) {
-                    totalSize = p.getTotalSize();
+                    totalSize = p.getTotalSizeWhenSequence();
                     break;
                 }
             }

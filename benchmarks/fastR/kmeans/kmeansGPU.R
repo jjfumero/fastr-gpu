@@ -46,7 +46,7 @@ benchmark <- function(inputSize) {
 }
 
 ## Main
-print("FASTR CPU")
+print("FASTR GPU")
 print(paste("SIZE:", size))
 benchmark(size)
 
