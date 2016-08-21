@@ -121,7 +121,7 @@ benchmark <- function(inputSize) {
 
 	px <- marawacc.parray(px)
 	py <- marawacc.parray(py)
-	px <- marawacc.parray(pz)
+	pz <- marawacc.parray(pz)
 	vx <- marawacc.parray(vx)
 	vy <- marawacc.parray(vy)
 	vz <- marawacc.parray(vz)
