@@ -1,12 +1,12 @@
 
 ## ASTx
-## NBody benchmark, baseline 
+## NBody benchmark
 
 ## Parse arguments
 args <- commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
-	stop("No input size passed. Usage: ./nbodyGPU.R <size> ")
+	stop("No input size passed. Usage: ./nbodyGPUPArrays.R <size> ")
 } 
 
 size <- as.integer(args[1])
@@ -98,6 +98,7 @@ nbodyFunction <- function(px, py, pz, vx, vy, vz) {
 
 
 benchmark <- function(inputSize) {
+
 	px <- runif(size)
 	py <- runif(size)
 	pz <- runif(size)
@@ -117,6 +118,14 @@ benchmark <- function(inputSize) {
 
 	seq <- mapply(nbodyCPU, vx, vy, vz, px, py, pz)
 
+
+	px <- marawacc.parray(px)
+	py <- marawacc.parray(py)
+	px <- marawacc.parray(pz)
+	vx <- marawacc.parray(vx)
+	vy <- marawacc.parray(vy)
+	vz <- marawacc.parray(vz)
+
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
 		result <- marawacc.gpusapply(vx, nbodyFunction, vy, vz, px, py, pz);
@@ -124,23 +133,22 @@ benchmark <- function(inputSize) {
 		total <- end - start
 		print(total)
 
-		if(CHECK) {
+		# Check result
+		if (CHECK) {
 			k <- 1
 			j <- 1
 			while (k < size) {
 			    lseq <- c(seq[[k]], seq[[k+1]], seq[[k+2]], seq[[k+3]], seq[[k+4]], seq[[k+5]])
     			lgpu <- c(result[[j]][[1]], result[[j]][[2]], result[[j]][[3]], result[[j]][[4]], result[[j]][[5]], result[[j]][[6]])
-	
 				for (ii in 1:6) {
-		    		# check the elements for the tuple
-		    		if (abs(lseq[ii] - lgpu[ii]) > LIMIT) {
-    			    	print("Result is wrong")
+			    	# check the elements for the tuple
+			    	if (abs(lseq[ii] - lgpu[ii]) > LIMIT) {
+    				    print("Result is wrong")
 				        break;
 				    }
 				}
-
-		    	k <- k + 6
-			    j <- j + 1
+			    k <- k + 6
+		    	j <- j + 1
 			}
 		}
 	}
@@ -149,7 +157,7 @@ benchmark <- function(inputSize) {
 LIMIT <- 0.5
 
 ## Main
-print("FASTR CPU")
+print("ASTX GPU")
 print(paste("SIZE:", size))
 benchmark(size)
 

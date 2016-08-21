@@ -1,12 +1,12 @@
 
 ## ASTx
-## NBody benchmark, baseline 
+## NBody benchmark, GNUR version
 
 ## Parse arguments
 args <- commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
-	stop("No input size passed. Usage: ./nbody.R <size> ")
+	stop("No input size passed. Usage: ./nbodyGNU.R <size> ")
 } 
 
 size <- as.integer(args[1])
@@ -18,6 +18,9 @@ DELTA <- 0.005
 ESPSQRT <- 500
 
 CHECK <- FALSE
+
+require(compiler)
+enableJIT(3)
 
 ## Lambda expression for the computation
 benchmark <- function(inputSize) {
@@ -77,16 +80,16 @@ benchmark <- function(inputSize) {
 	}
 
 	for (i in 1:REPETITIONS) {
-		start <- nanotime()
+		start <- proc.time()
 		result <- mapply(nbodyFunction, vx, vy, vz, px, py, pz);
-		end <- nanotime()
+		end <- proc.time()
 		total <- end - start
 		print(total)
 	}
 }
 
 ## Main
-print("FASTR CPU")
+print("GNU-R")
 print(paste("SIZE:", size))
 benchmark(size)
 

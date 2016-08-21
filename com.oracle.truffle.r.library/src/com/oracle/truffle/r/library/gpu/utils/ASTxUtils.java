@@ -1023,11 +1023,25 @@ public class ASTxUtils {
         String returns = composeReturnType(infoList);
         PArray<?> parray = new PArray<>(totalSize, TypeFactory.Tuple(returns), false);
         boolean sequence = isFullPArraySequence(input, additionalArgs);
+        PArray<?> b = additionalArgs[0];
         switch (infoList.size()) {
             case 2:
-                PArray<?> b = additionalArgs[0];
                 parray.setBuffer(0, input.getArrayReference(), input.isSequence());
                 parray.setBuffer(1, b.getArrayReference(), b.isSequence());
+                parray.setSequence(sequence);
+                parray.setTotalSize(totalSize);
+                return parray;
+            case 6:
+                PArray<?> c = additionalArgs[1];
+                PArray<?> d = additionalArgs[2];
+                PArray<?> e = additionalArgs[3];
+                PArray<?> f = additionalArgs[4];
+                parray.setBuffer(0, input.getArrayReference(), input.isSequence());
+                parray.setBuffer(1, b.getArrayReference(), b.isSequence());
+                parray.setBuffer(2, c.getArrayReference(), c.isSequence());
+                parray.setBuffer(3, d.getArrayReference(), d.isSequence());
+                parray.setBuffer(4, e.getArrayReference(), e.isSequence());
+                parray.setBuffer(5, f.getArrayReference(), f.isSequence());
                 parray.setSequence(sequence);
                 parray.setTotalSize(totalSize);
                 return parray;
