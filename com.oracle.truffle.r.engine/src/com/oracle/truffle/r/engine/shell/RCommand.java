@@ -265,8 +265,16 @@ public class RCommand {
                             }
                         }
                         if (ASTxOptions.profiler) {
-                            Profiler.getInstance().printLogBuffers();
-                            Profiler.getInstance().printMediansOCLEvents();
+                            StringBuffer logBuffers = Profiler.getInstance().getLogBuffers();
+                            StringBuffer mediansOCLEvents = Profiler.getInstance().getMediansOCLEvents();
+
+                            if (logBuffers.length() != 0) {
+                                System.out.println(logBuffers);
+                            }
+                            if (mediansOCLEvents.length() != 0) {
+                                System.out.println(mediansOCLEvents);
+                            }
+
                             Profiler.getInstance().clean();
                         }
                         continue REPL;
