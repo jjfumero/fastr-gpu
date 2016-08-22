@@ -1,6 +1,6 @@
 
 ## ASTx
-## Montecarlo benchmark, baseline 
+## Montecarlo benchmark
 
 ## Parse arguments
 args <- commandArgs(trailingOnly=TRUE)
@@ -11,61 +11,63 @@ if (length(args) == 0) {
 
 size <- as.integer(args[1])
 
-REPETITIONS <- 10
+REPETITIONS <- 11
+
+CHECK_RESULT <- TRUE
 
 ## Lambda expression for the computation
 benchmark <- function(inputSize) {
 
-	montecarloGPUFunction <- function(x) {
+	montecarloGPUFunction <- function(input) {
 		iter <- 25000
 
-		seed <- x
+		seed <- input
 		sum <- 0.0
 		
 		for (j in 1:iter) {
-			# random for x
-			#x <- runif(1)
-			# random for y
-			#y <- runif(1)
+			x <- rx[input] 
+			y <- ry[input] 
 
-			# temporal
-			x <- 0.1232
-			y <- 0.8712
+			#x <- 0.123
+			#y <- 0.9819
+			
+			d <- x * x + y * y			
+			dist <- sqrt(d)
+
+			if (dist <= 1.0) {
+				sum <- sum + 1.0;
+			}
+		}
+
+		sum <- sum * 4
+		result <- sum/iter
+		return(result)
+	}
+
+	montecarloCPUFunction <- function(input) {
+		iter <- 25000
+
+		seed <- input
+		sum <- 0.0
+		
+		for (j in 1:iter) {
+			x <- rx[input] 
+			y <- ry[input] 
 
 			dist <- sqrt(x*x + y * y)
 			if (dist <= 1.0) {
 				sum <- sum + 1.0;
 			}
 		}
-		
-		return(sum)
+
+		sum <- sum * 4
+		result <- sum/iter
+		return(result)
 	}
 
-	montecarloCPUFunction <- function(x) {
-		iter <- 25000
-
-		seed <- x
-		sum <- 0.0
-		
-		for (j in 1:iter) {
-			# random for x
-			#x <- runif(1)
-			# random for y
-			#y <- runif(1)
-
-			# temporal
-			x <- 0.1232
-			y <- 0.8712
-
-			dist <- sqrt(x*x + y * y)
-			if (dist <= 1.0) {
-				sum <- sum + 1.0;
-			}
-		}
-		return(sum)
-	}
-
-	x <- 0:size;
+	x <- 1:size;
+	rx <<- runif(size)
+	ry <<- runif(size)
 
 	resultSeq <- mapply(montecarloCPUFunction, x)
 
@@ -76,15 +78,14 @@ benchmark <- function(inputSize) {
 		total <- end - start
 		print(total)
 
-		# Check result
-		for (i in 1:size) {
-			if (abs(resultSeq[i] - result[i]) > 0.1) {
-				print("Result is wrong")
-				break
+		if (CHECK_RESULT) {
+			for (i in 1:size) {
+				if (abs(resultSeq[i] - result[i]) > 0.1) {
+					print("Result is wrong")
+					break
+				}
 			}
 		}
-
-		#print(result);
 	}
 }
 

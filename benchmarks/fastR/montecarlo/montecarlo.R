@@ -1,6 +1,6 @@
 
 ## ASTx
-## Montecarlo benchmark, baseline 
+## Montecarlo benchmark
 
 ## Parse arguments
 args <- commandArgs(trailingOnly=TRUE)
@@ -11,28 +11,35 @@ if (length(args) == 0) {
 
 size <- as.integer(args[1])
 
-REPETITIONS <- 10
+REPETITIONS <- 11
 
 ## Lambda expression for the computation
 benchmark <- function(inputSize) {
 
-	montecarloFunction <- function(x) {
+	montecarloFunction <- function(input) {
 		iter <- 25000
 
-		seed <- x
+		seed <- input
 		sum <- 0.0
 		
 		for (j in 1:iter) {
-			x <- runif(1)
-			y <- runif(1)
+
+			x <- rx[input]
+			y <- ry[input] 
+
 			dist <- sqrt(x*x + y * y)
 			if (dist <= 1.0) {
 				sum <- sum + 1.0;
 			}
 		}
+		sum <- sum * 4
+		result <- sum/iter;
+		return(result)
 	}
 
-	x <- 0:size;
+	x <- 1:size;
+	rx <<- runif(size)
+	ry <<- runif(size)
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
