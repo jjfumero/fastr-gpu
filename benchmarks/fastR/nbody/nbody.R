@@ -42,9 +42,9 @@ benchmark <- function(inputSize) {
 			invDistCube <- invDist * invDist * invDist;	
 			s <- positions[body + 3] * invDistCube;
 
-    	    acc1 <-(s * r1);
-	        acc2 <-(s * r2);
-    	    acc3 <-(s * r3);
+    	    acc1 <- acc1 + (s * r1);
+	        acc2 <- acc2 + (s * r2);
+    	    acc3 <- acc3 + (s * r3);
 	    }
 
 		npx <- px + (vx * DELTA + 0.5 * acc1 * DELTA * DELTA);

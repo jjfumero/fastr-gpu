@@ -17,7 +17,7 @@ NUMBODIES <- size
 DELTA <- 0.005
 ESPSQRT <- 500
 
-CHECK <- FALSE
+CHECK <- TRUE
 
 nbodyCPU <- function(px, py, pz, vx, vy, vz) {
 	acc1 <- 0
@@ -79,18 +79,18 @@ nbodyFunction <- function(px, py, pz, vx, vy, vz) {
 		invDistCube <- invDist * invDist * invDist;	
 		s <- positions[body + 3] * invDistCube;
 
-        acc1 <-(s * r1);
-        acc2 <-(s * r2);
-        acc3 <-(s * r3);
+        acc1 <- acc1 + (s * r1);
+        acc2 <- acc2 + (s * r2);
+        acc3 <- acc3 + (s * r3);
     }
 
 	npx <- px + (vx * DELTA + 0.5 * acc1 * DELTA * DELTA);
 	npy <- py + (vy * DELTA + 0.5 * acc2 * DELTA * DELTA);
 	npz <- pz + (vz * DELTA + 0.5 * acc3 * DELTA * DELTA);
 
-  	nvx <- vx + ( acc1 * DELTA);
- 	nvy <- vy + ( acc2 * DELTA);
-  	nvz <- vz + ( acc3 * DELTA);
+  	nvx <- vx + (acc1 * DELTA);
+ 	nvy <- vy + (acc2 * DELTA);
+  	nvz <- vz + (acc3 * DELTA);
 	
 	result <- list(npx, npy, npz, nvx, nvy, nvz)
 	return(result)	
