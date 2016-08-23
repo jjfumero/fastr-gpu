@@ -23,6 +23,7 @@ function bs4M {
 function nbody {
 	# NBody 65536
 	./runbench benchmarks/fastR/nbody/nbody.R 65536 > nbodyFastR.log
+	./runbench benchmarks/fastR/nbody/nbodySeq.R 65536 > nbodySeq.log
 	./runbench benchmarks/fastR/nbody/nbodyGPUPArrays.R 65536 > nbodyASTx.log
 	$GNUR/Rscript benchmarks/fastR/nbody/nbodyGNU.R 65536 > nbodyGNU.log
 }
