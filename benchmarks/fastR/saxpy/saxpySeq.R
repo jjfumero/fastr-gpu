@@ -1,6 +1,6 @@
 
 ## AST-X Compiler
-## Saxpy benchmark, GPU version
+## Saxpy benchmark, CPU version
 
 ## Parse arguments
 args <- commandArgs(trailingOnly=TRUE)
@@ -54,13 +54,11 @@ benchmark <- function(inputSize) {
 			} else {
 				print("Result is correct")
 			}
-			#print(result);
 		}
 	}
 }
 
-## Main 
-print("ASTx GPU")
+print("ASTx CPU")
 print(paste("SIZE:", size))
 benchmark(size)
 
