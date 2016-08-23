@@ -11,7 +11,7 @@ if (length(args) == 0) {
 
 size <- as.integer(args[1])
 
-REPETITIONS <- 2
+REPETITIONS <- 11
 
 CHECK_RESULT <- TRUE
 
@@ -28,12 +28,16 @@ mandelbrotOpenCL <- function(indexIDX, indexJDX) {
     ZiN <- 0
     y <- 0
 
-	while ((y < iterations) && ((ZiN + ZrN) <= 4)) { 
-		Zi <- 2.0 * Zr * Zi + Ci
-        Zr <- 1 * ZrN - ZiN + Cr
-        ZiN <- Zi * Zi
-        ZrN <- Zr * Zr
-		y <- y + 1
+	for (i in 1:iterations) {
+		if ((ZiN + ZrN) <= 4) {
+			Zi <- 2.0 * Zr * Zi + Ci
+    	    Zr <- 1 * ZrN - ZiN + Cr
+        	ZiN <- Zi * Zi
+	        ZrN <- Zr * Zr
+			y <- y + 1
+		} else {
+			break;
+		}
 	}
 
 	result <- ((y * 255) / iterations);
@@ -80,7 +84,6 @@ if (CHECK_RESULT) {
 	resultSeq <- mapply(mandelbrotCPU, x, y)
 }
 
-print(resultSeq)
 
 for (i in 1:REPETITIONS) {
 	start <- nanotime()
@@ -88,8 +91,6 @@ for (i in 1:REPETITIONS) {
 	end <- nanotime()
 	total <- end - start
 	print(paste("Total Time:" , total))
-
-	print(result)
 
 	if (CHECK_RESULT) {
 		nonError <- identical(resultSeq, result)
