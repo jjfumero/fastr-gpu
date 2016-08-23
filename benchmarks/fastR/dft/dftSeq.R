@@ -36,7 +36,7 @@ benchmark <- function(inputSize) {
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
-		result <- marawacc.sapply(x, dftFunction);
+		result <- marawacc.sapply(x, dftFunction, nThreads=1);
 		total <- nanotime() - start
 		print(paste("Total Time:" , total))
 	}

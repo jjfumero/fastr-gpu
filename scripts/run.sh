@@ -32,7 +32,14 @@ function dft() {
 	./runbench benchmarks/fastR/dft/dft.R 8192 > dftFastR.log
 	./runbench benchmarks/fastR/dft/dftSeq.R 8192 > dftSeq.log
 	./runbench benchmarks/fastR/dft/dftGPUPArrays.R 8192 > dftASTx.log
-	$GNUR/Rscript benchmarks/fastR/dft/dftGNU.R 8192 > nbodyGNU.log
+	$GNUR/Rscript benchmarks/fastR/dft/dftGNU.R 8192 > dftGNU.log
+}
+
+function mandelbrot() {
+	./runbench benchmarks/fastR/mandelbrot/mandelbrot.R 1024 > mandelbrotFastR.log
+	./runbench benchmarks/fastR/mandelbrot/mandelbrotSeq.R 1024 > mandelbrotSeq.log
+	./runbench benchmarks/fastR/mandelbrot/mandelbrotGPUPArrays.R 1024 > mandelbrotASTx.log
+	$GNUR/Rscript benchmarks/fastR/mandelbrot/mandelbrotGNU.R 1024 > mandelbrotGNU.log
 }
 
 ## main
@@ -41,3 +48,4 @@ bs1M
 bs4M
 nbody
 dft
+mandelbrot
