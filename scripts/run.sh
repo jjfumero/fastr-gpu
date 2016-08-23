@@ -28,10 +28,16 @@ function nbody {
 	$GNUR/Rscript benchmarks/fastR/nbody/nbodyGNU.R 65536 > nbodyGNU.log
 }
 
+function dft() {
+	./runbench benchmarks/fastR/dft/dft.R 8192 > dftFastR.log
+	./runbench benchmarks/fastR/dft/dftSeq.R 8192 > dftSeq.log
+	./runbench benchmarks/fastR/dft/dftGPUPArrays.R 8192 > dftASTx.log
+	$GNUR/Rscript benchmarks/fastR/dft/dftGNU.R 8192 > nbodyGNU.log
+}
+
 ## main
 saxpy
 bs1M
 bs4M
 nbody
-
-
+dft
