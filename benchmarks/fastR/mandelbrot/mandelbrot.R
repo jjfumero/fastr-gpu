@@ -11,15 +11,14 @@ if (length(args) == 0) {
 
 size <- as.integer(args[1])
 
-REPETITIONS <- 10
+REPETITIONS <- 11
 
-iterations <- 10000
 space <- 2/size
 
 benchmark <- function(inputSize) {
 
 	mandelbrotFunction <- function(indexIDX, indexJDX) {
-
+		iterations <- 10000
 		Zr <- 0
         Zi <- 0
         Cr <- (1 * indexJDX * space - 1.5)
@@ -57,8 +56,7 @@ benchmark <- function(inputSize) {
 		result <- mapply(mandelbrotFunction, x, y);
 		end <- nanotime()
 		total <- end - start
-		print(total)
-		#print(result);
+		print(paste("Total Time:" , total))
 	}
 }
 

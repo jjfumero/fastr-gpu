@@ -11,59 +11,96 @@ if (length(args) == 0) {
 
 size <- as.integer(args[1])
 
-REPETITIONS <- 10
+REPETITIONS <- 2
 
-iterations <- 10000
-space <- 2/size
+CHECK_RESULT <- TRUE
 
-benchmark <- function(inputSize) {
 
-	mandelbrotFunction <- function(indexIDX, indexJDX) {
+mandelbrotOpenCL <- function(indexIDX, indexJDX) {
+	iterations <- 10000
+	space <- 2/size
+	Zr <- 0
+    Zi <- 0
+    Cr <- (1 * indexJDX * space - 1.5)
+    Ci <- (1 * indexIDX * space - 1.0)
 
-		Zr <- 0
-        Zi <- 0
-        Cr <- (1 * indexJDX * space - 1.5)
-        Ci <- (1 * indexIDX * space - 1.0)
+    ZrN <- 0
+    ZiN <- 0
+    y <- 0
 
-        ZrN <- 0
-        ZiN <- 0
-        y <- 0
-
-		while ((y < iterations) && ((ZiN + ZrN) <= 4.0)) { 
-			Zi <- 2.0 * Zr * Zi + Ci
-            Zr <- 1 * ZrN - ZiN + Cr
-            ZiN <- Zi * Zi
-            ZrN <- Zr * Zr
-			y <- y + 1
-		}
-
-		result <- ((y * 255) / iterations);
-		return(result)
+	while ((y < iterations) && ((ZiN + ZrN) <= 4)) { 
+		Zi <- 2.0 * Zr * Zi + Ci
+        Zr <- 1 * ZrN - ZiN + Cr
+        ZiN <- Zi * Zi
+        ZrN <- Zr * Zr
+		y <- y + 1
 	}
 
-	totalSize <- size*size
-	x <- runif(totalSize)
-	y <- runif(totalSize)
-		
-	for (i in 1:size) {
-		for (j in 1:size) {
-			x[i * size + j] <- i
-			y[i * size + j] <- j
-		}
+	result <- ((y * 255) / iterations);
+	return(result)
+}
+
+mandelbrotCPU <- function(indexIDX, indexJDX) {
+	iterations <- 10000
+	space <- 2/size
+	Zr <- 0
+    Zi <- 0
+    Cr <- (1 * indexJDX * space - 1.5)
+    Ci <- (1 * indexIDX * space - 1.0)
+
+    ZrN <- 0
+    ZiN <- 0
+    y <- 0
+
+	while ((y < iterations) && ((ZiN + ZrN) <= 4)) {
+		Zi <- 2.0 * Zr * Zi + Ci;
+        Zr <- 1 * ZrN - ZiN + Cr;
+        ZiN <- Zi * Zi;
+        ZrN <- Zr * Zr;
+		y <- y + 1
 	}
+
+	result <- ((y * 255) / iterations);
+	return(result)
+}
+
+
+totalSize <- size*size
+x <<- runif(totalSize)
+y <<- runif(totalSize)
 	
-	for (i in 1:REPETITIONS) {
-		start <- nanotime()
-		result <- marawacc.testGPU(x, mandelbrotFunction, y);
-		end <- nanotime()
-		total <- end - start
-		print(total)
-		#print(result);
+for (i in 1:size) {
+	for (j in 1:size) {
+		x[i * size + j] <- i
+		y[i * size + j] <- j
 	}
 }
 
-## Main
-print("FASTR CPU")
-print(paste("SIZE:", size))
-benchmark(size)
+if (CHECK_RESULT) {
+	resultSeq <- mapply(mandelbrotCPU, x, y)
+}
+
+print(resultSeq)
+
+for (i in 1:REPETITIONS) {
+	start <- nanotime()
+	result <- marawacc.testGPU(x, mandelbrotOpenCL, y);
+	end <- nanotime()
+	total <- end - start
+	print(paste("Total Time:" , total))
+
+	print(result)
+
+	if (CHECK_RESULT) {
+		nonError <- identical(resultSeq, result)
+		if (!nonError) {
+			for (i in 1:totalSize) {
+				if (abs(resultSeq[i] - result[i]) > 0.1) {
+					print("Result is wrong")
+					break;
+				}
+			}
+		}
+	}
+}
 
