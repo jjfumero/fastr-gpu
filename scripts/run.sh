@@ -9,6 +9,7 @@ function saxpy {
 function bs1M {
 	# BS 1M
 	./runbench benchmarks/fastR/blackscholes/blackscholes.R 1048576 > bsFASTR.log 
+	./runbench benchmarks/fastR/blackscholes/blackscholesSeq.R 1048576 > bsSeq.log
 	./runbench benchmarks/fastR/blackscholes/blackscholesGPUPArrays.R 1048576 > bsASTx.log
 	$GNUR/Rscript benchmarks/fastR/blackscholes/blackscholesGNU.R 1048576 > bsGNU.log
 }
@@ -17,6 +18,7 @@ function bs4M {
 	# BS 4M
 	./runbench benchmarks/fastR/blackscholes/blackscholes.R 4194304 > bsFASTR4.log 
 	./runbench benchmarks/fastR/blackscholes/blackscholesGPUPArrays.R 4194304 > bsASTx4.log
+	./runbench benchmarks/fastR/blackscholes/blackscholesSeq.R 4194304 > bsSeq4.log
 	$GNUR/Rscript benchmarks/fastR/blackscholes/blackscholesGNU.R 4194304 > bsGNU4.log
 }
 
