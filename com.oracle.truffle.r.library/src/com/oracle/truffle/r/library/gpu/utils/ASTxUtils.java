@@ -520,6 +520,10 @@ public class ASTxUtils {
             type = listTupleOutputAnalysis(value);
         } else if (value instanceof RDoubleVector) {
             type = TypeInfo.DOUBLE_VECTOR;
+        } else if (value instanceof RDoubleSequence) {
+            type = TypeInfo.DOUBLE;
+        } else if (value instanceof RIntSequence) {
+            type = TypeInfo.INT;
         } else {
             printTypeError(value);
         }
