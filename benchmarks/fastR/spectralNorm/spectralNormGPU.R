@@ -11,9 +11,10 @@ if (length(args) == 0) {
 
 size <- as.integer(args[1])
 
-REPETITIONS <- 10
+REPETITIONS <- 11
 
-## Lambda expression for the computation
+CHECK_RESULT <- TRUE
+
 benchmark <- function(inputSize) {
 
 	spectralNorm1 <- function(i) {
@@ -42,24 +43,71 @@ benchmark <- function(inputSize) {
 		return(sum)
 	}
 
+	spectralNorm1CPU <- function(i) {
+		sum <- 0
+		for (j in 1:size) {
+			evalAPrime <- (i + j) * (i + j + 1)
+			evalA <- evalAPrime / 2
+			evalA <- evalA + i + 1
+			evalA <- 1.0/ evalA
+			partial <- evalA * v[j]
+			sum <- partial + sum
+		}
+		return(sum)
+	}
+
+	spectralNorm2CPU <- function(i) {
+		sum <- 0
+		for (j in 1:size) {
+			evalAPrime <- (j + i) * (j + i + 1)
+			evalA <- evalAPrime / 2
+			evalA <- evalA + j + 1
+			evalA <- 1.0/ evalA
+			partial <- evalA * v[j]
+			sum <- partial + sum
+		}
+		return(sum)
+	}
+
 	v <<- rep(1, size)
 	x <- 1:size
+
+	if (CHECK_RESULT) {
+		seqA <- mapply(spectralNorm1, x);
+		v <<- seqA
+		resultSeq <- mapply(spectralNorm2, seqA) 
+	}	
+
+	v <<- rep(1, size)
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
 
 		resultA <- marawacc.testGPU(x, spectralNorm1);
 		v <<- resultA
-		resultB <- marawacc.testGPU(x, spectralNorm2) 
+		resultB <- marawacc.testGPU(resultA, spectralNorm2) 
 
 		end <- nanotime()
 		total <- end - start
 		print(total)
+
+		if (CHECK_RESULT) {
+			nonError <- identical(resultSeq, resultB)
+			if (!nonError) {
+				for (i in seq(resultSeq)) {
+					if (abs(resultSeq[i] - resultB[i]) > 0.1) {
+						print("Result is wrong")
+						correct <- FALSE
+						break;
+					}
+				}
+			}
+		}
 	}
 }
 
 ## Main
-print("FASTR CPU")
+print("ASTx Benchmark")
 print(paste("SIZE:", size))
 benchmark(size)
 

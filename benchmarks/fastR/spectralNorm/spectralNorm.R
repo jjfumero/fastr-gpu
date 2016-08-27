@@ -11,7 +11,7 @@ if (length(args) == 0) {
 
 size <- as.integer(args[1])
 
-REPETITIONS <- 10
+REPETITIONS <- 11
 
 ## Lambda expression for the computation
 benchmark <- function(inputSize) {
@@ -50,7 +50,7 @@ benchmark <- function(inputSize) {
 
 		resultA <- mapply(spectralNorm1, x);
 		v <<- resultA
-		resultB <- mapply(spectralNorm2, x) 
+		resultB <- mapply(spectralNorm2, resultA) 
 
 		end <- nanotime()
 		total <- end - start
