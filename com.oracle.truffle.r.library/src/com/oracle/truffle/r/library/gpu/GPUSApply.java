@@ -536,7 +536,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         long endUnmarshal = System.nanoTime();
 
         // Print profiler
-        if (ASTxOptions.profiler) {
+        if (ASTxOptions.profile_OCL_ASTx) {
             // Marshal
             Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "start", startMarshal);
             Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end", endMarshal);
@@ -593,7 +593,7 @@ public final class GPUSApply extends RExternalBuiltinNode {
         long endUnmarshal = System.nanoTime();
 
         // Print profiler
-        if (ASTxOptions.profiler) {
+        if (ASTxOptions.profile_OCL_ASTx) {
 
             // Marshal
             Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "start", startMarshal);
@@ -693,12 +693,11 @@ public final class GPUSApply extends RExternalBuiltinNode {
 
         long end = System.nanoTime();
 
-        if (ASTxOptions.profiler) {
+        if (ASTxOptions.profile_OCL_ASTx) {
             Profiler.getInstance().writeInBuffer("gpu start-end", (end - start));
             Profiler.getInstance().writeInBuffer("gpu start", start);
             Profiler.getInstance().writeInBuffer("gpu end", end);
         }
-
         return mapResult;
     }
 }
