@@ -73,23 +73,22 @@ benchmark <- function(inputSize) {
 	x <- 1:size
 
 	if (CHECK_RESULT) {
-		seqA <- mapply(spectralNorm1, x);
+		seqA <- mapply(spectralNorm1CPU, x);
 		v <<- seqA
-		resultSeq <- mapply(spectralNorm2, seqA) 
+		resultSeq <- mapply(spectralNorm2CPU, seqA) 
 	}	
 
 	v <<- rep(1, size)
 
 	for (i in 1:REPETITIONS) {
-		start <- nanotime()
 
+		start <- nanotime()
 		resultA <- marawacc.testGPU(x, spectralNorm1);
 		v <<- resultA
 		resultB <- marawacc.testGPU(resultA, spectralNorm2) 
-
 		end <- nanotime()
 		total <- end - start
-		print(total)
+		print(paste("Total Time:", total))
 
 		if (CHECK_RESULT) {
 			nonError <- identical(resultSeq, resultB)
