@@ -1,8 +1,7 @@
 
 ## ASTx
-## KMeans benchmark, baseline 
+## KMeans benchmark
 
-## Parse arguments
 args <- commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
@@ -11,13 +10,14 @@ if (length(args) == 0) {
 
 size <- as.integer(args[1])
 
-REPETITIONS <- 20
+REPETITIONS <- 11
 KS <- 10
 
-## Lambda expression for the computation
+CHECK_RESULT <- TRUE
+
 benchmark <- function(inputSize) {
 
-	kmeansFunction <- function(x, y) {
+	kmeansOpenCLFunction <- function(x, y) {
 		minDist <- 10000000
 		id <- 0
 		for (i in 1:KS) {
@@ -26,27 +26,59 @@ benchmark <- function(inputSize) {
 			if (currentDist < minDist) {
 				minDist <- currentDist
 				id <- i
+			} else {
 			}	
 		}
 		return(id)
 	}
-	
+
+	kmeansFastRFunction <- function(x, y) {
+		minDist <- 10000000
+		id <- -1
+		for (i in 1:KS) {
+			currentDist <- (x - centre[i]) * (x - centre[i]) + 
+						   (y - centre[i + KS]) * (y - centre[i + KS])
+			if (currentDist < minDist) {
+				minDist <- currentDist
+				id <- i
+			}			
+		}
+		return(id)
+	}
+
 	centre <<- runif(KS*2)  * 10 * 2 - 10 
 	x <- centre[1:KS]
 	y <- centre[(KS+1):(KS*2)]
 
+	if (CHECK_RESULT) {
+		resultSeq <- mapply(kmeansFastRFunction, x, y);
+	}	
+
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
-		result <- marawacc.gpusapply(x, kmeansFunction, y);
+		result <- marawacc.gpusapply(x, kmeansOpenCLFunction, y);
 		end <- nanotime()
 		total <- end - start
-		print(total)
-		#print(result);
+		print(paste("Total Time: ", total))
+
+		if (CHECK_RESULT) {
+			nonError <- identical(resultSeq, result)
+			correct <- TRUE
+			if (!nonError) {
+				for (i in seq(result)) {
+					if (abs(resultSeq[i] - result[i]) > 0.1) {
+						print("Result is wrong")
+						correct <- FALSE
+						break;
+					}
+				}
+			}
+		}
 	}
 }
 
 ## Main
-print("FASTR GPU")
+print("ASTx GPU")
 print(paste("SIZE:", size))
 benchmark(size)
 

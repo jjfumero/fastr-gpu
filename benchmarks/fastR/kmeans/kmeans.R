@@ -11,16 +11,14 @@ if (length(args) == 0) {
 
 size <- as.integer(args[1])
 
-REPETITIONS <- 10
+REPETITIONS <- 11
 
 KS <- 10
 
-## Lambda expression for the computation
 benchmark <- function(inputSize) {
 
 	kmeansFunction <- function(x, y) {
-
-		minDist <- -1
+		minDist <- 10000000
 		id <- -1
 		for (i in 1:KS) {
 			currentDist <- (x - centre[i]) * (x - centre[i]) + 
@@ -43,7 +41,6 @@ benchmark <- function(inputSize) {
 		end <- nanotime()
 		total <- end - start
 		print(total)
-		#print(result);
 	}
 }
 
