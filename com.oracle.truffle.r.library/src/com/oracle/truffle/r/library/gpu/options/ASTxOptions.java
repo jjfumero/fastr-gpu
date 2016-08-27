@@ -30,7 +30,7 @@ import com.oracle.truffle.r.runtime.data.RSequence;
 public class ASTxOptions {
 
     /**
-     * Print internal results. Debugging purposes
+     * Print internal results. Debugging purposes.
      */
     public static boolean printResult = false;
 
