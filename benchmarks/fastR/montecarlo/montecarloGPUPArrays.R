@@ -6,7 +6,7 @@
 args <- commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
-	stop("No input size passed. Usage: ./montecarloGPU.R <size> ")
+	stop("No input size passed. Usage: ./montecarloGPUPArrays.R <size> ")
 } 
 
 size <- as.integer(args[1])
@@ -19,9 +19,8 @@ CHECK_RESULT <- TRUE
 benchmark <- function(inputSize) {
 
 	montecarloGPUFunction <- function(input) {
-		iterations <- 25000
 
-		seed <- input
+		iterations <- 25000
 		sum <- 0.0
 		
 		for (i in 1:iterations) {
@@ -69,9 +68,11 @@ benchmark <- function(inputSize) {
 		return(result)
 	}
 
-	x <- 1:size;
+	x <- 1:size
 	rx <<- runif(size)
 	ry <<- runif(size)
+
+	x <- marawacc.parray(x)
 
 	resultSeq <- mapply(montecarloCPUFunction, x)
 
