@@ -47,8 +47,8 @@ benchmark <- function(inputSize) {
 	}
 
 	centre <<- runif(KS*2)  * 10 * 2 - 10 
-	x <- centre[1:KS]
-	y <- centre[(KS+1):(KS*2)]
+	x <- runif(size)
+	y <- runif(size)
 
 	if (CHECK_RESULT) {
 		resultSeq <- mapply(kmeansFastRFunction, x, y);

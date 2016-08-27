@@ -1,12 +1,12 @@
 
 ## ASTx
-## KMeans benchmark, baseline 
+## KMeans benchmark
 
 ## Parse arguments
 args <- commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
-	stop("No input size passed. Usage: ./kmeans.R <size> ")
+	stop("No input size passed. Usage: ./kmeansSeq.R <size> ")
 } 
 
 size <- as.integer(args[1])
@@ -37,10 +37,10 @@ benchmark <- function(inputSize) {
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
-		result <- mapply(kmeansFunction, x, y);
+		result <- marawacc.sapply(x, kmeansFunction, x, nThreads=1);
 		end <- nanotime()
 		total <- end - start
-		print(total)
+		print(paste("Total Time:", total))
 	}
 }
 

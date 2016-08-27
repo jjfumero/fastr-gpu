@@ -1,19 +1,23 @@
 
-## ASTx
-## KMeans benchmark, baseline 
+## GNU R version
+## KMeans benchmark
 
 ## Parse arguments
 args <- commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
-	stop("No input size passed. Usage: ./kmeans.R <size> ")
+	stop("No input size passed. Usage: ./kmeansGNU.R <size> ")
 } 
 
 size <- as.integer(args[1])
 
 REPETITIONS <- 11
 
+## Number of clusters
 KS <- 10
+
+require(compiler)
+enableJIT(3)
 
 benchmark <- function(inputSize) {
 
@@ -36,16 +40,16 @@ benchmark <- function(inputSize) {
 	y <- runif(size)
 
 	for (i in 1:REPETITIONS) {
-		start <- nanotime()
+		start <- proc.time()
 		result <- mapply(kmeansFunction, x, y);
-		end <- nanotime()
+		end <- proc.time()
 		total <- end - start
 		print(total)
 	}
 }
 
 ## Main
-print("FASTR CPU")
+print("GNU R Version")
 print(paste("SIZE:", size))
 benchmark(size)
 
