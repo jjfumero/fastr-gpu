@@ -20,7 +20,7 @@ enableJIT(3)
 benchmark <- function(inputSize) {
 
 	hilbertFunction <- function(x, y) {
-		value <- 1 / (x + y + 1)
+		value <- 1 / (x + y - 1)
 		result <- (value)
 	}	
 

@@ -16,13 +16,13 @@ CHECK_RESULT <- TRUE
 benchmark <- function(inputSize) {
 
 	hilbertGPUFunction <- function(x, y) {
-		aux <- x * y + 1
+		aux <- x + y - 1
 		value <- 1.0 / aux
 		return(value)
 	}	
 
 	hilbertCPUFunction <- function(x, y) {
-		aux <- x * y + 1
+		aux <- x + y - 1
 		value <- 1.0 / aux
 		return(value)
 	}	

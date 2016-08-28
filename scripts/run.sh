@@ -59,11 +59,10 @@ function kmeans() {
 }
 
 function hilbert() {
-	./runbench benchmarks/fastR/hilbert/hilbert.R 8378368 > hilbertFastR.log
-	./runbench benchmarks/fastR/hilbert/hilbertSeq.R 8378368 > hilbertSeq.log
-	./runbench benchmarks/fastR/hilbert/hilbertGPUPArrays.R 8378368 > hilbertASTx.log
-	$GNUR/Rscript benchmarks/fastR/hilbert/hilbertGNU.R 8378368 > hilbertGNU.log
-	
+	./runbench benchmarks/fastR/hilbert/hilbert.R 4096 > hilbertFastR.log
+	./runbench benchmarks/fastR/hilbert/hilbertSeq.R 4096 > hilbertSeq.log
+	./runbench benchmarks/fastR/hilbert/hilbertGPUPArrays.R 4096 > hilbertASTx.log
+	$GNUR/Rscript benchmarks/fastR/hilbert/hilbertGNU.R 4096 > hilbertGNU.log
 }
 
 ## main
