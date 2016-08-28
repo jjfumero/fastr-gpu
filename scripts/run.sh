@@ -65,6 +65,13 @@ function hilbert() {
 	$GNUR/Rscript benchmarks/fastR/hilbert/hilbertGNU.R 4096 > hilbertGNU.log
 }
 
+function spectralNorm() {
+	./run benchmarks/fastR/spectralNorm/spectralNorm.R 32768 > spectralNormFastR.log
+	./run benchmarks/fastR/spectralNorm/spectralNormSeq.R 32768 > spectralNormSeq.log
+	./run benchmarks/fastR/spectralNorm/spectralNormGPUPArrays.R 32768 > spectralNormASTx.log
+	$GNUR/Rscript benchmarks/fastR/spectralNorm/spectralNormGNU.R 32768 > spectralNormGNU.log
+}
+
 ## main
 saxpy
 bs1M
@@ -75,3 +82,4 @@ mandelbrot
 montecarlo
 kmeans
 hilbert
+spectralNorm
