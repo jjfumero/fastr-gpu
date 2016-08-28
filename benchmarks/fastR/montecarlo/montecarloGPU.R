@@ -50,20 +50,15 @@ benchmark <- function(inputSize) {
 
 	montecarloCPUFunction <- function(input) {
 		iter <- 25000
-
-		seed <- input
 		sum <- 0.0
-		
 		for (j in 1:iter) {
 			x <- rx[input] 
 			y <- ry[input] 
-
 			dist <- sqrt(x*x + y * y)
 			if (dist <= 1.0) {
 				sum <- sum + 1.0;
 			}
 		}
-
 		sum <- sum * 4
 		result <- sum/iter
 		return(result)

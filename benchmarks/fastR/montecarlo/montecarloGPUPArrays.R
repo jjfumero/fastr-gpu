@@ -48,33 +48,30 @@ benchmark <- function(inputSize) {
 	}
 
 	montecarloCPUFunction <- function(input) {
-		iter <- 25000
-
-		seed <- input
+		iterations <- 25000
 		sum <- 0.0
-		
-		for (j in 1:iter) {
+		for (i in 1:iterations) {
 			x <- rx[input] 
 			y <- ry[input] 
-
 			dist <- sqrt(x*x + y * y)
 			if (dist <= 1.0) {
 				sum <- sum + 1.0;
 			}
 		}
-
 		sum <- sum * 4
-		result <- sum/iter
+		result <- sum/iterations
 		return(result)
 	}
 
 	x <- 1:size
 	rx <<- runif(size)
 	ry <<- runif(size)
+	
+	if (CHECK_RESULT) {
+		resultSeq <- mapply(montecarloCPUFunction, x)
+	}
 
 	x <- marawacc.parray(x)
-
-	resultSeq <- mapply(montecarloCPUFunction, x)
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
@@ -84,10 +81,13 @@ benchmark <- function(inputSize) {
 		print(paste("Total Time: ",total))
 
 		if (CHECK_RESULT) {
-			for (i in 1:size) {
-				if (abs(resultSeq[i] - result[i]) > 0.1) {
-					print("Result is wrong")
-					break
+			nonError <- identical(resultSeq, result)
+			if (!nonError) {
+				for (j in 1:size) {
+					if (abs(resultSeq[j] - result[j]) > 0.1) {
+						print("Result is wrong")
+						break
+					}
 				}
 			}
 		}

@@ -13,7 +13,6 @@ size <- as.integer(args[1])
 
 REPETITIONS <- 11
 
-## Lambda expression for the computation
 benchmark <- function(inputSize) {
 
 	montecarloFunction <- function(input) {
