@@ -51,6 +51,21 @@ function montecarlo() {
 	$GNUR/Rscript benchmarks/fastR/montecarlo/montecarloGNU.R 262144 > montecarloGNU.log
 }
 
+function kmeans() {
+	./runbench benchmarks/fastR/kmeans/kmeans.R 4194304 > kmeansFastR.log
+	./runbench benchmarks/fastR/kmeans/kmeansSeq.R 4194304 > kmeansSeq.log
+	./runbench benchmarks/fastR/kmeans/kmeansGPUPArrays.R 4194304 > kmeansASTx.log
+	$GNUR/Rscript benchmarks/fastR/kmeans/kmeansGNU.R 4194304 > kmeansGNU.log
+}
+
+function hilbert() {
+	./runbench benchmarks/fastR/hilbert/hilbert.R 8378368 > hilbertFastR.log
+	./runbench benchmarks/fastR/hilbert/hilbertSeq.R 8378368 > hilbertSeq.log
+	./runbench benchmarks/fastR/hilbert/hilbertGPUPArrays.R 8378368 > hilbertASTx.log
+	$GNUR/Rscript benchmarks/fastR/hilbert/hilbertGNU.R 8378368 > hilbertGNU.log
+	
+}
+
 ## main
 saxpy
 bs1M
@@ -59,3 +74,5 @@ nbody
 dft
 mandelbrot
 montecarlo
+kmeans
+hilbert

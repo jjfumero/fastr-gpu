@@ -11,11 +11,17 @@ if (length(args) == 0) {
 size <- as.integer(args[1])
 
 REPETITIONS <- 11
-CHECK_RESULT <- FALSE
+CHECK_RESULT <- TRUE
 
 benchmark <- function(inputSize) {
 
-	hilbertFunction <- function(x, y) {
+	hilbertGPUFunction <- function(x, y) {
+		aux <- x * y + 1
+		value <- 1.0 / aux
+		return(value)
+	}	
+
+	hilbertCPUFunction <- function(x, y) {
 		aux <- x * y + 1
 		value <- 1.0 / aux
 		return(value)
@@ -25,11 +31,24 @@ benchmark <- function(inputSize) {
 	x <- 1:totalSize
 	y <- 1:totalSize
 
+	if (CHECK_RESULT) {
+		resultSeq <- mapply(hilbertCPUFunction, x, y)
+	}
+
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
-		result <- marawacc.testGPU(x, hilbertFunction, y)
+		result <- marawacc.testGPU(x, hilbertGPUFunction, y)
 		total <- nanotime() - start
 		print(paste("Total Time: ", total))
+
+		if (CHECK_RESULT) {
+			for (i in 1:totalSize) {
+				if (abs(resultSeq[i] - result[i]) > 0.1) {
+					print("Result is wrong")
+					break
+				}
+			}
+		}
 	}
 }
 
