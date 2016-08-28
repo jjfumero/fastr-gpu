@@ -23,8 +23,9 @@ benchmark <- function(inputSize) {
 		result <- (value)
 	}	
 
-	x <- 1:size;
-	y <- 1:size;
+	totalSize <- size*size
+	x <- 1:totalSize
+	y <- 1:totalSize
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
