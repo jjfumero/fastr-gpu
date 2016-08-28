@@ -48,7 +48,7 @@ function montecarlo() {
 	./runbench benchmarks/fastR/montecarlo/montecarlo.R  262144 > montecarloFastR.log
 	./runbench benchmarks/fastR/montecarlo/montecarloSeq.R  262144 > montecarloSeq.log
 	./runbench benchmarks/fastR/montecarlo/montecarloGPUPArrays.R  262144 > montecarloASTx.log
-	$GNUR/Rscript benchmarks/fastR/montecarlo/montecarloGNU.R 1024 > montecarloGNU.log
+	$GNUR/Rscript benchmarks/fastR/montecarlo/montecarloGNU.R 262144 > montecarloGNU.log
 }
 
 ## main
