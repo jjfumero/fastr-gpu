@@ -49,11 +49,11 @@ benchmark <- function(inputSize) {
 
 		resultA <- marawacc.sapply(x, spectralNorm1, nThreads=1);
 		v <<- resultA
-		resultB <- mapply(resultA, spectralNorm2,  nThreads=1) 
+		resultB <- marawacc.sapply(resultA, spectralNorm2,  nThreads=1) 
 
 		end <- nanotime()
 		total <- end - start
-		print(total)
+		print(paste("Total Time:", total))
 	}
 }
 
