@@ -72,7 +72,7 @@ import com.oracle.truffle.r.runtime.nodes.RSyntaxNode;
 /**
  * AST Node to check the connection with Marawacc. This is just a proof of concept.
  */
-public final class GPUSApply extends RExternalBuiltinNode {
+public final class OpenCLMApply extends RExternalBuiltinNode {
 
     private boolean gpuExecution = false;
     private static int iteration = 0;
