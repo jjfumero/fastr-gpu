@@ -1,5 +1,5 @@
 #! /bin/bash
 
 # High Performance Execution
-mx Rscript --J @'-DR:+IgnoreVisibility -G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:-TraceTruffleCompilation  -XX:-UseJVMCIClassLoader -Dmarawacc.printOCLInfo=true -Dmarawacc.dumpGraph=false -Dastx.marawacc.profiler=true -Xmx12g -Xms12g -XX:-UseSerialGC -Dmarawacc.printOCLKernel=true -Dastx.marawacc.optimizeRSequence=true  ' $* 
+mx Rscript --J @'-DR:+IgnoreVisibility -G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:-TraceTruffleCompilation  -XX:-UseJVMCIClassLoader -Dmarawacc.printOCLInfo=true -Dmarawacc.dumpGraph=false -Dastx.marawacc.profiler=true -Xmx12g -Xms12g -XX:-UseSerialGC -Dmarawacc.printOCLKernel=true -Dastx.marawacc.optimizeRSequence=false  ' $* 
  
