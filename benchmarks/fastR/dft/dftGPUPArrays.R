@@ -66,7 +66,7 @@ for (i in 1:REPETITIONS) {
 	result <- marawacc.testGPU(input, dftGPUFunction);
 	total <- nanotime() - start
 	print(paste("Total Time:" , total))
-
+	
 	# Check result
 	if (CHECK_RESULT) {
 		k <- 1
@@ -77,11 +77,18 @@ for (i in 1:REPETITIONS) {
 
 			# check the elements for the tuple
 			if (abs(lseq[1] - lgpu[1]) > 0.1) {
-       			print("Result is wrong")
+       			print("Result is wrong 1")
+				print(k)
+				print(lseq[1])
+				print(lgpu[1])
             	break;
             }
 			if (abs(lseq[2] - lgpu[2]) > 0.1) {
-    	   		print("Result is wrong")
+    	   		print("Result is wrong 2")
+				print(k)
+				print(lseq[2])
+				print(lgpu[2])
+
         	    break;
             }
 

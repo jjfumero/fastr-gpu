@@ -13,7 +13,7 @@ size <- as.integer(args[1])
 
 REPETITIONS <- 11
 
-CHECK_RESULT <- TRUE
+CHECK_RESULT <- FALSE
 
 benchmark <- function(inputSize) {
 
@@ -79,6 +79,7 @@ benchmark <- function(inputSize) {
 	}	
 
 	v <<- rep(1, size)
+	x <- 1:size
 	x <- marawacc.parray(x)
 
 	for (i in 1:REPETITIONS) {

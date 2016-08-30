@@ -815,12 +815,25 @@ public class ASTxUtils {
             case RDoubleSequence:
                 return buildDoublePArrayForSequence(input);
             case RIntVector:
-                return ((RIntVector) input).getPArray();
+                // return ((RIntVector) input).getPArray();
+                PArray<Integer> parrayI = new PArray<>(input.getLength(), TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER);
+                // Real marshal
+                for (int k = 0; k < input.getLength(); k++) {
+                    parrayI.put(k, (int) ((RIntVector) input).getDataAtAsObject(k));
+                }
+                return parrayI;
             case RDoubleVector:
-                return ((RDoubleVector) input).getPArray();
+                PArray<Double> parrayD = new PArray<>(input.getLength(), TypeFactory.Double(), StorageMode.OPENCL_BYTE_BUFFER);
+                // Real marshal
+                for (int k = 0; k < input.getLength(); k++) {
+                    parrayD.put(k, (double) ((RDoubleVector) input).getDataAtAsObject(k));
+                }
+                return parrayD;
+                // return ((RDoubleVector) input).getPArray();
             default:
                 throw new MarawaccRuntimeTypeException("Data type not supported: " + input.getClass() + " [ " + __LINE__.print() + "]");
         }
+
     }
 
     public static PArray<?> getReferencePArray(TypeInfo type, RAbstractVector input) {
