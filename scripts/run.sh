@@ -1,9 +1,9 @@
 
 function saxpy {
 	# Saxpy 8M
-	./runbench benchmarks/fastR/saxpy/saxpy.R 1048576 > saxpyFASTR.log 
-	./runbench benchmarks/fastR/saxpy/saxpyGPUPArrays.R 1048576 > saxpyASTx.log
-	$GNUR/Rscript benchmarks/fastR/saxpy/saxpyGNU.R 1048576 > saxpyGNU.log
+	./runbench benchmarks/fastR/saxpy/saxpy.R 8388608 > saxpyFASTR.log 
+	./runbench benchmarks/fastR/saxpy/saxpyGPUPArrays.R 8388608 > saxpyASTx.log
+	$GNUR/Rscript benchmarks/fastR/saxpy/saxpyGNU.R 8388608 > saxpyGNU.log
 }
 
 function bs1M {
