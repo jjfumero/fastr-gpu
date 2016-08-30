@@ -262,7 +262,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
              * Execution. On Stack Replacement (OSR): switch to compiled GPU code
              */
             graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
-            if (graphToCompile != null && gpuCompilationUnit == null) {
+            if ((graphToCompile != null) && (gpuCompilationUnit == null)) {
                 if (ASTxOptions.debug) {
                     System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU - Iteration: " + i);
                 }
