@@ -295,7 +295,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             return runWithMarawaccAccelerator;
         }
 
-        // Interpreter mode
         for (int i = 1; i < totalSize; i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             Object value = callTarget.call(argsPackage);
@@ -305,7 +304,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
              * Check if the graph is prepared for GPU compilation and invoke the compilation and
              * execution. On Stack Replacement (OSR): switch to compiled GPU code
              */
-            if (graphToCompile != null && gpuCompilationUnit == null) {
+            graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
+            if ((graphToCompile != null) && (gpuCompilationUnit == null)) {
                 if (ASTxOptions.debug) {
                     System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU - Iteration: " + i);
                 }
