@@ -15,7 +15,7 @@ def execute(bench, sizes, version, symName):
     logFile = symName 
     for s in sizes:
         command = SCRIPT + URL + bench + "/" + version + " " + str(s) + " > " + logFile + str(s) + ".log"
-        print command
+        print "\t" + command
         if (not DEBUG):
             os.system(command)
 
