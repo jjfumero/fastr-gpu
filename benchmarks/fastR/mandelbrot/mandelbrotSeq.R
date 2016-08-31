@@ -41,16 +41,9 @@ benchmark <- function(inputSize) {
 	}
 
 	totalSize <- size*size
-	x <- runif(totalSize)
-	y <- runif(totalSize)
+	x <- 1:totalSize
+	y <- 1:totalSize
 		
-	for (i in 1:size) {
-		for (j in 1:size) {
-			x[i * size + j] <- i
-			y[i * size + j] <- j
-		}
-	}
-	
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
 		result <- marawacc.sapply(x, mandelbrotFunction, nThreads=1, y);

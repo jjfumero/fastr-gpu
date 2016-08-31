@@ -70,20 +70,12 @@ mandelbrotCPU <- function(indexIDX, indexJDX) {
 
 
 totalSize <- size*size
-x <<- runif(totalSize)
-y <<- runif(totalSize)
+x <<- 1:totalSize
+y <<- 1:totalSize
 	
-for (i in 1:size) {
-	for (j in 1:size) {
-		x[i * size + j] <- i
-		y[i * size + j] <- j
-	}
-}
-
 if (CHECK_RESULT) {
 	resultSeq <- mapply(mandelbrotCPU, x, y)
 }
-
 
 for (i in 1:REPETITIONS) {
 	start <- nanotime()

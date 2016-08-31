@@ -6,7 +6,7 @@
 args <- commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
-	stop("No input size passed. Usage: ./mandelbrotGPU.R <size> ")
+	stop("No input size passed. Usage: ./mandelbrotGPUPArrays.R <size> ")
 } 
 
 size <- as.integer(args[1])
@@ -69,15 +69,8 @@ mandelbrotCPU <- function(indexIDX, indexJDX) {
 
 
 totalSize <- size*size
-x <- runif(totalSize)
-y <- runif(totalSize)
-	
-for (i in 1:size) {
-	for (j in 1:size) {
-		x[i * size + j] <- i
-		y[i * size + j] <- j
-	}
-}
+x <- 1:totalSize
+y <- 1:totalSize
 
 if (CHECK_RESULT) {
 	resultSeq <- mapply(mandelbrotCPU, x, y)
