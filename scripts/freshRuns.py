@@ -7,12 +7,16 @@ import os
 
 SCRIPT="./runbench "
 URL="benchmarks/fastR/"
+DIRNAME = "logsSizes"
+DEBUG = False
 
-DEBUG = True
+def createDirectory(directoryName):
+    if not os.path.exists(directoryName):
+        os.makedirs(directoryName)
 
 def execute(bench, sizes, version, symName):
     print "\nRunning: " + version
-    logFile = symName 
+    logFile = DIRNAME + "/" + symName 
     for s in sizes:
         command = SCRIPT + URL + bench + "/" + version + " " + str(s) + " > " + logFile + str(s) + ".log"
         print "\t" + command
@@ -27,77 +31,93 @@ def runExperiment(bench, sizes, versions, symbolicNames):
 
 def saxpy():
     bench="saxpy"
-    sizes = [2097152, 4194304, 8388608, 16777216, 33554432]
 
-    versions = ["saxpy.R", "saxpySeq.R", "saxpyGPU.R", "saxpyGPUPArrays"]
-    symbolicNames = ["saxpyFastR", "saxpySeq", "saxpyASTxFull", "saxpyASTx"]
+    mainSize = 8388608
+    sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
+
+    versions = ["saxpy.R", "saxpyGPU.R", "saxpyGPUPArrays"]
+    symbolicNames = ["saxpyFastR", "saxpyASTxFull", "saxpyASTx"]
 
     runExperiment(bench, sizes, versions, symbolicNames)
 
 def blacksholes():
     bench = "blacksholes"
-    sizes = [1, 2, 3, 4, 5]
+    
+    mainSize = 1048576
+    sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
 
-    versions = ["blackcholes.R", "blackcholesSeq.R", "blackcholesGPU.R", "blackcholesGPUPArrays"]
-    symbolicNames = ["blackcholesFastR", "blackcholesSeq", "blackcholesASTxFull", "blackcholesASTx"]
+    versions = ["blackcholes.R",  "blackcholesGPU.R", "blackcholesGPUPArrays"]
+    symbolicNames = ["blackcholesFastR", "blackcholesASTxFull", "blackcholesASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
 
 def nbody():
     bench = "nbody"
-    sizes = [1, 2, 3, 4, 5]
 
-    versions = ["nbody.R", "nbodySeq.R", "nbodyGPU.R", "nbodyGPUPArrays"]
-    symbolicNames = ["nbodyFastR", "nbodySeq", "nbodyASTxFull", "nbodyASTx"]
+    mainSize = 65536
+    sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
+
+    versions = ["nbody.R", "nbodyGPU.R", "nbodyGPUPArrays"]
+    symbolicNames = ["nbodyFastR", "nbodyASTxFull", "nbodyASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
 
 def dft():
     bench = "dft"
-    sizes = [1, 2, 3, 4, 5]
 
-    versions = ["dft.R", "dftSeq.R", "dftGPU.R", "dftGPUPArrays"]
-    symbolicNames = ["dftFastR", "dftSeq", "dftASTxFull", "dftASTx"]
+    mainSize = 8192
+    sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
+
+    versions = ["dft.R",  "dftGPU.R", "dftGPUPArrays"]
+    symbolicNames = ["dftFastR", "dftASTxFull", "dftASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
  
 def mandelbrot():
     bench = "mandelbrot"
+    mainSize = 1024
+    sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
+
     sizes = [1, 2, 3, 4, 5]
 
-    versions = ["mandelbrot.R", "mandelbrotSeq.R", "mandelbrotGPU.R", "mandelbrotGPUPArrays"]
-    symbolicNames = ["mandelbrotFastR", "mandelbrotSeq", "mandelbrotASTxFull", "mandelbrotASTx"]
+    versions = ["mandelbrot.R",  "mandelbrotGPU.R", "mandelbrotGPUPArrays"]
+    symbolicNames = ["mandelbrotFastR", "mandelbrotASTxFull", "mandelbrotASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
 
 def kmeans():
     bench = "kmeans"
-    sizes = [1, 2, 3, 4, 5]
+    mainSize = 4194304
+    sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
 
-    versions = ["kmeans.R", "kmeansSeq.R", "kmeansGPU.R", "kmeansGPUPArrays"]
-    symbolicNames = ["kmeansFastR", "kmeansSeq", "kmeansASTxFull", "kmeansASTx"]
+    versions = ["kmeans.R", "kmeansGPU.R", "kmeansGPUPArrays"]
+    symbolicNames = ["kmeansFastR", "kmeansASTxFull", "kmeansASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
  
 def hilbert():
     bench = "hilbert"
-    sizes = [1, 2, 3, 4, 5]
+    mainSize = 4096
+    sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
 
-    versions = ["hilbert.R", "hilbertSeq.R", "hilbertGPU.R", "hilbertGPUPArrays"]
-    symbolicNames = ["hilbertFastR", "hilbertSeq", "hilbertASTxFull", "hilbertASTx"]
+    versions = ["hilbert.R", "hilbertGPU.R", "hilbertGPUPArrays"]
+    symbolicNames = ["hilbertFastR", "hilbertASTxFull", "hilbertASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
  
 def spectralNorm():
     bench = "spectralNorm"
-    sizes = [1, 2, 3, 4, 5]
+    mainSize = 32768
+    sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
 
-    versions = ["spectralNorm.R", "spectralNormSeq.R", "spectralNormGPU.R", "spectralNormGPUPArrays"]
-    symbolicNames = ["spectralNormFastR", "spectralNormSeq", "spectralNormASTxFull", "spectralNormASTx"]
+    versions = ["spectralNorm.R", "spectralNormGPU.R", "spectralNormGPUPArrays"]
+    symbolicNames = ["spectralNormFastR",  "spectralNormASTxFull", "spectralNormASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
  
 if __name__ == "__main__":
+
+    createDirectory(DIRNAME)
     
     saxpy()
     blacksholes()   
