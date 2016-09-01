@@ -10,6 +10,8 @@ URL="benchmarks/fastR/"
 DIRNAME = "logsSizes"
 DEBUG = False
 
+NUMBER_OF_FRESH_RUNS=3
+
 def createDirectory(directoryName):
     if not os.path.exists(directoryName):
         os.makedirs(directoryName)
@@ -18,10 +20,11 @@ def execute(bench, sizes, version, symName):
     print "\nRunning: " + version
     logFile = DIRNAME + "/" + symName 
     for s in sizes:
-        command = SCRIPT + URL + bench + "/" + version + " " + str(s) + " > " + logFile + str(s) + ".log"
-        print "\t" + command
-        if (not DEBUG):
-            os.system(command)
+        for i in range(NUMBER_OF_FRESH_RUNS):
+            command = SCRIPT + URL + bench + "/" + version + " " + str(s) + " > " + logFile + str(s) + ".log." + str(i)
+            print "\t" + command
+            if (not DEBUG):
+                os.system(command)
 
 def runExperiment(bench, sizes, versions, symbolicNames):
     for i in range(len(versions)):
