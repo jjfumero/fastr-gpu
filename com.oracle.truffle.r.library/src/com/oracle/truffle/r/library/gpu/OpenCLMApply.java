@@ -240,7 +240,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         if (RGPUCache.INSTANCE.getCachedObjects(function).getIDExecution() == 0) {
             callTarget.generateIDForGPU();
             // Set the GPU execution to true;
-            ((FunctionDefinitionNode) function.getRootNode()).setGPUFlag(true);
+            ((FunctionDefinitionNode) function.getRootNode()).setOpenCLFlag(true);
             RGPUCache.INSTANCE.getCachedObjects(function).incID();
         }
 
@@ -283,7 +283,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         if (RGPUCache.INSTANCE.getCachedObjects(function).getIDExecution() == 0) {
             callTarget.generateIDForGPU();
             // Set the GPU execution to true;
-            ((FunctionDefinitionNode) function.getRootNode()).setGPUFlag(true);
+            ((FunctionDefinitionNode) function.getRootNode()).setOpenCLFlag(true);
             RGPUCache.INSTANCE.getCachedObjects(function).incID();
         }
 

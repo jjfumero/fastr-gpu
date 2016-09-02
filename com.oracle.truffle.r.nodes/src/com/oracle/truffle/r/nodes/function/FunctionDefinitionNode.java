@@ -127,7 +127,7 @@ public final class FunctionDefinitionNode extends RRootNode implements RSyntaxNo
      */
     private final BranchProfile returnProfile = BranchProfile.create();
 
-    @CompilationFinal private boolean gpuExecution = false;
+    @CompilationFinal private boolean openCLExecution = false;
 
     public FunctionDefinitionNode(SourceSection src, FrameDescriptor frameDesc, BodyNode body, FormalArguments formals, String description, boolean substituteFrame,
                     PostProcessArgumentsNode argPostProcess) {
@@ -232,11 +232,12 @@ public final class FunctionDefinitionNode extends RRootNode implements RSyntaxNo
         return argPostProcess;
     }
 
-    private Object cpuExecution(VirtualFrame vf) {
+    private Object fastRExecution(VirtualFrame vf) {
         /*
          * It might be possible to only record this iff a handler is installed, by using the
          * RArguments array.
          */
+        printInfo();
         Object handlerStack = RErrorHandling.getHandlerStack();
         Object restartStack = RErrorHandling.getRestartStack();
         boolean runOnExitHandlers = true;
@@ -310,6 +311,11 @@ public final class FunctionDefinitionNode extends RRootNode implements RSyntaxNo
                 }
             }
         }
+    }
+
+    @TruffleBoundary
+    private static void printInfo() {
+        System.out.println("CPU Execution");
     }
 
     @SuppressWarnings("unused")
@@ -393,7 +399,7 @@ public final class FunctionDefinitionNode extends RRootNode implements RSyntaxNo
         }
     }
 
-    private Object gpuExecution(VirtualFrame vf) {
+    private Object openCLExecution(VirtualFrame vf) {
         try {
             Object result = body.execute(vf);
             // normalExit.enter();
@@ -414,20 +420,20 @@ public final class FunctionDefinitionNode extends RRootNode implements RSyntaxNo
     public Object execute(VirtualFrame frame) {
         VirtualFrame vf = substituteFrame ? new SubstituteVirtualFrame((MaterializedFrame) frame.getArguments()[0]) : frame;
 
-        if (gpuExecution) {
+        if (openCLExecution) {
             // return gpuExecutionExperimental(vf);
-            return gpuExecution(vf);
+            return openCLExecution(vf);
         } else {
-            return cpuExecution(vf);
+            return fastRExecution(vf);
         }
     }
 
-    public void setGPUFlag(boolean gpuFlag) {
-        this.gpuExecution = gpuFlag;
+    public void setOpenCLFlag(boolean gpuFlag) {
+        this.openCLExecution = gpuFlag;
     }
 
-    public boolean isGPU() {
-        return gpuExecution;
+    public boolean isOpenCL() {
+        return openCLExecution;
     }
 
     private void setupS3Slots(VirtualFrame frame) {
