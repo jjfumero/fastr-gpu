@@ -237,7 +237,6 @@ public final class FunctionDefinitionNode extends RRootNode implements RSyntaxNo
          * It might be possible to only record this iff a handler is installed, by using the
          * RArguments array.
          */
-        printInfo();
         Object handlerStack = RErrorHandling.getHandlerStack();
         Object restartStack = RErrorHandling.getRestartStack();
         boolean runOnExitHandlers = true;
