@@ -81,8 +81,6 @@ def mandelbrot():
     mainSize = 1024
     sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
 
-    sizes = [1, 2, 3, 4, 5]
-
     versions = ["mandelbrot.R",  "mandelbrotGPU.R", "mandelbrotGPUPArrays.R"]
     symbolicNames = ["mandelbrotFastR", "mandelbrotASTxFull", "mandelbrotASTx"]
     
