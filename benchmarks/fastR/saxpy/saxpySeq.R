@@ -1,12 +1,12 @@
 
 ## AST-X Compiler
-## Saxpy benchmark, CPU version
+## Saxpy
 
 ## Parse arguments
 args <- commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
-	stop("No input size passed. Usage: ./saxpyGPU.R <size> ")
+	stop("No input size passed. Usage: ./saxpySeq.R <size> ")
 } 
 
 size <- as.integer(args[1])
@@ -23,11 +23,12 @@ benchmark <- function(inputSize) {
 		return (result);
 	}	
 
-	x <- 1:size;
-	y <- 1:size
+	x <- runif(size)
+	y <- runif(size)
 
-	# Seq code
-	resultSeq <- 0.12 * x + y
+	if (CHECK) {
+		resultSeq <- 0.12 * x + y
+	}
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()

@@ -29,8 +29,8 @@ benchmark <- function(inputSize) {
 
         alpha <- 0.12
 
-        x <- 0:size;
-        y <- 0:size;
+        x <- runif(size)
+        y <- runif(size)
 
         # Seq code
         resultSeq <- alpha * x + y
