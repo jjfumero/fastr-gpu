@@ -7,7 +7,7 @@ import os
 
 SCRIPT="./runbench "
 URL="benchmarks/fastR/"
-DIRNAME = "logsSizes"
+DIRNAME = "newLogsSizes"
 DEBUG = False
 
 NUMBER_OF_FRESH_RUNS=3
@@ -38,8 +38,8 @@ def saxpy():
     mainSize = 8388608
     sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
 
-    versions = ["saxpy.R", "saxpyGPU.R", "saxpyGPUPArrays.R"]
-    symbolicNames = ["saxpyFastR", "saxpyASTxFull", "saxpyASTx"]
+    versions = ["saxpySeq.R", "saxpyGPU.R", "saxpyGPUPArrays.R"]
+    symbolicNames = ["saxpySeq", "saxpyASTxFull", "saxpyASTx"]
 
     runExperiment(bench, sizes, versions, symbolicNames)
 
@@ -49,8 +49,8 @@ def blacksholes():
     mainSize = 1048576
     sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
 
-    versions = ["blackscholes.R",  "blackscholesGPU.R", "blackscholesGPUPArrays.R"]
-    symbolicNames = ["blackcholesFastR", "blackcholesASTxFull", "blackcholesASTx"]
+    versions = ["blackscholesSeq.R",  "blackscholesGPU.R", "blackscholesGPUPArrays.R"]
+    symbolicNames = ["blackcholesSeq", "blackcholesASTxFull", "blackcholesASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
 
@@ -60,8 +60,8 @@ def nbody():
     mainSize = 65536
     sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
 
-    versions = ["nbody.R", "nbodyGPU.R", "nbodyGPUPArrays.R"]
-    symbolicNames = ["nbodyFastR", "nbodyASTxFull", "nbodyASTx"]
+    versions = ["nbodySeq.R", "nbodyGPU.R", "nbodyGPUPArrays.R"]
+    symbolicNames = ["nbodySeq", "nbodyASTxFull", "nbodyASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
 
@@ -71,8 +71,8 @@ def dft():
     mainSize = 8192
     sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
 
-    versions = ["dft.R",  "dftGPU.R", "dftGPUPArrays.R"]
-    symbolicNames = ["dftFastR", "dftASTxFull", "dftASTx"]
+    versions = ["dftSeq.R",  "dftGPU.R", "dftGPUPArrays.R"]
+    symbolicNames = ["dftSeq", "dftASTxFull", "dftASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
  
@@ -81,28 +81,28 @@ def mandelbrot():
     mainSize = 1024
     sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
 
-    versions = ["mandelbrot.R",  "mandelbrotGPU.R", "mandelbrotGPUPArrays.R"]
-    symbolicNames = ["mandelbrotFastR", "mandelbrotASTxFull", "mandelbrotASTx"]
+    versions = ["mandelbrotSeq.R",  "mandelbrotGPU.R", "mandelbrotGPUPArrays.R"]
+    symbolicNames = ["mandelbrotSeq", "mandelbrotASTxFull", "mandelbrotASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
 
 def kmeans():
     bench = "kmeans"
     mainSize = 4194304
-    sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
+    sizes = [mainSize/8, mainSize/4, mainSize/2, mainSize, mainSize*2]
 
-    versions = ["kmeans.R", "kmeansGPU.R", "kmeansGPUPArrays.R"]
-    symbolicNames = ["kmeansFastR", "kmeansASTxFull", "kmeansASTx"]
+    versions = ["kmeansSeq.R", "kmeansGPU.R", "kmeansGPUPArrays.R"]
+    symbolicNames = ["kmeansSeq", "kmeansASTxFull", "kmeansASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
  
 def hilbert():
     bench = "hilbert"
     mainSize = 4096
-    sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
+    sizes = [mainSize/8, mainSize/4, mainSize/2, mainSize, mainSize*2]
 
-    versions = ["hilbert.R", "hilbertGPU.R", "hilbertGPUPArrays.R"]
-    symbolicNames = ["hilbertFastR", "hilbertASTxFull", "hilbertASTx"]
+    versions = ["hilbertSeq.R", "hilbertGPU.R", "hilbertGPUPArrays.R"]
+    symbolicNames = ["hilbertSeq", "hilbertASTxFull", "hilbertASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
  
@@ -111,8 +111,8 @@ def spectralNorm():
     mainSize = 32768
     sizes = [mainSize/4, mainSize/2, mainSize, mainSize*2, mainSize*4]
 
-    versions = ["spectralNorm.R", "spectralNormGPU.R", "spectralNormGPUPArrays.R"]
-    symbolicNames = ["spectralNormFastR",  "spectralNormASTxFull", "spectralNormASTx"]
+    versions = ["spectralNormSeq.R", "spectralNormGPU.R", "spectralNormGPUPArrays.R"]
+    symbolicNames = ["spectralNormSeq",  "spectralNormASTxFull", "spectralNormASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
  
