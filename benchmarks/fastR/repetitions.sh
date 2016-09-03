@@ -1,1 +1,1 @@
-find -iname *.R -print | xargs sed -i 's/REPETITIONS <- 11/REPETITIONS <- 1/g'
+find -iname *.R -print | xargs sed -i 's/REPETITIONS <- 110/REPETITIONS <- 11/g'
