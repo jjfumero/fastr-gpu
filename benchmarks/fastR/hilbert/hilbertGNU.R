@@ -10,7 +10,7 @@ if (length(args) == 0) {
 
 size <- as.integer(args[1])
 
-REPETITIONS <- 11
+REPETITIONS <- 1
 
 CHECK_RESULT <- FALSE
 
