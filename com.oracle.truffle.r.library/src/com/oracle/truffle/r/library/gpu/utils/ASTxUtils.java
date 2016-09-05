@@ -31,6 +31,7 @@ import uk.ac.ed.accelerator.profiler.Profiler;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.PArray.StorageMode;
 import uk.ac.ed.datastructures.common.TypeFactory;
+import uk.ac.ed.datastructures.interop.InteropTable;
 import uk.ac.ed.datastructures.tuples.Tuple;
 import uk.ac.ed.datastructures.tuples.Tuple10;
 import uk.ac.ed.datastructures.tuples.Tuple11;
@@ -44,11 +45,14 @@ import uk.ac.ed.datastructures.tuples.Tuple8;
 import uk.ac.ed.datastructures.tuples.Tuple9;
 
 import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccRuntimeTypeException;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
+import com.oracle.truffle.r.library.gpu.scope.ASTLexicalScoping;
+import com.oracle.truffle.r.library.gpu.scope.ASTxPrinter;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.runtime.ArgumentsSignature;
@@ -56,6 +60,7 @@ import com.oracle.truffle.r.runtime.RArguments;
 import com.oracle.truffle.r.runtime.RRuntime;
 import com.oracle.truffle.r.runtime.context.Engine.ParseException;
 import com.oracle.truffle.r.runtime.context.RContext;
+import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
 import com.oracle.truffle.r.runtime.data.RDataFactory;
 import com.oracle.truffle.r.runtime.data.RDoubleSequence;
 import com.oracle.truffle.r.runtime.data.RDoubleVector;
@@ -67,6 +72,7 @@ import com.oracle.truffle.r.runtime.data.RLogicalVector;
 import com.oracle.truffle.r.runtime.data.RStringVector;
 import com.oracle.truffle.r.runtime.data.RVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
+import com.oracle.truffle.r.runtime.nodes.RSyntaxNode;
 
 /**
  * ASTx utility class. Methods for {@link RFunction} inspection, marshal and un-marshal.
@@ -1171,6 +1177,185 @@ public class ASTxUtils {
             return null;
         }
         return scopes.toArray();
+    }
+
+    public static void printAST(RFunction function) {
+        Node root = function.getTarget().getRootNode();
+        ASTxPrinter printAST = new ASTxPrinter();
+        RSyntaxNode.accept(root, 0, printAST);
+    }
+
+    public static String[] lexicalScopingAST(RFunction function) {
+        ASTLexicalScoping lexicalScoping = new ASTLexicalScoping();
+        lexicalScoping.apply(function);
+        String[] scopeVars = lexicalScoping.scopeVars();
+        return scopeVars;
+    }
+
+    public static RAbstractVector[] getRArrayWithAdditionalArguments(RArgsValuesAndNames args) {
+        RAbstractVector[] additionalInputs = null;
+        if (args.getLength() > 2) {
+            additionalInputs = new RAbstractVector[args.getLength() - 2];
+            for (int i = 0; i < additionalInputs.length; i++) {
+                additionalInputs[i] = (RAbstractVector) args.getArgument(i + 2);
+            }
+        }
+        return additionalInputs;
+    }
+
+    public static PArray<?>[] getPArrayWithAdditionalArguments(RArgsValuesAndNames args) {
+        PArray<?>[] additionalInputs = null;
+        if (args.getLength() > 2) {
+            additionalInputs = new PArray<?>[args.getLength() - 2];
+            for (int i = 0; i < additionalInputs.length; i++) {
+                additionalInputs[i] = (PArray<?>) args.getArgument(i + 2);
+            }
+        }
+        return additionalInputs;
+    }
+
+    public static TypeInfo obtainTypeInfo(Object value) {
+        TypeInfo outputType = null;
+        try {
+            outputType = ASTxUtils.typeInference(value);
+        } catch (MarawaccTypeException e) {
+            // TODO: DEOPTIMIZATION
+            throw new RuntimeException("Interop data type not supported yet: " + value.getClass());
+        }
+        return outputType;
+    }
+
+    public static InteropTable obtainInterop(TypeInfo outputType) {
+        InteropTable interop = null;
+        if (outputType != null && outputType.getGenericType().equals(TypeInfo.TUPLE_GENERIC_TYPE.getGenericType())) {
+            if (outputType == TypeInfo.TUPLE2) {
+                interop = InteropTable.T2;
+            } else if (outputType == TypeInfo.TUPLE3) {
+                interop = InteropTable.T3;
+            } else if (outputType == TypeInfo.TUPLE4) {
+                interop = InteropTable.T4;
+            } else if (outputType == TypeInfo.TUPLE5) {
+                interop = InteropTable.T5;
+            } else if (outputType == TypeInfo.TUPLE6) {
+                interop = InteropTable.T6;
+            } else {
+                throw new RuntimeException("Interop data type not supported yet");
+            }
+        } else if (outputType == null) {
+            // TODO: DEOPTIMIZATION
+            throw new RuntimeException("Interop data type not supported yet");
+        }
+        return interop;
+    }
+
+    public static Class<?>[] createListSubTypes(InteropTable interop, Object value) {
+        Class<?>[] typeObject = null;
+        if (interop != null) {
+            // Create sub-type list
+            RList list = (RList) value;
+            int ntuple = list.getLength();
+            typeObject = new Class<?>[ntuple];
+            for (int i = 0; i < ntuple; i++) {
+                Class<?> k = list.getDataAt(i).getClass();
+                typeObject[i] = k;
+            }
+        }
+        return typeObject;
+    }
+
+    /**
+     * If tuple contains the name="tuple".
+     *
+     * @param interop
+     * @param value
+     * @return {@link Class}
+     */
+    @SuppressWarnings("unused")
+    public static Class<?>[] createListSubTypesWithName(InteropTable interop, Object value) {
+        Class<?>[] typeObject = null;
+        if (interop != null) {
+            // Create sub-type list
+            RList list = (RList) value;
+            int ntuple = list.getLength();
+            typeObject = new Class<?>[ntuple - 1];
+            for (int i = 0; i < ntuple; i++) {
+                Class<?> k = list.getDataAt(i).getClass();
+                typeObject[i - 1] = k;
+            }
+        }
+        return typeObject;
+    }
+
+    public static TypeInfoList createTypeInfoListForInput(RAbstractVector input, RAbstractVector[] additionalArgs) {
+        TypeInfoList inputTypeList = null;
+        try {
+            inputTypeList = ASTxUtils.typeInference(input, additionalArgs);
+        } catch (MarawaccTypeException e) {
+            // TODO: DEOPTIMIZE
+            e.printStackTrace();
+        }
+        return inputTypeList;
+    }
+
+    public static TypeInfoList createTypeInfoListForInputWithPArrays(RAbstractVector input, RAbstractVector[] additionalArgs) {
+        TypeInfoList inputTypeList = null;
+        try {
+            inputTypeList = ASTxUtils.typeInferenceWithPArray(input, additionalArgs);
+        } catch (MarawaccTypeException e) {
+            // TODO: DEOPTIMIZE
+            e.printStackTrace();
+        }
+        return inputTypeList;
+    }
+
+    public static TypeInfoList createTypeInfoListForInputWithPArrays(PArray<?> input, PArray<?>[] additionalArgs) {
+        TypeInfoList inputTypeList = null;
+        try {
+            inputTypeList = ASTxUtils.typeInferenceWithPArray(input, additionalArgs);
+        } catch (MarawaccTypeException e) {
+            // TODO: DEOPTIMIZE
+            e.printStackTrace();
+        }
+        return inputTypeList;
+    }
+
+    public static PArray<?> createPArrays(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList inputTypeList) {
+        PArray<?> inputPArrayFormat = null;
+        if (ASTxOptions.usePArrays && ASTxOptions.optimizeRSequence) {
+            // Optimise with RSequences data types (openCL logic to compute the data) and no
+            // input copy.
+            inputPArrayFormat = ASTxUtils.marshalWithReferencesAndSequenceOptimize(input, additionalArgs, inputTypeList);
+        } else if (ASTxOptions.usePArrays && !ASTxOptions.optimizeRSequence) {
+            // RTypes with PArray information
+            inputPArrayFormat = ASTxUtils.marshalWithReferences(input, additionalArgs, inputTypeList);
+        } else {
+            // real marshal
+            inputPArrayFormat = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
+        }
+        return inputPArrayFormat;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static int getSize(PArray input, PArray[] additionalArgs) {
+        int totalSize = input.size();
+        if (input.isSequence()) {
+            totalSize = input.getTotalSizeWhenSequence();
+        } else if (additionalArgs != null) {
+            for (PArray<?> p : additionalArgs) {
+                if (p.isSequence()) {
+                    totalSize = p.getTotalSizeWhenSequence();
+                    break;
+                }
+            }
+        }
+        return totalSize;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static PArray<?> createPArrays(PArray input, PArray[] additionalArgs, TypeInfoList inputTypeList) {
+        int totalSize = getSize(input, additionalArgs);
+        PArray<?> inputPArrayFormat = ASTxUtils.marshalWithReferences(input, additionalArgs, inputTypeList, totalSize);
+        return inputPArrayFormat;
     }
 
     private ASTxUtils() {
