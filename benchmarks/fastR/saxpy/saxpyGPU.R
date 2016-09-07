@@ -28,6 +28,7 @@ benchmark <- function(inputSize) {
 	resultSeq <- 0.12 * x + y
 
 	for (i in 1:REPETITIONS) {
+		system.gc()
 		start <- nanotime()
 		result <- marawacc.gpusapply(x, saxpyFunction, y);
 		total <- nanotime() - start

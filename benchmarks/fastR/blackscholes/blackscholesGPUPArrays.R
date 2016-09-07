@@ -176,6 +176,7 @@ benchmark <- function(inputSize) {
 	x <- marawacc.parray(x) 
 
 	for (i in 1:REPETITIONS) {
+		system.gc()
 		start <- nanotime()
 		result <- marawacc.gpusapply(x, bsFunction);
 		total <- nanotime() - start

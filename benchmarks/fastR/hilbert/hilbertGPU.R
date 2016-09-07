@@ -36,6 +36,7 @@ benchmark <- function(inputSize) {
 	}
 
 	for (i in 1:REPETITIONS) {
+		system.gc()
 		start <- nanotime()
 		result <- marawacc.testGPU(x, hilbertGPUFunction, y)
 		total <- nanotime() - start

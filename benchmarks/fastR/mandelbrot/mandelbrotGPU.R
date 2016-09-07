@@ -78,6 +78,7 @@ if (CHECK_RESULT) {
 }
 
 for (i in 1:REPETITIONS) {
+	system.gc()
 	start <- nanotime()
 	result <- marawacc.testGPU(x, mandelbrotOpenCL, y);
 	end <- nanotime()
