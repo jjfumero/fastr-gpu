@@ -1,5 +1,11 @@
 # ChangeLog ASTx GPU Compiler Framework
 
+## astx-0.9
+	* Garbage collector builtin provided
+	* R root node for OpenCL execution equivalent to normal FastR
+	* Profiling information improved
+	* Benchmarks updated 
+
 ## astx-0.8 
 	* Mandelbrot supported
 	* Lexical scope variables improved
