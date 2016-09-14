@@ -32,6 +32,26 @@ ENDIANESS        : LITTLE_ENDIAN
 
 # Installation
 
+Get mx tool:
+
+```
+#!bash
+mkdir mx
+hg clone https://bitbucket.org/allr/mx
+
+```
+
+Create source file: 
+
+```
+#!bash
+export PATH=/path/to/mx/mx/:$PATH
+export JAVA_HOME=/path/to/jdk1.8x/
+export DEFAULT_VM="jvmci"
+```
+
+
+OpenCL R JIT compiler:
 
 ```
 #!bash
