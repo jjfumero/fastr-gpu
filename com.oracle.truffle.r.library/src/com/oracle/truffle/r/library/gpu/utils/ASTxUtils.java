@@ -1280,7 +1280,6 @@ public class ASTxUtils {
      * @param value
      * @return {@link Class}
      */
-    @SuppressWarnings("unused")
     public static Class<?>[] createListSubTypesWithName(InteropTable interop, Object value) {
         Class<?>[] typeObject = null;
         if (interop != null) {
