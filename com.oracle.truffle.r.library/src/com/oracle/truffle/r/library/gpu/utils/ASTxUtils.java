@@ -27,7 +27,6 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import uk.ac.ed.accelerator.profiler.Profiler;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.PArray.StorageMode;
 import uk.ac.ed.datastructures.common.TypeFactory;
