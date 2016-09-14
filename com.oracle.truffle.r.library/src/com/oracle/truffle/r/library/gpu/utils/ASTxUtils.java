@@ -720,15 +720,8 @@ public class ASTxUtils {
      * @return {@link RDoubleVector}
      */
     public static RDoubleVector getDoubleVectorFromPArray(PArray<Double> array) {
-        long s1 = System.nanoTime();
         double[] asDoubleArray = array.asDoubleArray();
-        long s2 = System.nanoTime();
         RDoubleVector createDoubleVector = RDataFactory.createDoubleVector(asDoubleArray, false);
-        long s3 = System.nanoTime();
-        if (ASTxOptions.profile_OCL_ASTx) {
-            Profiler.getInstance().writeInBuffer("UNMARSHAL asArray", (s2 - s1));
-            Profiler.getInstance().writeInBuffer("UNMARHALL rdataFactory", (s3 - s2));
-        }
         return createDoubleVector;
     }
 
