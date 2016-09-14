@@ -63,6 +63,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     private boolean gpuExecution = false;
     private static int iteration = 0;
+    private final boolean ISTRUFFLE = true;
 
     ArrayList<com.oracle.graal.graph.Node> scopedNodes;
 
@@ -93,14 +94,13 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             scopedNodes = ASTxUtils.applyCompilationPhasesForOpenCL(graphToCompile);
         }
 
-        // Compilation to the GPU
-        boolean ISTRUFFLE = true;
+        // Compilation to OpenCL
         GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData(),
                         scopedNodes);
         gpuCompilationUnit.setScopeArrays(scopeData.getData());
         gpuCompilationUnit.setScopeNodes(scopedNodes);
 
-        // Insert graph into cache
+        // Insert graph into Truffle OCL Cache
         InternalGraphCache.INSTANCE.installGPUBinaryIntoCache(graphToCompile, gpuCompilationUnit);
 
         return gpuCompilationUnit;
