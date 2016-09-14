@@ -24,6 +24,26 @@ package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
 
+import com.oracle.graal.nodes.StructuredGraph;
+import com.oracle.graal.truffle.OptimizedCallTarget;
+import com.oracle.truffle.api.RootCallTarget;
+import com.oracle.truffle.r.library.gpu.cache.CacheGPUExecutor;
+import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
+import com.oracle.truffle.r.library.gpu.cache.RCacheObjects;
+import com.oracle.truffle.r.library.gpu.cache.RFunctionMetadata;
+import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
+import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
+import com.oracle.truffle.r.library.gpu.phases.scope.ScopeData;
+import com.oracle.truffle.r.library.gpu.types.TypeInfo;
+import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
+import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
+import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
+import com.oracle.truffle.r.nodes.function.FunctionDefinitionNode;
+import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
+import com.oracle.truffle.r.runtime.data.RFunction;
+import com.oracle.truffle.r.runtime.data.RVector;
+import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
+
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.accelerator.profiler.Profiler;
 import uk.ac.ed.accelerator.profiler.ProfilerType;
@@ -35,33 +55,6 @@ import uk.ac.ed.jpai.graal.GraalGPUCompilationUnit;
 import uk.ac.ed.jpai.graal.GraalGPUCompiler;
 import uk.ac.ed.jpai.graal.GraalGPUExecutor;
 import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
-import uk.ac.ed.marawacc.graal.CompilerUtils;
-
-import com.oracle.graal.nodes.StructuredGraph;
-import com.oracle.graal.truffle.OptimizedCallTarget;
-import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.r.library.gpu.cache.CacheGPUExecutor;
-import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
-import com.oracle.truffle.r.library.gpu.cache.RCacheObjects;
-import com.oracle.truffle.r.library.gpu.cache.RFunctionMetadata;
-import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
-import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
-import com.oracle.truffle.r.library.gpu.phases.GPUBoxingEliminationPhase;
-import com.oracle.truffle.r.library.gpu.phases.GPUCheckCastRemovalPhase;
-import com.oracle.truffle.r.library.gpu.phases.GPUFixedGuardRemovalPhase;
-import com.oracle.truffle.r.library.gpu.phases.GPUFrameStateEliminationPhase;
-import com.oracle.truffle.r.library.gpu.phases.GPUInstanceOfRemovePhase;
-import com.oracle.truffle.r.library.gpu.phases.ScopeArraysDetectionPhase;
-import com.oracle.truffle.r.library.gpu.phases.ScopeDetectionPhase;
-import com.oracle.truffle.r.library.gpu.types.TypeInfo;
-import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
-import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
-import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
-import com.oracle.truffle.r.nodes.function.FunctionDefinitionNode;
-import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
-import com.oracle.truffle.r.runtime.data.RFunction;
-import com.oracle.truffle.r.runtime.data.RVector;
-import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 /**
  * AST Node to check the connection with Marawacc. This is just a proof of concept.
@@ -71,75 +64,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private boolean gpuExecution = false;
     private static int iteration = 0;
 
-    private static class ScopeData {
-        private Object[] scopeArray;
-
-        public ScopeData(Object[] data) {
-            this.scopeArray = data;
-        }
-
-        public Object[] getData() {
-            return scopeArray;
-        }
-
-        public void setData(Object[] data) {
-            this.scopeArray = data;
-        }
-    }
-
     ArrayList<com.oracle.graal.graph.Node> scopedNodes;
-
-    private static ScopeData scopeArrayDetection(StructuredGraph graph) {
-        ScopeDetectionPhase scopeDetection = new ScopeDetectionPhase();
-        scopeDetection.apply(graph);
-        ScopeData scopeData = new ScopeData(scopeDetection.getDataArray());
-        return scopeData;
-    }
-
-    private void applyCompilationPhasesForGPUAndDump(StructuredGraph graph) {
-
-        CompilerUtils.dumpGraph(graph, "beforeOptomisations");
-
-        new GPUFrameStateEliminationPhase().apply(graph);
-        CompilerUtils.dumpGraph(graph, "GPUFrameStateEliminationPhase");
-
-        new GPUInstanceOfRemovePhase().apply(graph);
-        CompilerUtils.dumpGraph(graph, "GPUInstanceOfRemovePhase");
-
-        new GPUCheckCastRemovalPhase().apply(graph);
-        CompilerUtils.dumpGraph(graph, "GPUCheckCastRemovalPhase");
-
-        new GPUFixedGuardRemovalPhase().apply(graph);
-        CompilerUtils.dumpGraph(graph, "GPUFixedGuardRemovalPhase");
-
-        new GPUBoxingEliminationPhase().apply(graph);
-        CompilerUtils.dumpGraph(graph, "GPUBoxingEliminationPhase");
-
-        ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
-        arraysDetectionPhase.apply(graph);
-
-        if (arraysDetectionPhase.isScopeDetected()) {
-            scopedNodes = arraysDetectionPhase.getScopedNodes();
-            System.out.println(scopedNodes);
-        }
-
-    }
-
-    private void applyCompilationPhasesForGPU(StructuredGraph graph) {
-
-        new GPUFrameStateEliminationPhase().apply(graph);
-        new GPUInstanceOfRemovePhase().apply(graph);
-        new GPUCheckCastRemovalPhase().apply(graph);
-        new GPUFixedGuardRemovalPhase().apply(graph);
-        new GPUBoxingEliminationPhase().apply(graph);
-
-        ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
-        arraysDetectionPhase.apply(graph);
-
-        if (arraysDetectionPhase.isScopeDetected()) {
-            scopedNodes = arraysDetectionPhase.getScopedNodes();
-        }
-    }
 
     /**
      * Given the {@link StructuredGraph}, this method invokes the OpenCL code generation. We also
@@ -155,7 +80,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue, Interoperable interoperable,
                     Object[] lexicalScope) {
 
-        ScopeData scopeData = scopeArrayDetection(graphToCompile);
+        ScopeData scopeData = ASTxUtils.scopeArrayDetection(graphToCompile);
 
         if (lexicalScope != null) {
             scopeData.setData(lexicalScope);
@@ -163,9 +88,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         GraalAcceleratorOptions.printOffloadKernel = true;
 
         if (ASTxOptions.debug) {
-            applyCompilationPhasesForGPUAndDump(graphToCompile);
+            scopedNodes = ASTxUtils.applyCompilationPhasesForOpenCLAndDump(graphToCompile);
         } else {
-            applyCompilationPhasesForGPU(graphToCompile);
+            scopedNodes = ASTxUtils.applyCompilationPhasesForOpenCL(graphToCompile);
         }
 
         // Compilation to the GPU
@@ -211,19 +136,58 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return arrayList;
     }
 
-    // Run in the interpreter
-    private ArrayList<Object> runJavaOpenCLJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
-                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes) {
-
-        ArrayList<Object> output = new ArrayList<>(input.getLength());
+    private static ArrayList<Object> setOutput(Object firstValue) {
+        ArrayList<Object> output = new ArrayList<>();
         output.add(firstValue);
+        return output;
+    }
 
+    private static void checkFunctionInCache(RFunction function, RootCallTarget callTarget) {
         if (RGPUCache.INSTANCE.getCachedObjects(function).getIDExecution() == 0) {
             callTarget.generateIDForGPU();
             // Set the GPU execution to true;
             ((FunctionDefinitionNode) function.getRootNode()).setOpenCLFlag(true);
             RGPUCache.INSTANCE.getCachedObjects(function).incID();
         }
+    }
+
+    private static class JITMetaInput {
+        private Object firstValue;
+        private Interoperable interoperable;
+        private Object[] lexicalScopes;
+        private PArray<?> inputPArray;
+
+        public JITMetaInput(Object firstValue, Interoperable interoperable, Object[] lexicalScopes, PArray<?> inputPArray) {
+            super();
+            this.firstValue = firstValue;
+            this.interoperable = interoperable;
+            this.lexicalScopes = lexicalScopes;
+            this.inputPArray = inputPArray;
+        }
+    }
+
+    private ArrayList<Object> checkAndRun(GraalGPUCompilationUnit gpuCompilationUnit, RootCallTarget callTarget, int index, JITMetaInput meta) {
+        /*
+         * Check if the graph is prepared for GPU compilation and invoke the compilation and
+         * execution. On Stack Replacement (OSR): switch to compiled GPU code
+         */
+        StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
+        if ((graphToCompile != null) && (gpuCompilationUnit == null)) {
+            if (ASTxOptions.debug) {
+                System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU - Iteration: " + index);
+            }
+            GraalGPUCompilationUnit oclCompileUnit = compileForMarawaccBackend(meta.inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, meta.firstValue, meta.interoperable,
+                            meta.lexicalScopes);
+            return runWithMarawaccAccelerator(meta.inputPArray, graphToCompile, oclCompileUnit);
+        }
+        return null;
+    }
+
+    // Run in the interpreter and then JIT when the CFG is prepared for compilation
+    private ArrayList<Object> runJavaOpenCLJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
+                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes) {
+
+        checkFunctionInCache(function, callTarget);
 
         StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
         GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
@@ -232,41 +196,25 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
         }
 
-        // Run in the AST interpreter
+        JITMetaInput meta = new JITMetaInput(firstValue, interoperable, lexicalScopes, inputPArray);
+        ArrayList<Object> output = setOutput(firstValue);
         for (int i = 1; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             Object value = callTarget.call(argsPackage);
             output.add(value);
-
-            /*
-             * Check if the graph is prepared for GPU compilation and invoke the compilation + GPU
-             * Execution. On Stack Replacement (OSR): switch to compiled GPU code
-             */
-            graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
-            if ((graphToCompile != null) && (gpuCompilationUnit == null)) {
-                if (ASTxOptions.debug) {
-                    System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU - Iteration: " + i);
-                }
-                gpuCompilationUnit = compileForMarawaccBackend(inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, firstValue, interoperable, lexicalScopes);
-                return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
+            ArrayList<Object> checkAndRun = checkAndRun(gpuCompilationUnit, callTarget, i, meta);
+            if (checkAndRun != null) {
+                return checkAndRun;
             }
         }
-
         return output;
     }
 
+    // Run in the interpreter and then JIT when the CFG is prepared for compilation
     private ArrayList<Object> runJavaOpenCLJIT(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int totalSize) {
 
-        ArrayList<Object> output = new ArrayList<>();
-        output.add(firstValue);
-
-        if (RGPUCache.INSTANCE.getCachedObjects(function).getIDExecution() == 0) {
-            callTarget.generateIDForGPU();
-            // Set the GPU execution to true;
-            ((FunctionDefinitionNode) function.getRootNode()).setOpenCLFlag(true);
-            RGPUCache.INSTANCE.getCachedObjects(function).incID();
-        }
+        checkFunctionInCache(function, callTarget);
 
         StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
         GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
@@ -276,22 +224,16 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             return runWithMarawaccAccelerator;
         }
 
+        JITMetaInput meta = new JITMetaInput(firstValue, interoperable, lexicalScopes, inputPArray);
+        ArrayList<Object> output = setOutput(firstValue);
+
         for (int i = 1; i < totalSize; i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             Object value = callTarget.call(argsPackage);
             output.add(value);
-
-            /*
-             * Check if the graph is prepared for GPU compilation and invoke the compilation and
-             * execution. On Stack Replacement (OSR): switch to compiled GPU code
-             */
-            graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
-            if ((graphToCompile != null) && (gpuCompilationUnit == null)) {
-                if (ASTxOptions.debug) {
-                    System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU - Iteration: " + i);
-                }
-                gpuCompilationUnit = compileForMarawaccBackend(inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, firstValue, interoperable, lexicalScopes);
-                return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
+            ArrayList<Object> checkAndRun = checkAndRun(gpuCompilationUnit, callTarget, i, meta);
+            if (checkAndRun != null) {
+                return checkAndRun;
             }
         }
         return output;
@@ -320,7 +262,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
-    private RAbstractVector computeOpenCLSApply(PArray<?> input, RFunction function, RootCallTarget target, PArray<?>[] additionalArgs, Object[] lexicalScopes) {
+    private RAbstractVector computeOpenCLMApply(PArray<?> input, RFunction function, RootCallTarget target, PArray<?>[] additionalArgs, Object[] lexicalScopes) {
 
         RFunctionMetadata cachedFunctionMetadata = getCachedFunctionMetadata(input, function, additionalArgs);
         int nArgs = cachedFunctionMetadata.getnArgs();
@@ -367,7 +309,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return resultFastR;
     }
 
-    private RAbstractVector computeOpenCLSApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes) {
+    private RAbstractVector computeOpenCLMApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes) {
 
         // Type inference -> execution of the first element
         int nArgs = ASTxUtils.getNumberOfArguments(function);
@@ -500,10 +442,10 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         // Prepare all inputs in an array of Objects
         if (!parrayFormat) {
             RAbstractVector[] additionalInputs = ASTxUtils.getRArrayWithAdditionalArguments(args);
-            mapResult = computeOpenCLSApply(input, function, target, additionalInputs, lexicalScopes);
+            mapResult = computeOpenCLMApply(input, function, target, additionalInputs, lexicalScopes);
         } else {
             PArray<?>[] additionalInputs = ASTxUtils.getPArrayWithAdditionalArguments(args);
-            mapResult = computeOpenCLSApply(parrayInput, function, target, additionalInputs, lexicalScopes);
+            mapResult = computeOpenCLMApply(parrayInput, function, target, additionalInputs, lexicalScopes);
         }
 
         long end = System.nanoTime();
