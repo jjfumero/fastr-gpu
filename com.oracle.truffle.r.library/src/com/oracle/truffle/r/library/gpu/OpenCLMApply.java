@@ -144,7 +144,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     private static void checkFunctionInCache(RFunction function, RootCallTarget callTarget) {
         if (RGPUCache.INSTANCE.getCachedObjects(function).getIDExecution() == 0) {
-            callTarget.generateIDForGPU();
+            callTarget.generateIDForOpenCL();
             // Set the GPU execution to true;
             ((FunctionDefinitionNode) function.getRootNode()).setOpenCLFlag(true);
             RGPUCache.INSTANCE.getCachedObjects(function).incID();
@@ -171,7 +171,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
          * Check if the graph is prepared for GPU compilation and invoke the compilation and
          * execution. On Stack Replacement (OSR): switch to compiled GPU code
          */
-        StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
+        StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         if ((graphToCompile != null) && (gpuCompilationUnit == null)) {
             if (ASTxOptions.debug) {
                 System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU - Iteration: " + index);
@@ -189,7 +189,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         checkFunctionInCache(function, callTarget);
 
-        StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
+        StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
         if (graphToCompile != null && gpuCompilationUnit != null) {
@@ -216,7 +216,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         checkFunctionInCache(function, callTarget);
 
-        StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForGPU());
+        StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
         if (graphToCompile != null && gpuCompilationUnit != null) {

@@ -63,7 +63,7 @@ public class ASTxOptions {
     /**
      * Print AST for the R function to be executed on the GPU
      */
-    public static boolean printAST = getBoolean("astx.marawacc.printast", false);
+    public static boolean printAST = getBoolean("astx.marawacc.printast", true);
 
     /**
      * Use the references provided in the PArray to avoid marshal and unmarshal

@@ -187,7 +187,7 @@ public final class FrameSlotChangeMonitor {
         if (info.needsInvalidation()) {
             info.setValue(newValue);
         }
-        checkAndInvalidate(frame, frameSlot, isNonLocal, invalidateProfile);
+        // checkAndInvalidate(frame, frameSlot, isNonLocal, invalidateProfile);
     }
 
     public static void setObjectAndInvalidate(Frame frame, FrameSlot frameSlot, Object newValue, boolean isNonLocal, BranchProfile invalidateProfile) {
