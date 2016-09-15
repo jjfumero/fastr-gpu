@@ -24,6 +24,18 @@ package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
 
+import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
+import uk.ac.ed.accelerator.profiler.Profiler;
+import uk.ac.ed.accelerator.profiler.ProfilerType;
+import uk.ac.ed.datastructures.common.AcceleratorPArray;
+import uk.ac.ed.datastructures.common.PArray;
+import uk.ac.ed.datastructures.interop.InteropTable;
+import uk.ac.ed.datastructures.interop.Interoperable;
+import uk.ac.ed.jpai.graal.GraalGPUCompilationUnit;
+import uk.ac.ed.jpai.graal.GraalGPUCompiler;
+import uk.ac.ed.jpai.graal.GraalGPUExecutor;
+import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
+
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.truffle.OptimizedCallTarget;
 import com.oracle.truffle.api.RootCallTarget;
@@ -43,18 +55,6 @@ import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
 import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.RVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
-
-import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
-import uk.ac.ed.accelerator.profiler.Profiler;
-import uk.ac.ed.accelerator.profiler.ProfilerType;
-import uk.ac.ed.datastructures.common.AcceleratorPArray;
-import uk.ac.ed.datastructures.common.PArray;
-import uk.ac.ed.datastructures.interop.InteropTable;
-import uk.ac.ed.datastructures.interop.Interoperable;
-import uk.ac.ed.jpai.graal.GraalGPUCompilationUnit;
-import uk.ac.ed.jpai.graal.GraalGPUCompiler;
-import uk.ac.ed.jpai.graal.GraalGPUExecutor;
-import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
 
 /**
  * AST Node to check the connection with Marawacc. This is just a proof of concept.
@@ -409,12 +409,12 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             ASTxUtils.printAST(function);
         }
 
-        RAbstractVector input = null;
+        RAbstractVector inputRArray = null;
         PArray<?> parrayInput = null;
         boolean parrayFormat = false;
 
         if (firstParam instanceof RAbstractVector) {
-            input = (RAbstractVector) firstParam;
+            inputRArray = (RAbstractVector) firstParam;
         } else if (firstParam instanceof PArray) {
             parrayFormat = true;
             parrayInput = (PArray<?>) firstParam;
@@ -442,7 +442,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         // Prepare all inputs in an array of Objects
         if (!parrayFormat) {
             RAbstractVector[] additionalInputs = ASTxUtils.getRArrayWithAdditionalArguments(args);
-            mapResult = computeOpenCLMApply(input, function, target, additionalInputs, lexicalScopes);
+            mapResult = computeOpenCLMApply(inputRArray, function, target, additionalInputs, lexicalScopes);
         } else {
             PArray<?>[] additionalInputs = ASTxUtils.getPArrayWithAdditionalArguments(args);
             mapResult = computeOpenCLMApply(parrayInput, function, target, additionalInputs, lexicalScopes);

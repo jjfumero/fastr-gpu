@@ -27,6 +27,7 @@ import java.util.*;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.TypeFactory;
 
+import com.oracle.truffle.api.CompilerDirectives.OpenCLNotNull;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.r.runtime.*;
 import com.oracle.truffle.r.runtime.data.closures.*;
@@ -37,7 +38,7 @@ public class RIntVector extends RVector implements RAbstractIntVector {
 
     public static final RStringVector implicitClassHeader = RDataFactory.createStringVectorFromScalar(RType.Integer.getName());
 
-    private final int[] data;
+    @OpenCLNotNull private final int[] data;
     private PArray<Integer> parray;
 
     RIntVector(int[] data, boolean complete, int[] dims, RStringVector names) {

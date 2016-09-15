@@ -22,15 +22,18 @@
  */
 package com.oracle.truffle.r.runtime;
 
-import java.util.*;
+import java.util.Arrays;
 
-import com.oracle.truffle.api.*;
+import com.oracle.graal.truffle.OpenCLInstanceOf;
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.ValueType;
-import com.oracle.truffle.api.frame.*;
-import com.oracle.truffle.r.runtime.data.*;
-import com.oracle.truffle.r.runtime.env.*;
-import com.oracle.truffle.r.runtime.env.frame.*;
+import com.oracle.truffle.api.frame.Frame;
+import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
+import com.oracle.truffle.r.runtime.data.RFunction;
+import com.oracle.truffle.r.runtime.env.REnvironment;
+import com.oracle.truffle.r.runtime.env.frame.FrameSlotChangeMonitor;
 
 // @formatter:off
 /**
@@ -113,7 +116,7 @@ public final class RArguments {
     static final int INDEX_DEPTH = 6;
     static final int INDEX_IS_IRREGULAR = 7;
     static final int INDEX_SIGNATURE = 8;
-    static final int INDEX_ARGUMENTS = 9;
+    @com.oracle.truffle.api.CompilerDirectives.OpenCLInstanceOf static final int INDEX_ARGUMENTS = 9;
 
     /**
      * At the least, the array contains the function, enclosing frame, and numbers of arguments and
@@ -132,16 +135,19 @@ public final class RArguments {
         return ((HasSignature) function.getRootNode()).getSignature();
     }
 
-    public static Object[] create(RFunction functionObj, RCaller call, MaterializedFrame callerFrame, int depth, Object[] evaluatedArgs, ArgumentsSignature signature, S3Args s3Args) {
+    public static Object[] create(RFunction functionObj, RCaller call, MaterializedFrame callerFrame, int depth, @com.oracle.truffle.api.CompilerDirectives.OpenCLInstanceOf Object[] evaluatedArgs,
+                    ArgumentsSignature signature, S3Args s3Args) {
         CompilerAsserts.neverPartOfCompilation();
         return create(functionObj, call, callerFrame, depth, evaluatedArgs, signature, functionObj.getEnclosingFrame(), s3Args);
     }
 
-    public static Object[] create(RFunction functionObj, RCaller call, MaterializedFrame callerFrame, int depth, Object[] evaluatedArgs, ArgumentsSignature signature,
+    public static Object[] create(RFunction functionObj, RCaller call, MaterializedFrame callerFrame, int depth, @com.oracle.truffle.api.CompilerDirectives.OpenCLInstanceOf Object[] evaluatedArgs,
+                    ArgumentsSignature signature,
                     MaterializedFrame enclosingFrame, S3Args s3Args) {
         assert evaluatedArgs != null && signature != null : evaluatedArgs + " " + signature;
         assert evaluatedArgs.length == signature.getLength() : Arrays.toString(evaluatedArgs) + " " + signature;
         assert signature == getSignature(functionObj) : signature + " vs. " + getSignature(functionObj);
+
         // Eventually we want to have this invariant
         // assert call != null || REnvironment.isGlobalEnvFrame(callerFrame);
 

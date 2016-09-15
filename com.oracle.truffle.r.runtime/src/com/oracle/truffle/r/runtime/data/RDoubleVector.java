@@ -28,6 +28,7 @@ import java.util.Arrays;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.TypeFactory;
 
+import com.oracle.truffle.api.CompilerDirectives.OpenCLInstanceOf;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.r.runtime.RRuntime;
 import com.oracle.truffle.r.runtime.RType;
@@ -41,7 +42,7 @@ public final class RDoubleVector extends RVector implements RAbstractDoubleVecto
 
     public static final RStringVector implicitClassHeader = RDataFactory.createStringVectorFromScalar(RType.Numeric.getName());
 
-    private final double[] data;
+    @OpenCLInstanceOf private final double[] data;
     private PArray<Double> parray;
 
     RDoubleVector(double[] data, boolean complete, int[] dims, RStringVector names) {
