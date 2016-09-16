@@ -24,7 +24,6 @@ package com.oracle.truffle.r.runtime;
 
 import java.util.Arrays;
 
-import com.oracle.graal.truffle.OpenCLInstanceOf;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.ValueType;
@@ -116,7 +115,7 @@ public final class RArguments {
     static final int INDEX_DEPTH = 6;
     static final int INDEX_IS_IRREGULAR = 7;
     static final int INDEX_SIGNATURE = 8;
-    @com.oracle.truffle.api.CompilerDirectives.OpenCLInstanceOf static final int INDEX_ARGUMENTS = 9;
+    static final int INDEX_ARGUMENTS = 9;
 
     /**
      * At the least, the array contains the function, enclosing frame, and numbers of arguments and
@@ -135,13 +134,13 @@ public final class RArguments {
         return ((HasSignature) function.getRootNode()).getSignature();
     }
 
-    public static Object[] create(RFunction functionObj, RCaller call, MaterializedFrame callerFrame, int depth, @com.oracle.truffle.api.CompilerDirectives.OpenCLInstanceOf Object[] evaluatedArgs,
+    public static Object[] create(RFunction functionObj, RCaller call, MaterializedFrame callerFrame, int depth, Object[] evaluatedArgs,
                     ArgumentsSignature signature, S3Args s3Args) {
         CompilerAsserts.neverPartOfCompilation();
         return create(functionObj, call, callerFrame, depth, evaluatedArgs, signature, functionObj.getEnclosingFrame(), s3Args);
     }
 
-    public static Object[] create(RFunction functionObj, RCaller call, MaterializedFrame callerFrame, int depth, @com.oracle.truffle.api.CompilerDirectives.OpenCLInstanceOf Object[] evaluatedArgs,
+    public static Object[] create(RFunction functionObj, RCaller call, MaterializedFrame callerFrame, int depth, Object[] evaluatedArgs,
                     ArgumentsSignature signature,
                     MaterializedFrame enclosingFrame, S3Args s3Args) {
         assert evaluatedArgs != null && signature != null : evaluatedArgs + " " + signature;
