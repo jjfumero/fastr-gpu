@@ -25,7 +25,7 @@ LOCAL  MEMORY    : 32768
 ENDIANESS        : LITTLE_ENDIAN
 
 
-> # Use the GPU when the function is JIT 
+> # Use the GPU when the function is JIT by the compiler
 > marawacc.gpusapply(1:100000, function(x, y) x * y, 1:100000) 
 
 ```
@@ -63,6 +63,16 @@ $ cd astx
 $ make 
 ```
 
+Make will download all the dependencies. 
+For updating the repository:
+
+```
+#!/bin/bash 
+
+$ mx sforceimports
+$ make
+
+```
 
 ### Eclipse 
 
@@ -77,7 +87,7 @@ Then import the projects into eclipse
 
 # Note
 
-This compiler has been tested on Linux Fedora 21/22/23 with OpenJDK >= 1.8_61.
+This compiler has been tested on Linux Fedora 21/22/23 and OpenSuse 13 with OpenJDK >= 1.8_61.
 Current implementation with JDK 8 u91
 
 
