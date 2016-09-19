@@ -35,6 +35,7 @@ import uk.ac.ed.jpai.graal.GraalGPUCompilationUnit;
 import uk.ac.ed.jpai.graal.GraalGPUCompiler;
 import uk.ac.ed.jpai.graal.GraalGPUExecutor;
 import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
+import uk.ac.ed.marawacc.graal.CompilerUtils;
 
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.truffle.OptimizedCallTarget;
@@ -45,6 +46,7 @@ import com.oracle.truffle.r.library.gpu.cache.RCacheObjects;
 import com.oracle.truffle.r.library.gpu.cache.RFunctionMetadata;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
+import com.oracle.truffle.r.library.gpu.phases.FilterInterpreterNodes;
 import com.oracle.truffle.r.library.gpu.phases.scope.ScopeData;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
@@ -94,8 +96,10 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             scopedNodes = ASTxUtils.applyCompilationPhasesForOpenCL(graphToCompile);
         }
 
-        // Compilation to OpenCL
-        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToGPU(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData(),
+        new FilterInterpreterNodes(6).apply(graphToCompile);
+        CompilerUtils.dumpGraph(graphToCompile, "Filter");
+
+        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToOpenCL(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData(),
                         scopedNodes);
         gpuCompilationUnit.setScopeArrays(scopeData.getData());
         gpuCompilationUnit.setScopeNodes(scopedNodes);

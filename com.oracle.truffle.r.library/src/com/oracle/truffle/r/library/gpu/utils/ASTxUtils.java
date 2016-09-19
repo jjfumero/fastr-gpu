@@ -55,6 +55,7 @@ import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.phases.GPUBoxingEliminationPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUCheckCastRemovalPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUFrameStateEliminationPhase;
+import com.oracle.truffle.r.library.gpu.phases.GPUInstanceOfRemovePhase;
 import com.oracle.truffle.r.library.gpu.phases.scope.ScopeArraysDetectionPhase;
 import com.oracle.truffle.r.library.gpu.phases.scope.ScopeData;
 import com.oracle.truffle.r.library.gpu.phases.scope.ScopeDetectionPhase;
