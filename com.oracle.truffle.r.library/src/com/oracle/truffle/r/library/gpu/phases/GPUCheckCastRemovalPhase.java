@@ -30,6 +30,7 @@ import com.oracle.graal.graph.Node;
 import com.oracle.graal.graph.iterators.NodeIterable;
 import com.oracle.graal.nodes.FixedWithNextNode;
 import com.oracle.graal.nodes.StructuredGraph;
+import com.oracle.graal.nodes.calc.IsNullNode;
 import com.oracle.graal.nodes.java.CheckCastNode;
 import com.oracle.graal.phases.Phase;
 import com.oracle.graal.phases.common.CanonicalizerPhase;
@@ -38,6 +39,23 @@ import com.oracle.graal.phases.tiers.PhaseContext;
 import com.oracle.graal.phases.util.Providers;
 
 public class GPUCheckCastRemovalPhase extends Phase {
+
+    private static void deadCodeElimination(StructuredGraph graph) {
+        Providers providers = GraalOCLBackendConnector.getHostBackend().getProviders();
+        new CanonicalizerPhase().apply(graph, new PhaseContext(providers));
+        new DeadCodeEliminationPhase().apply(graph);
+    }
+
+    @SuppressWarnings("unused")
+    private static void removeIsNullNodes(StructuredGraph graph) {
+        for (Node node : graph.getNodes()) {
+            if (node instanceof IsNullNode) {
+                node.replaceAtUsages(null);
+                node.safeDelete();
+            }
+        }
+        deadCodeElimination(graph);
+    }
 
     @Override
     protected void run(StructuredGraph graph) {
@@ -52,10 +70,6 @@ public class GPUCheckCastRemovalPhase extends Phase {
             }
             prev = node;
         }
-
-        Providers providers = GraalOCLBackendConnector.getHostBackend().getProviders();
-        new CanonicalizerPhase().apply(graph, new PhaseContext(providers));
-        new DeadCodeEliminationPhase().apply(graph);
-
+        deadCodeElimination(graph);
     }
 }

@@ -38,6 +38,7 @@ import org.jocl.cl_program;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.data.RDataFactory;
+import com.oracle.truffle.r.runtime.data.RDoubleVector;
 import com.oracle.truffle.r.runtime.data.RIntSequence;
 import com.oracle.truffle.r.runtime.data.RIntVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
@@ -50,12 +51,12 @@ public abstract class OCLVectorMulBuiltin extends RExternalBuiltinNode.Arg2 {
 
     // @formatter:off
     private static final String SAXPY_KERNELS=
-                    "__kernel void saxpyDouble( __global double *a, __global double *b, __global double *c)\n" +
+                    "__kernel void vectorMultiplicationDouble( __global double *a, __global double *b, __global double *c)\n" +
                     "{\n" +
                     "   int idx = get_global_id(0);\n" +
                     "   c[idx]  = a[idx] * b[idx];" +
                     "}\n" +
-                    "__kernel void saxpyInteger( __global int *a, __global int *b, __global int *c)\n" +
+                    "__kernel void vectorMultiplicationInteger( __global int *a, __global int *b, __global int *c)\n" +
                     "{\n" +
                     "   int idx = get_global_id(0);\n" +
                     "   c[idx]  = a[idx] * b[idx];" +
@@ -120,9 +121,12 @@ public abstract class OCLVectorMulBuiltin extends RExternalBuiltinNode.Arg2 {
         String programSource = SAXPY_KERNELS;
         program = CL.clCreateProgramWithSource(context, 1, new String[]{programSource}, null, null);
         CL.clBuildProgram(program, 0, null, null, null, null);
-        kernelDouble = CL.clCreateKernel(program, "saxpyDouble", null);
-        kernelInteger = CL.clCreateKernel(program, "saxpyInteger", null);
+        kernelDouble = CL.clCreateKernel(program, "vectorMultiplicationDouble", null);
+        kernelInteger = CL.clCreateKernel(program, "vectorMultiplicationInteger", null);
         initializationDone = true;
+
+        System.out.println("OpenCL Initialization done");
+
     }
 
     private static void saxpyJOCLInteger(int size, int[] x, int[] y, int[] z) {
@@ -160,7 +164,6 @@ public abstract class OCLVectorMulBuiltin extends RExternalBuiltinNode.Arg2 {
         CL.clReleaseMemObject(srcMemZ);
     }
 
-    @SuppressWarnings("unused")
     private static void saxpyJOCLDouble(int size, double[] x, double[] y, double[] z) {
 
         final Pointer srcX = Pointer.to(x);
@@ -213,21 +216,29 @@ public abstract class OCLVectorMulBuiltin extends RExternalBuiltinNode.Arg2 {
             return null;
         }
 
-        // Data preparation (marshalling)
-        int[] a = new int[v1.getLength()];
-        int[] b = new int[v1.getLength()];
-        for (int i = 0; i < v1.getLength(); i++) {
-            a[i] = (int) v1.getDataAtAsObject(i);
-            b[i] = (int) v2.getDataAtAsObject(i);
+        int[] a = v1.getDataWithoutCopying();
+        int[] b = v2.getDataWithoutCopying();
+        RIntVector result = RDataFactory.createIntVector(a.length, false);
+        saxpyJOCLInteger(a.length, a, b, result.getDataWithoutCopying());
+        return result;
+    }
+
+    @Specialization
+    public RAbstractVector compute(RDoubleVector v1, RDoubleVector v2) {
+
+        if (!initializationDone) {
+            oclInitialization();
         }
-        int[] c = new int[v1.getLength()];
 
-        // Computation
-        saxpyJOCLInteger(c.length, a, b, c);
+        if (v1.getLength() != v2.getLength()) {
+            return null;
+        }
 
-        // Return the result
-        return RDataFactory.createIntVector(c, false);
-
+        double[] a = v1.getDataWithoutCopying();
+        double[] b = v2.getDataWithoutCopying();
+        RDoubleVector result = RDataFactory.createDoubleVector(a.length, false);
+        saxpyJOCLDouble(a.length, a, b, result.getDataWithoutCopying());
+        return result;
     }
 
     @Specialization

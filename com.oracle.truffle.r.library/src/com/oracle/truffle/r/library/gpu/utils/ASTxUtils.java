@@ -54,9 +54,7 @@ import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.phases.GPUBoxingEliminationPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUCheckCastRemovalPhase;
-import com.oracle.truffle.r.library.gpu.phases.GPUFixedGuardRemovalPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUFrameStateEliminationPhase;
-import com.oracle.truffle.r.library.gpu.phases.GPUInstanceOfRemovePhase;
 import com.oracle.truffle.r.library.gpu.phases.scope.ScopeArraysDetectionPhase;
 import com.oracle.truffle.r.library.gpu.phases.scope.ScopeData;
 import com.oracle.truffle.r.library.gpu.phases.scope.ScopeDetectionPhase;
@@ -1398,9 +1396,9 @@ public class ASTxUtils {
 
     public static ArrayList<com.oracle.graal.graph.Node> applyCompilationPhasesForOpenCL(StructuredGraph graph) {
         new GPUFrameStateEliminationPhase().apply(graph);
-        new GPUInstanceOfRemovePhase().apply(graph);
-        new GPUCheckCastRemovalPhase().apply(graph);
-        new GPUFixedGuardRemovalPhase().apply(graph);
+// new GPUInstanceOfRemovePhase().apply(graph);
+// new GPUCheckCastRemovalPhase().apply(graph);
+// new GPUFixedGuardRemovalPhase().apply(graph);
         new GPUBoxingEliminationPhase().apply(graph);
 
         ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
