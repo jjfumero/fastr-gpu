@@ -11,17 +11,32 @@
  */
 package com.oracle.truffle.r.runtime;
 
-import java.text.*;
-import java.util.*;
+import java.text.DecimalFormat;
+import java.util.Locale;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.*;
-import com.oracle.truffle.api.frame.*;
-import com.oracle.truffle.api.interop.*;
-import com.oracle.truffle.r.runtime.data.*;
-import com.oracle.truffle.r.runtime.data.model.*;
-import com.oracle.truffle.r.runtime.env.frame.*;
+import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameSlotKind;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.r.runtime.data.RComplex;
+import com.oracle.truffle.r.runtime.data.RComplexVector;
+import com.oracle.truffle.r.runtime.data.RDataFactory;
+import com.oracle.truffle.r.runtime.data.RDouble;
+import com.oracle.truffle.r.runtime.data.RDoubleVector;
+import com.oracle.truffle.r.runtime.data.RFunction;
+import com.oracle.truffle.r.runtime.data.RIntVector;
+import com.oracle.truffle.r.runtime.data.RInteger;
+import com.oracle.truffle.r.runtime.data.RLogical;
+import com.oracle.truffle.r.runtime.data.RLogicalVector;
+import com.oracle.truffle.r.runtime.data.RRaw;
+import com.oracle.truffle.r.runtime.data.RString;
+import com.oracle.truffle.r.runtime.data.RStringVector;
+import com.oracle.truffle.r.runtime.data.RTypedValue;
+import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
+import com.oracle.truffle.r.runtime.env.frame.FrameSlotChangeMonitor;
 
 public class RRuntime {
 
@@ -29,7 +44,7 @@ public class RRuntime {
     // Parts of the welcome message originate from GNU R.
     public static final String WELCOME_MESSAGE =
         "FastR version " + RVersionNumber.FULL + "\n" +
-        "Copyright (c) 2013-5, Oracle and/or its affiliates\n" +
+        "Copyright (c) 2013-6, Oracle and/or its affiliates\n" +
         "Copyright (c) 1995-2015, The R Core Team\n" +
         "Copyright (c) 2015 The R Foundation\n" +
         "Copyright (c) 2012-4 Purdue University\n" +
@@ -43,6 +58,7 @@ public class RRuntime {
         "R is a collaborative project with many contributors.\n" +
         "Type 'contributors()' for more information.\n" +
         "\n" +
+        "NOTE: This compiler includes a backend for OpenCL\n" +
         "Type 'q()' to quit R.";
 
     public static final String LICENSE =
@@ -557,10 +573,10 @@ public class RRuntime {
         if (operand > 1000000000000L) {
             return String.format((Locale) null, "%.6e", operand);
         }
-// if (true || operand < 0.0001) {
-// // not quite correct but better than nothing for now...
-// return String.format((Locale) null, "%.22e", new BigDecimal(operand));
-// }
+        // if (true || operand < 0.0001) {
+        // // not quite correct but better than nothing for now...
+        // return String.format((Locale) null, "%.22e", new BigDecimal(operand));
+        // }
         if (digitsBehindDot == -1) {
             return Double.toString(operand);
         } else {
