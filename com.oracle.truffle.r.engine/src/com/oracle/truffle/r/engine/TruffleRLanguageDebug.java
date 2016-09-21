@@ -22,13 +22,14 @@
  */
 package com.oracle.truffle.r.engine;
 
-import java.io.*;
+import java.io.IOException;
 
-import com.oracle.truffle.api.frame.*;
-import com.oracle.truffle.api.instrument.impl.*;
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.conn.*;
-import com.oracle.truffle.r.runtime.context.*;
+import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.instrument.impl.DefaultVisualizer;
+import com.oracle.truffle.r.runtime.RInternalError;
+import com.oracle.truffle.r.runtime.conn.StdConnections;
+import com.oracle.truffle.r.runtime.conn.TextConnections;
+import com.oracle.truffle.r.runtime.context.RContext;
 
 /**
  * Support for FastR evaluation under Truffle debugging control.

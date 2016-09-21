@@ -22,20 +22,28 @@
  */
 package com.oracle.truffle.r.engine.repl;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-import com.oracle.truffle.api.debug.*;
-import com.oracle.truffle.api.instrument.*;
-import com.oracle.truffle.api.source.*;
-import com.oracle.truffle.api.vm.*;
+import com.oracle.truffle.api.debug.Breakpoint;
+import com.oracle.truffle.api.debug.Debugger;
+import com.oracle.truffle.api.debug.ExecutionEvent;
+import com.oracle.truffle.api.debug.SuspendedEvent;
+import com.oracle.truffle.api.instrument.QuitException;
+import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.api.vm.EventConsumer;
+import com.oracle.truffle.api.vm.PolyglotEngine;
 import com.oracle.truffle.api.vm.PolyglotEngine.Language;
-import com.oracle.truffle.r.engine.*;
-import com.oracle.truffle.r.engine.shell.*;
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.context.*;
-import com.oracle.truffle.tools.debug.shell.*;
-import com.oracle.truffle.tools.debug.shell.client.*;
-import com.oracle.truffle.tools.debug.shell.server.*;
+import com.oracle.truffle.r.engine.TruffleRLanguage;
+import com.oracle.truffle.r.engine.shell.RCommand;
+import com.oracle.truffle.r.runtime.RCmdOptions;
+import com.oracle.truffle.r.runtime.context.ContextInfo;
+import com.oracle.truffle.tools.debug.shell.REPLMessage;
+import com.oracle.truffle.tools.debug.shell.REPLServer;
+import com.oracle.truffle.tools.debug.shell.client.SimpleREPLClient;
+import com.oracle.truffle.tools.debug.shell.server.REPLHandler;
+import com.oracle.truffle.tools.debug.shell.server.REPLServerContext;
 
 /**
  * A first cut at a REPL server for the FastR implementation.

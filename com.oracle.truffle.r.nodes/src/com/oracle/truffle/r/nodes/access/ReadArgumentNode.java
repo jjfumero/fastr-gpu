@@ -22,11 +22,12 @@
  */
 package com.oracle.truffle.r.nodes.access;
 
-import com.oracle.truffle.api.frame.*;
-import com.oracle.truffle.api.instrument.*;
-import com.oracle.truffle.r.nodes.instrument.wrappers.*;
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.nodes.*;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrument.WrapperNode;
+import com.oracle.truffle.r.nodes.instrument.wrappers.ReadArgumentNodeWrapper;
+import com.oracle.truffle.r.runtime.RArguments;
+import com.oracle.truffle.r.runtime.nodes.NeedsWrapper;
+import com.oracle.truffle.r.runtime.nodes.RNode;
 
 @NeedsWrapper
 public class ReadArgumentNode extends RNode {

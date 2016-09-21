@@ -22,9 +22,10 @@
  */
 package com.oracle.truffle.r.library.fastr;
 
-import com.oracle.truffle.api.dsl.*;
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.instrument.Probe;
-import com.oracle.truffle.r.nodes.builtin.*;
+import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.nodes.function.FunctionDefinitionNode;
 import com.oracle.truffle.r.nodes.instrument.REntryCounters;
 import com.oracle.truffle.r.nodes.instrument.RInstrument;

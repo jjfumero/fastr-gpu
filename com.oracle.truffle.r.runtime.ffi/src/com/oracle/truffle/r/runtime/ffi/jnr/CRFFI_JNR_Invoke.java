@@ -22,12 +22,18 @@
  */
 package com.oracle.truffle.r.runtime.ffi.jnr;
 
-import java.lang.invoke.*;
+import java.lang.invoke.MethodHandle;
 
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.ffi.*;
+import jnr.invoke.CodeAddress;
+import jnr.invoke.DataDirection;
+import jnr.invoke.Native;
+import jnr.invoke.NativeType;
+import jnr.invoke.ParameterType;
+import jnr.invoke.ResultType;
+import jnr.invoke.Signature;
 
-import jnr.invoke.*;
+import com.oracle.truffle.r.runtime.RError;
+import com.oracle.truffle.r.runtime.ffi.CRFFI;
 
 /**
  * An implementation of {@link CRFFI} that uses {@code jnr-invoke}.

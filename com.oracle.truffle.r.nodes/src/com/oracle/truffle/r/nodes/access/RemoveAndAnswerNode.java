@@ -22,16 +22,20 @@
  */
 package com.oracle.truffle.r.nodes.access;
 
-import com.oracle.truffle.api.*;
-import com.oracle.truffle.api.dsl.*;
-import com.oracle.truffle.api.frame.*;
-import com.oracle.truffle.api.utilities.*;
-import com.oracle.truffle.r.nodes.*;
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.FrameSlotTypeException;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.utilities.BranchProfile;
+import com.oracle.truffle.r.nodes.RTruffleVisitor;
 import com.oracle.truffle.r.nodes.access.RemoveAndAnswerNodeFactory.RemoveAndAnswerResolvedNodeGen;
-import com.oracle.truffle.r.parser.ast.*;
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.env.frame.*;
-import com.oracle.truffle.r.runtime.nodes.*;
+import com.oracle.truffle.r.parser.ast.Replacement;
+import com.oracle.truffle.r.runtime.RError;
+import com.oracle.truffle.r.runtime.RInternalError;
+import com.oracle.truffle.r.runtime.VisibilityController;
+import com.oracle.truffle.r.runtime.env.frame.FrameSlotChangeMonitor;
+import com.oracle.truffle.r.runtime.nodes.RNode;
 
 /**
  * This node removes a slot from the current frame (i.e., sets it to {@code null} to allow fast-path

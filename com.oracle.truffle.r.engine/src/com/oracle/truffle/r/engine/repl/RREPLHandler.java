@@ -22,19 +22,30 @@
  */
 package com.oracle.truffle.r.engine.repl;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.oracle.truffle.api.frame.*;
-import com.oracle.truffle.api.frame.FrameInstance.*;
-import com.oracle.truffle.api.instrument.*;
+import com.oracle.truffle.api.frame.Frame;
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameInstance;
+import com.oracle.truffle.api.frame.FrameInstance.FrameAccess;
+import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.instrument.KillException;
+import com.oracle.truffle.api.instrument.QuitException;
+import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.source.Source;
-import com.oracle.truffle.api.vm.*;
+import com.oracle.truffle.api.vm.PolyglotEngine;
 import com.oracle.truffle.r.engine.TruffleRLanguage;
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.tools.debug.shell.*;
-import com.oracle.truffle.tools.debug.shell.client.*;
-import com.oracle.truffle.tools.debug.shell.server.*;
+import com.oracle.truffle.r.runtime.AnonymousFrameVariable;
+import com.oracle.truffle.r.runtime.RArguments;
+import com.oracle.truffle.tools.debug.shell.REPLMessage;
+import com.oracle.truffle.tools.debug.shell.client.SimpleREPLClient;
+import com.oracle.truffle.tools.debug.shell.server.FrameDebugDescription;
+import com.oracle.truffle.tools.debug.shell.server.REPLHandler;
+import com.oracle.truffle.tools.debug.shell.server.REPLServerContext;
 
 /**
  * Instantiation of the "server handler" part of the "REPL*" debugger for R.

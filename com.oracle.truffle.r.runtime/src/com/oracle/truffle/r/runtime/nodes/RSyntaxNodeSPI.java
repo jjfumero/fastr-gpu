@@ -22,10 +22,10 @@
  */
 package com.oracle.truffle.r.runtime.nodes;
 
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.RDeparse.*;
-import com.oracle.truffle.r.runtime.data.*;
-import com.oracle.truffle.r.runtime.env.*;
+import com.oracle.truffle.r.runtime.RDeparse.State;
+import com.oracle.truffle.r.runtime.RSerialize;
+import com.oracle.truffle.r.runtime.data.RLanguage;
+import com.oracle.truffle.r.runtime.env.REnvironment;
 
 /**
  * The following methods must be implemented by all implementors of {@link RSyntaxNode}. However,

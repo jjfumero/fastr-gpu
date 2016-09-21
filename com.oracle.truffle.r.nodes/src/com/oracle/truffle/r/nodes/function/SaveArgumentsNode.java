@@ -23,7 +23,7 @@
 package com.oracle.truffle.r.nodes.function;
 
 import com.oracle.truffle.r.nodes.control.SequenceNode;
-import com.oracle.truffle.r.runtime.nodes.*;
+import com.oracle.truffle.r.runtime.nodes.RNode;
 
 /**
  * Encapsulates the nodes that save the incoming function arguments into the frame. Functionally a

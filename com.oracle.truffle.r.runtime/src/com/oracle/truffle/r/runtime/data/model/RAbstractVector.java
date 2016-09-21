@@ -24,10 +24,11 @@ package com.oracle.truffle.r.runtime.data.model;
 
 import uk.ac.ed.datastructures.common.PArray;
 
-import com.oracle.truffle.api.interop.*;
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.context.*;
-import com.oracle.truffle.r.runtime.data.*;
+import com.oracle.truffle.api.interop.ForeignAccess;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.r.runtime.RType;
+import com.oracle.truffle.r.runtime.context.RContext;
+import com.oracle.truffle.r.runtime.data.RVector;
 
 public interface RAbstractVector extends RAbstractContainer, TruffleObject {
 

@@ -23,7 +23,7 @@
 package com.oracle.truffle.r.runtime.nodes;
 
 import com.oracle.truffle.api.instrument.WrapperNode;
-import com.oracle.truffle.api.nodes.*;
+import com.oracle.truffle.api.nodes.Node;
 
 /**
  * Some additional support for instrumentable node.

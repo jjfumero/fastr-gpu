@@ -45,11 +45,10 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.List;
 
-import uk.ac.ed.accelerator.profiler.Profiler;
 import jline.console.ConsoleReader;
 import jline.console.UserInterruptException;
+import uk.ac.ed.accelerator.profiler.Profiler;
 
-import com.oracle.truffle.r.runtime.data.RLogicalVector;
 import com.oracle.truffle.api.instrument.QuitException;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.source.Source;
@@ -70,6 +69,7 @@ import com.oracle.truffle.r.runtime.context.Engine.IncompleteSourceException;
 import com.oracle.truffle.r.runtime.context.Engine.ParseException;
 import com.oracle.truffle.r.runtime.context.RContext;
 import com.oracle.truffle.r.runtime.context.RContext.ContextKind;
+import com.oracle.truffle.r.runtime.data.RLogicalVector;
 import com.oracle.truffle.r.runtime.data.RStringVector;
 
 /**

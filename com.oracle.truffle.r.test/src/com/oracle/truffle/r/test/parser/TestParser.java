@@ -22,14 +22,15 @@
  */
 package com.oracle.truffle.r.test.parser;
 
-import java.io.*;
+import java.io.File;
 
-import org.antlr.runtime.*;
-import org.junit.*;
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.RecognitionException;
+import org.junit.Test;
 
-import com.oracle.truffle.api.source.*;
-import com.oracle.truffle.r.parser.*;
-import com.oracle.truffle.r.test.*;
+import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.r.parser.ParseUtil;
+import com.oracle.truffle.r.test.TestBase;
 
 public class TestParser extends TestBase {
 

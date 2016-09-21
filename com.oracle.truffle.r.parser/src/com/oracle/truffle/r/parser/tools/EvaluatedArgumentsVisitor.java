@@ -22,13 +22,39 @@
  */
 package com.oracle.truffle.r.parser.tools;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import com.oracle.truffle.r.parser.ast.*;
+import com.oracle.truffle.r.parser.ast.ASTNode;
+import com.oracle.truffle.r.parser.ast.ArgNode;
+import com.oracle.truffle.r.parser.ast.BinaryOperation;
+import com.oracle.truffle.r.parser.ast.Break;
+import com.oracle.truffle.r.parser.ast.Constant;
+import com.oracle.truffle.r.parser.ast.FieldAccess;
+import com.oracle.truffle.r.parser.ast.For;
+import com.oracle.truffle.r.parser.ast.Function;
+import com.oracle.truffle.r.parser.ast.FunctionCall;
+import com.oracle.truffle.r.parser.ast.If;
+import com.oracle.truffle.r.parser.ast.Missing;
+import com.oracle.truffle.r.parser.ast.Next;
 import com.oracle.truffle.r.parser.ast.Operation.Operator;
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.data.*;
-import com.oracle.truffle.r.runtime.nodes.*;
+import com.oracle.truffle.r.parser.ast.Repeat;
+import com.oracle.truffle.r.parser.ast.Replacement;
+import com.oracle.truffle.r.parser.ast.Sequence;
+import com.oracle.truffle.r.parser.ast.SimpleAccessTempVariable;
+import com.oracle.truffle.r.parser.ast.SimpleAccessVariable;
+import com.oracle.truffle.r.parser.ast.SimpleAccessVariadicComponent;
+import com.oracle.truffle.r.parser.ast.SimpleAssignVariable;
+import com.oracle.truffle.r.parser.ast.UnaryOperation;
+import com.oracle.truffle.r.parser.ast.UpdateField;
+import com.oracle.truffle.r.parser.ast.UpdateVector;
+import com.oracle.truffle.r.parser.ast.While;
+import com.oracle.truffle.r.runtime.ArgumentsSignature;
+import com.oracle.truffle.r.runtime.data.FastPathFactory;
+import com.oracle.truffle.r.runtime.nodes.RFastPathNode;
 
 final class Info {
     public static final Info EMPTY = new Info(Collections.emptySet(), Collections.emptySet(), false);

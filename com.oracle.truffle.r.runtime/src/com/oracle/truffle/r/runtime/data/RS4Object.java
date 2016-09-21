@@ -22,7 +22,7 @@
  */
 package com.oracle.truffle.r.runtime.data;
 
-import com.oracle.truffle.r.runtime.*;
+import com.oracle.truffle.r.runtime.RType;
 
 /**
  * This is a placeholder class for an S4 object (GnuR S4SXP). It has no functionality at present but

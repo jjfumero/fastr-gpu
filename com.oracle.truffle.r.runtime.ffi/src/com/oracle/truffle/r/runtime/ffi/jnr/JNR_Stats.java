@@ -22,14 +22,14 @@
  */
 package com.oracle.truffle.r.runtime.ffi.jnr;
 
-import static com.oracle.truffle.r.runtime.ffi.RFFIUtils.*;
+import static com.oracle.truffle.r.runtime.ffi.RFFIUtils.wrapInt;
 import jnr.ffi.LibraryLoader;
 import jnr.ffi.annotations.In;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.r.runtime.ffi.DLL;
-import com.oracle.truffle.r.runtime.ffi.StatsRFFI;
 import com.oracle.truffle.r.runtime.ffi.DLL.DLLInfo;
+import com.oracle.truffle.r.runtime.ffi.StatsRFFI;
 
 // Checkstyle: stop method name
 public class JNR_Stats implements StatsRFFI {

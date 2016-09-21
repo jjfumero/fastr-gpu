@@ -10,10 +10,28 @@
  */
 package com.oracle.truffle.r.parser.tools;
 
-import java.io.*;
-import java.util.*;
+import java.io.PrintStream;
+import java.util.List;
 
-import com.oracle.truffle.r.parser.ast.*;
+import com.oracle.truffle.r.parser.ast.ASTNode;
+import com.oracle.truffle.r.parser.ast.ArgNode;
+import com.oracle.truffle.r.parser.ast.BinaryOperation;
+import com.oracle.truffle.r.parser.ast.Break;
+import com.oracle.truffle.r.parser.ast.Constant;
+import com.oracle.truffle.r.parser.ast.FieldAccess;
+import com.oracle.truffle.r.parser.ast.For;
+import com.oracle.truffle.r.parser.ast.Function;
+import com.oracle.truffle.r.parser.ast.FunctionCall;
+import com.oracle.truffle.r.parser.ast.If;
+import com.oracle.truffle.r.parser.ast.Next;
+import com.oracle.truffle.r.parser.ast.Repeat;
+import com.oracle.truffle.r.parser.ast.Sequence;
+import com.oracle.truffle.r.parser.ast.SimpleAccessVariable;
+import com.oracle.truffle.r.parser.ast.SimpleAssignVariable;
+import com.oracle.truffle.r.parser.ast.UnaryOperation;
+import com.oracle.truffle.r.parser.ast.UpdateField;
+import com.oracle.truffle.r.parser.ast.UpdateVector;
+import com.oracle.truffle.r.parser.ast.While;
 
 public class PrettyPrinter extends BasicVisitor<Void> {
 

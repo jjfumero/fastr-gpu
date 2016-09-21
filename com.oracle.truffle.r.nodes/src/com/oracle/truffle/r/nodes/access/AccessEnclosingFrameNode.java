@@ -22,10 +22,11 @@
  */
 package com.oracle.truffle.r.nodes.access;
 
-import com.oracle.truffle.api.dsl.*;
-import com.oracle.truffle.api.frame.*;
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.nodes.*;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.r.runtime.RArguments;
+import com.oracle.truffle.r.runtime.nodes.RNode;
 
 public abstract class AccessEnclosingFrameNode extends RNode {
 

@@ -22,16 +22,21 @@
  */
 package com.oracle.truffle.r.nodes.access;
 
-import com.oracle.truffle.api.frame.*;
-import com.oracle.truffle.api.instrument.*;
-import com.oracle.truffle.api.nodes.*;
-import com.oracle.truffle.api.source.*;
-import com.oracle.truffle.r.nodes.*;
-import com.oracle.truffle.r.nodes.instrument.wrappers.*;
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.RDeparse.*;
-import com.oracle.truffle.r.runtime.env.*;
-import com.oracle.truffle.r.runtime.nodes.*;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrument.WrapperNode;
+import com.oracle.truffle.api.nodes.NodeCost;
+import com.oracle.truffle.api.nodes.NodeInfo;
+import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.r.nodes.RASTUtils;
+import com.oracle.truffle.r.nodes.instrument.wrappers.WriteCurrentVariableNodeWrapper;
+import com.oracle.truffle.r.runtime.RDeparse.State;
+import com.oracle.truffle.r.runtime.RInternalError;
+import com.oracle.truffle.r.runtime.RSerialize;
+import com.oracle.truffle.r.runtime.VisibilityController;
+import com.oracle.truffle.r.runtime.env.REnvironment;
+import com.oracle.truffle.r.runtime.nodes.NeedsWrapper;
+import com.oracle.truffle.r.runtime.nodes.RNode;
+import com.oracle.truffle.r.runtime.nodes.RSyntaxNode;
 
 /**
  * The "syntax" variant corresponding to {@code x <- y} in the source.

@@ -22,7 +22,8 @@
  */
 package com.oracle.truffle.r.test;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class WhiteList implements TestTrait {
     public static class Results {

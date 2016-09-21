@@ -10,10 +10,12 @@
  */
 package com.oracle.truffle.r.parser;
 
-import org.antlr.runtime.*;
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
 
-import com.oracle.truffle.api.source.*;
-import com.oracle.truffle.r.parser.ast.*;
+import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.r.parser.ast.ASTNode;
 
 public class ParseUtil {
 

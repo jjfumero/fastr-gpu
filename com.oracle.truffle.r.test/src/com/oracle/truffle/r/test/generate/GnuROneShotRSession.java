@@ -22,7 +22,9 @@
  */
 package com.oracle.truffle.r.test.generate;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import com.oracle.truffle.r.test.TestBase;
 

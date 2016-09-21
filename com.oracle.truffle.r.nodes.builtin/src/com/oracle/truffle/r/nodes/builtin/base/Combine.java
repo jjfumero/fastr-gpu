@@ -22,21 +22,60 @@
  */
 package com.oracle.truffle.r.nodes.builtin.base;
 
-import static com.oracle.truffle.r.nodes.unary.PrecedenceNode.*;
-import static com.oracle.truffle.r.runtime.RBuiltinKind.*;
+import static com.oracle.truffle.r.nodes.unary.PrecedenceNode.COMPLEX_PRECEDENCE;
+import static com.oracle.truffle.r.nodes.unary.PrecedenceNode.DOUBLE_PRECEDENCE;
+import static com.oracle.truffle.r.nodes.unary.PrecedenceNode.EXPRESSION_PRECEDENCE;
+import static com.oracle.truffle.r.nodes.unary.PrecedenceNode.INT_PRECEDENCE;
+import static com.oracle.truffle.r.nodes.unary.PrecedenceNode.LIST_PRECEDENCE;
+import static com.oracle.truffle.r.nodes.unary.PrecedenceNode.LOGICAL_PRECEDENCE;
+import static com.oracle.truffle.r.nodes.unary.PrecedenceNode.NO_PRECEDENCE;
+import static com.oracle.truffle.r.nodes.unary.PrecedenceNode.RAW_PRECEDENCE;
+import static com.oracle.truffle.r.nodes.unary.PrecedenceNode.STRING_PRECEDENCE;
+import static com.oracle.truffle.r.runtime.RBuiltinKind.PRIMITIVE;
 
-import com.oracle.truffle.api.*;
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.dsl.*;
-import com.oracle.truffle.api.utilities.*;
-import com.oracle.truffle.r.nodes.binary.*;
-import com.oracle.truffle.r.nodes.builtin.*;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.utilities.ConditionProfile;
+import com.oracle.truffle.r.nodes.binary.CombineBinaryComplexNodeGen;
+import com.oracle.truffle.r.nodes.binary.CombineBinaryDoubleNodeGen;
+import com.oracle.truffle.r.nodes.binary.CombineBinaryIntegerNodeGen;
+import com.oracle.truffle.r.nodes.binary.CombineBinaryListNodeGen;
+import com.oracle.truffle.r.nodes.binary.CombineBinaryLogicalNodeGen;
+import com.oracle.truffle.r.nodes.binary.CombineBinaryNode;
+import com.oracle.truffle.r.nodes.binary.CombineBinaryRawNodeGen;
+import com.oracle.truffle.r.nodes.binary.CombineBinaryStringNodeGen;
+import com.oracle.truffle.r.nodes.builtin.RCastingBuiltinNode;
 import com.oracle.truffle.r.nodes.builtin.base.CombineNodeGen.CombineInputCastNodeGen;
-import com.oracle.truffle.r.nodes.unary.*;
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.data.*;
-import com.oracle.truffle.r.runtime.data.model.*;
-import com.oracle.truffle.r.runtime.nodes.*;
+import com.oracle.truffle.r.nodes.unary.CastComplexNodeGen;
+import com.oracle.truffle.r.nodes.unary.CastDoubleNodeGen;
+import com.oracle.truffle.r.nodes.unary.CastIntegerNodeGen;
+import com.oracle.truffle.r.nodes.unary.CastListNodeGen;
+import com.oracle.truffle.r.nodes.unary.CastLogicalNodeGen;
+import com.oracle.truffle.r.nodes.unary.CastNode;
+import com.oracle.truffle.r.nodes.unary.CastRawNodeGen;
+import com.oracle.truffle.r.nodes.unary.CastStringNodeGen;
+import com.oracle.truffle.r.nodes.unary.CastToVectorNode;
+import com.oracle.truffle.r.nodes.unary.CastToVectorNodeGen;
+import com.oracle.truffle.r.nodes.unary.PrecedenceNode;
+import com.oracle.truffle.r.nodes.unary.PrecedenceNodeGen;
+import com.oracle.truffle.r.runtime.ArgumentsSignature;
+import com.oracle.truffle.r.runtime.RBuiltin;
+import com.oracle.truffle.r.runtime.RError;
+import com.oracle.truffle.r.runtime.RRuntime;
+import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
+import com.oracle.truffle.r.runtime.data.RAttributeProfiles;
+import com.oracle.truffle.r.runtime.data.RAttributes;
+import com.oracle.truffle.r.runtime.data.RDataFactory;
+import com.oracle.truffle.r.runtime.data.RList;
+import com.oracle.truffle.r.runtime.data.RNull;
+import com.oracle.truffle.r.runtime.data.RStringVector;
+import com.oracle.truffle.r.runtime.data.RVector;
+import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
+import com.oracle.truffle.r.runtime.nodes.RNode;
 
 @RBuiltin(name = "c", kind = PRIMITIVE, parameterNames = {"..."})
 public abstract class Combine extends RCastingBuiltinNode {

@@ -22,13 +22,13 @@
  */
 package com.oracle.truffle.r.nodes.binary;
 
-import java.util.*;
-
-import com.oracle.truffle.api.dsl.*;
-import com.oracle.truffle.api.frame.*;
-import com.oracle.truffle.r.nodes.profile.*;
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.data.*;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.r.nodes.profile.CountedLoopConditionProfile;
+import com.oracle.truffle.r.runtime.data.RComplex;
+import com.oracle.truffle.r.runtime.data.RComplexVector;
+import com.oracle.truffle.r.runtime.data.RDataFactory;
+import com.oracle.truffle.r.runtime.data.RNull;
 
 @SuppressWarnings("unused")
 /** Takes only RNull, RComplex or RComplexVector as arguments. Use CastComplexNode to cast the operands. */

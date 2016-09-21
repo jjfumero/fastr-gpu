@@ -10,9 +10,10 @@
  */
 package com.oracle.truffle.r.parser.ast;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
-import com.oracle.truffle.api.source.*;
+import com.oracle.truffle.api.source.SourceSection;
 
 public class While extends Loop {
 

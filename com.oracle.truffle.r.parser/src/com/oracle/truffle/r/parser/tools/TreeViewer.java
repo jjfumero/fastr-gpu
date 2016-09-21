@@ -10,13 +10,23 @@
  */
 package com.oracle.truffle.r.parser.tools;
 
-import java.awt.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 
 public class TreeViewer extends JTree {
 

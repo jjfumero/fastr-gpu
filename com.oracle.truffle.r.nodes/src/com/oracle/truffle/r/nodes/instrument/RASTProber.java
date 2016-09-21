@@ -22,15 +22,30 @@
  */
 package com.oracle.truffle.r.nodes.instrument;
 
-import static com.oracle.truffle.api.instrument.StandardSyntaxTag.*;
+import static com.oracle.truffle.api.instrument.StandardSyntaxTag.CALL;
+import static com.oracle.truffle.api.instrument.StandardSyntaxTag.START_METHOD;
+import static com.oracle.truffle.api.instrument.StandardSyntaxTag.STATEMENT;
 
-import com.oracle.truffle.api.instrument.*;
-import com.oracle.truffle.api.nodes.*;
+import com.oracle.truffle.api.instrument.ASTProber;
+import com.oracle.truffle.api.instrument.Instrumenter;
+import com.oracle.truffle.api.instrument.Probe;
+import com.oracle.truffle.api.instrument.StandardSyntaxTag;
+import com.oracle.truffle.api.instrument.WrapperNode;
+import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
-import com.oracle.truffle.r.nodes.control.*;
-import com.oracle.truffle.r.nodes.function.*;
-import com.oracle.truffle.r.runtime.*;
-import com.oracle.truffle.r.runtime.nodes.*;
+import com.oracle.truffle.r.nodes.control.BlockNode;
+import com.oracle.truffle.r.nodes.control.SequenceNode;
+import com.oracle.truffle.r.nodes.function.BodyNode;
+import com.oracle.truffle.r.nodes.function.FunctionBodyNode;
+import com.oracle.truffle.r.nodes.function.FunctionDefinitionNode;
+import com.oracle.truffle.r.nodes.function.FunctionStatementsNode;
+import com.oracle.truffle.r.nodes.function.RCallNode;
+import com.oracle.truffle.r.runtime.FastROptions;
+import com.oracle.truffle.r.runtime.FunctionUID;
+import com.oracle.truffle.r.runtime.RDeparse;
+import com.oracle.truffle.r.runtime.nodes.RNode;
+import com.oracle.truffle.r.runtime.nodes.RSyntaxNode;
+import com.oracle.truffle.r.runtime.nodes.RSyntaxNodeVisitor;
 
 /**
  * A visitor which traverses a completely parsed R AST (presumed not yet executed) and attaches

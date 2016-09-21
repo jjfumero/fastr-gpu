@@ -23,17 +23,23 @@
 package com.oracle.truffle.r.test.generate;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.TimeZone;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.source.Source;
-import com.oracle.truffle.api.vm.*;
-import com.oracle.truffle.r.engine.*;
-import com.oracle.truffle.r.runtime.*;
+import com.oracle.truffle.api.vm.PolyglotEngine;
+import com.oracle.truffle.r.engine.TruffleRLanguage;
+import com.oracle.truffle.r.runtime.RCmdOptions;
 import com.oracle.truffle.r.runtime.RCmdOptions.Client;
-import com.oracle.truffle.r.runtime.context.*;
+import com.oracle.truffle.r.runtime.RError;
+import com.oracle.truffle.r.runtime.RInternalError;
+import com.oracle.truffle.r.runtime.context.ConsoleHandler;
+import com.oracle.truffle.r.runtime.context.ContextInfo;
 import com.oracle.truffle.r.runtime.context.Engine.ParseException;
+import com.oracle.truffle.r.runtime.context.RContext;
 import com.oracle.truffle.r.runtime.context.RContext.ContextKind;
 
 public final class FastRSession implements RSession {

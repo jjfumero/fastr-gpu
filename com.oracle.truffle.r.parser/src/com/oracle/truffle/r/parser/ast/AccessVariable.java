@@ -10,7 +10,7 @@
  */
 package com.oracle.truffle.r.parser.ast;
 
-import com.oracle.truffle.api.source.*;
+import com.oracle.truffle.api.source.SourceSection;
 
 public abstract class AccessVariable extends ASTNode {
 

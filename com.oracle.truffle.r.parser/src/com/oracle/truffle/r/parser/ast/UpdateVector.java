@@ -10,7 +10,8 @@
  */
 package com.oracle.truffle.r.parser.ast;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
 public class UpdateVector extends ASTNode {
 

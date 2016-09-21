@@ -24,10 +24,12 @@ package com.oracle.truffle.r.nodes.access;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.r.nodes.RASTUtils;
-import com.oracle.truffle.r.runtime.*;
+import com.oracle.truffle.r.runtime.RDeparse;
+import com.oracle.truffle.r.runtime.RInternalError;
+import com.oracle.truffle.r.runtime.RSerialize;
 import com.oracle.truffle.r.runtime.data.RDataFactory;
-import com.oracle.truffle.r.runtime.gnur.*;
-import com.oracle.truffle.r.runtime.nodes.*;
+import com.oracle.truffle.r.runtime.gnur.SEXPTYPE;
+import com.oracle.truffle.r.runtime.nodes.RNode;
 
 abstract class WriteVariableNodeSyntaxHelper extends WriteVariableNode {
     protected void deparseHelper(RDeparse.State state, String op) {

@@ -23,11 +23,13 @@
 // Checkstyle: stop
 package com.oracle.truffle.r.nodes.instrument.wrappers;
 
-import com.oracle.truffle.api.instrument.Probe;
 import com.oracle.truffle.api.instrument.EventHandlerNode;
+import com.oracle.truffle.api.instrument.Probe;
 import com.oracle.truffle.api.instrument.WrapperNode;
-import com.oracle.truffle.api.nodes.*;
-import com.oracle.truffle.r.runtime.nodes.*;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.NodeCost;
+import com.oracle.truffle.api.nodes.NodeInfo;
+import com.oracle.truffle.r.runtime.nodes.RSyntaxNode;
 
 @NodeInfo(cost = NodeCost.NONE)
 public final class ConvertBooleanNodeWrapper extends com.oracle.truffle.r.nodes.unary.ConvertBooleanNode implements WrapperNode {

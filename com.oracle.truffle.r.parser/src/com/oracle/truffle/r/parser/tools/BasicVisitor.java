@@ -10,7 +10,33 @@
  */
 package com.oracle.truffle.r.parser.tools;
 
-import com.oracle.truffle.r.parser.ast.*;
+import com.oracle.truffle.r.parser.ast.ASTNode;
+import com.oracle.truffle.r.parser.ast.ArgNode;
+import com.oracle.truffle.r.parser.ast.BinaryOperation;
+import com.oracle.truffle.r.parser.ast.Break;
+import com.oracle.truffle.r.parser.ast.Call;
+import com.oracle.truffle.r.parser.ast.Constant;
+import com.oracle.truffle.r.parser.ast.FieldAccess;
+import com.oracle.truffle.r.parser.ast.For;
+import com.oracle.truffle.r.parser.ast.Formula;
+import com.oracle.truffle.r.parser.ast.Function;
+import com.oracle.truffle.r.parser.ast.FunctionCall;
+import com.oracle.truffle.r.parser.ast.If;
+import com.oracle.truffle.r.parser.ast.Missing;
+import com.oracle.truffle.r.parser.ast.Next;
+import com.oracle.truffle.r.parser.ast.Operation;
+import com.oracle.truffle.r.parser.ast.Repeat;
+import com.oracle.truffle.r.parser.ast.Replacement;
+import com.oracle.truffle.r.parser.ast.Sequence;
+import com.oracle.truffle.r.parser.ast.SimpleAccessTempVariable;
+import com.oracle.truffle.r.parser.ast.SimpleAccessVariable;
+import com.oracle.truffle.r.parser.ast.SimpleAccessVariadicComponent;
+import com.oracle.truffle.r.parser.ast.SimpleAssignVariable;
+import com.oracle.truffle.r.parser.ast.UnaryOperation;
+import com.oracle.truffle.r.parser.ast.UpdateField;
+import com.oracle.truffle.r.parser.ast.UpdateVector;
+import com.oracle.truffle.r.parser.ast.Visitor;
+import com.oracle.truffle.r.parser.ast.While;
 
 public class BasicVisitor<R> implements Visitor<R> {
 

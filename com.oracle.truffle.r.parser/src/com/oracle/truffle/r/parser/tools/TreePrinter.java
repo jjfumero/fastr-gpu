@@ -22,9 +22,12 @@
  */
 package com.oracle.truffle.r.parser.tools;
 
-import java.io.*;
+import java.io.PrintStream;
 
-import com.oracle.truffle.r.parser.ast.*;
+import com.oracle.truffle.r.parser.ast.ASTNode;
+import com.oracle.truffle.r.parser.ast.BinaryOperation;
+import com.oracle.truffle.r.parser.ast.FunctionCall;
+import com.oracle.truffle.r.parser.ast.SimpleAccessVariable;
 
 public class TreePrinter extends BasicVisitor<Void> {
 
