@@ -28,11 +28,18 @@ benchmark <- function(inputSize) {
 	x <- rep(1, size)
 	x[size] = 100
 
+	r <- rep(0, size)
+	r[size] = 1
+
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
 		result <- marawacc.gpusapply(x, deoptSample);
 		total <- nanotime() - start
 		print(paste("Total Time: ", total))
+
+		if (identical(result, r)) {
+			print("RESULT IS CORRECT")
+		}
 	}
 }
 

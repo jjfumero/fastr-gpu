@@ -137,7 +137,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         if (deopt != null) {
             System.out.println("DEOPT: " + deopt);
             if (deopt.get(0) == 1) {
-                // DEOPTIMIZATION!!!!
+                throw new RuntimeException("Deoptimization");
             }
         }
 
@@ -251,6 +251,32 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return output;
     }
 
+    // Run in the interpreter and then JIT when the CFG is prepared for compilation
+    private static ArrayList<Object> runAfterDeopt(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
+                    Object firstValue, int totalSize) {
+        checkFunctionInCache(function, callTarget);
+        ArrayList<Object> output = setOutput(firstValue);
+        for (int i = 1; i < totalSize; i++) {
+            Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
+            Object value = callTarget.call(argsPackage);
+            output.add(value);
+        }
+        return output;
+    }
+
+    // Run in the interpreter and then JIT when the CFG is prepared for compilation
+    private static ArrayList<Object> runAfterDeopt(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
+                    Object firstValue, int totalSize) {
+        checkFunctionInCache(function, callTarget);
+        ArrayList<Object> output = setOutput(firstValue);
+        for (int i = 1; i < totalSize; i++) {
+            Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
+            Object value = callTarget.call(argsPackage);
+            output.add(value);
+        }
+        return output;
+    }
+
     private static RFunctionMetadata getCachedFunctionMetadata(PArray<?> input, RFunction function, PArray<?>[] additionalArgs) {
         if (RGPUCache.INSTANCE.getCachedObjects(function).getRFunctionMetadata() == null) {
             // Type inference -> execution of the first element
@@ -292,8 +318,15 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         long endMarshal = System.nanoTime();
 
         // Execution
+        ArrayList<Object> result = null;
         long startExecution = System.nanoTime();
-        ArrayList<Object> result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes, totalSize);
+        try {
+            result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes, totalSize);
+        } catch (RuntimeException e) {
+            // Deoptimization
+            System.out.println("Running in the DEOPT mode");
+            result = runAfterDeopt(inputPArrayFormat, target, function, nArgs, additionalArgs, argsName, value, totalSize);
+        }
         long endExecution = System.nanoTime();
 
         // Get the result (un-marshal)
@@ -349,8 +382,15 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         long endMarshal = System.nanoTime();
 
         // Execution
+        ArrayList<Object> result = null;
         long startExecution = System.nanoTime();
-        ArrayList<Object> result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes);
+        try {
+            result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes);
+        } catch (RuntimeException e) {
+            // Deoptimization
+            System.out.println("Running in the DEOPT mode");
+            result = runAfterDeopt(input, target, function, nArgs, additionalArgs, argsName, value, input.getLength());
+        }
         long endExecution = System.nanoTime();
 
         // Get the result (un-marshal)
