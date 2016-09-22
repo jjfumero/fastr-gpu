@@ -133,6 +133,14 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         AcceleratorPArray copyToDevice = executor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
         AcceleratorPArray executeOnTheDevice = executor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType(), gpuCompilationUnit.getScopeArrays());
         PArray result = executor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
+        PArray<Integer> deopt = executor.getDeoptBuffer();
+        if (deopt != null) {
+            System.out.println("DEOPT: " + deopt);
+            if (deopt.get(0) == 1) {
+                // DEOPTIMIZATION!!!!
+            }
+        }
+
         gpuExecution = true;
 
         ArrayList<Object> arrayList = new ArrayList<>();
