@@ -45,6 +45,7 @@ import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
 import com.oracle.truffle.r.library.gpu.cache.RCacheObjects;
 import com.oracle.truffle.r.library.gpu.cache.RFunctionMetadata;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
+import com.oracle.truffle.r.library.gpu.exceptions.MarawaccRuntimeDeoptException;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.phases.FilterInterpreterNodes;
 import com.oracle.truffle.r.library.gpu.phases.scope.ScopeData;
@@ -137,7 +138,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         if (deopt != null) {
             System.out.println("DEOPT: " + deopt);
             if (deopt.get(0) == 1) {
-                throw new RuntimeException("Deoptimization");
+                throw new MarawaccRuntimeDeoptException("Deoptimization");
             }
         }
 
@@ -322,7 +323,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         long startExecution = System.nanoTime();
         try {
             result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes, totalSize);
-        } catch (RuntimeException e) {
+        } catch (MarawaccRuntimeDeoptException e) {
             // Deoptimization
             System.out.println("Running in the DEOPT mode");
             result = runAfterDeopt(inputPArrayFormat, target, function, nArgs, additionalArgs, argsName, value, totalSize);
@@ -386,7 +387,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         long startExecution = System.nanoTime();
         try {
             result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes);
-        } catch (RuntimeException e) {
+        } catch (MarawaccRuntimeDeoptException e) {
             // Deoptimization
             System.out.println("Running in the DEOPT mode");
             result = runAfterDeopt(input, target, function, nArgs, additionalArgs, argsName, value, input.getLength());
