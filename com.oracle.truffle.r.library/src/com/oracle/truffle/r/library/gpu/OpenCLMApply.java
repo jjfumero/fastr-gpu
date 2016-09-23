@@ -105,7 +105,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         gpuCompilationUnit.setScopeArrays(scopeData.getData());
         gpuCompilationUnit.setScopeNodes(scopedNodes);
 
-        // Insert graph into Truffle OCL Cache
+        // Insert graph into Truffle OpenCL Cache
         InternalGraphCache.INSTANCE.installGPUBinaryIntoCache(graphToCompile, gpuCompilationUnit);
 
         return gpuCompilationUnit;
@@ -473,7 +473,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             parrayFormat = true;
             parrayInput = (PArray<?>) firstParam;
         } else {
-            throw new RuntimeException("Vector expected: " + firstParam.getClass());
+            throw new RuntimeException("Vector or PArray expected, but " + firstParam.getClass() + " found");
         }
 
         RootCallTarget target = null;
