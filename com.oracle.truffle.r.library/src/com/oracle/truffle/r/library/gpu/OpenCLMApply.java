@@ -41,6 +41,7 @@ import uk.ac.ed.marawacc.graal.CompilerUtils;
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.truffle.OptimizedCallTarget;
 import com.oracle.truffle.api.RootCallTarget;
+import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.r.library.gpu.cache.CacheGPUExecutor;
 import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
 import com.oracle.truffle.r.library.gpu.cache.RCacheObjects;
@@ -56,7 +57,10 @@ import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils.ScopeVarInfo;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.nodes.function.FunctionDefinitionNode;
+import com.oracle.truffle.r.runtime.context.RContext;
+import com.oracle.truffle.r.runtime.context.Engine.ParseException;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
+import com.oracle.truffle.r.runtime.data.RDataFactory;
 import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.RVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
@@ -448,6 +452,22 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
+    private static RFunction scopeRewritting(RFunction function, String[] scopeVars) {
+        String code = "f <- function(x) x * x";
+
+        String originalCode = function.getRootNode().getSourceSection().getCode();
+        System.out.println(originalCode);
+
+        Source source = Source.fromText(code, "<eval>").withMimeType("application/x-r");
+        try {
+            RFunction parseAndEval = (RFunction) RContext.getEngine().parseAndEval(source, false);
+            return parseAndEval;
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     @Override
     public Object call(RArgsValuesAndNames args) {
 
@@ -487,8 +507,10 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             // Lexical scoping from the AST level
             String[] scopeVars = ASTxUtils.lexicalScopingAST(function);
             ScopeVarInfo valueOfScopeArrays = ASTxUtils.getValueOfScopeArrays(scopeVars, function);
-            lexicalScopes = valueOfScopeArrays.getScopeVars();
-            filterScopeVarNames = valueOfScopeArrays.getNameVars();
+            if (valueOfScopeArrays != null) {
+                lexicalScopes = valueOfScopeArrays.getScopeVars();
+                filterScopeVarNames = valueOfScopeArrays.getNameVars();
+            }
             RCacheObjects cachedObjects = new RCacheObjects(function.getTarget(), scopeVars, lexicalScopes);
             target = RGPUCache.INSTANCE.updateCacheObjects(function, cachedObjects);
         } else {
@@ -496,8 +518,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             lexicalScopes = RGPUCache.INSTANCE.getCachedObjects(function).getLexicalScopeVars();
         }
 
-        System.out.println("LEXICAL SCOPE VARIABLES");
-        System.out.println(Arrays.toString(filterScopeVarNames));
+        RFunction scopeRewritting = scopeRewritting(function, filterScopeVarNames);
+        System.out.println("NEW FUNCTION: " + scopeRewritting);
 
         RAbstractVector mapResult = null;
 

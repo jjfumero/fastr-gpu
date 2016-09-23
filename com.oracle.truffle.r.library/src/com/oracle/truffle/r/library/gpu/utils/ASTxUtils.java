@@ -86,6 +86,9 @@ import com.oracle.truffle.r.runtime.nodes.RSyntaxNode;
  */
 public class ASTxUtils {
 
+    private static final String regExpForArguments = "^function[ ]*\\(([a-zA-Z]+([, ]*[a-zA-Z0-9]+)*)\\)";
+    private static final Pattern pattern = Pattern.compile(regExpForArguments);
+
     /**
      * It returns the number of arguments for an {@link RFunction}.
      *
@@ -99,9 +102,6 @@ public class ASTxUtils {
         }
 
         String sourceCode = function.getTarget().getRootNode().getSourceSection().getCode();
-
-        String regExpForArguments = "^function[ ]*\\(([a-zA-Z]+([, ]*[a-zA-Z0-9]+)*)\\)";
-        Pattern pattern = Pattern.compile(regExpForArguments);
         Matcher matcher = pattern.matcher(sourceCode);
         int nArgs = 1;
         if (matcher.find()) {
@@ -132,8 +132,6 @@ public class ASTxUtils {
         }
 
         String sourceCode = function.getRootNode().getSourceSection().getCode();
-        String regExpForArguments = "^function[ ]*\\(([a-zA-Z]+([, ]*[a-zA-Z0-9]+)*)\\)";
-        Pattern pattern = Pattern.compile(regExpForArguments);
         Matcher matcher = pattern.matcher(sourceCode);
 
         if (matcher.find()) {

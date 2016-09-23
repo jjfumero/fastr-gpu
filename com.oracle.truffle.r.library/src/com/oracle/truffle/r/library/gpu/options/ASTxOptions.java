@@ -81,6 +81,12 @@ public class ASTxOptions {
      */
     public static boolean profile_OCL_ASTx = getBoolean("astx.marawacc.profiler", true);
 
+    /**
+     * The function it is rewritten itself with the scope variables as parameters. Therefore with
+     * this option side effects are not allowed.
+     */
+    public static boolean scopeRewriting = getBoolean("astx.marawacc.scoperewriting", true);
+
     private static boolean getBoolean(String property, boolean defaultValue) {
         if (System.getProperty(property) == null) {
             return defaultValue;
