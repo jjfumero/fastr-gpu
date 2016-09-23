@@ -23,6 +23,7 @@
 package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.accelerator.profiler.Profiler;
@@ -52,6 +53,7 @@ import com.oracle.truffle.r.library.gpu.phases.scope.ScopeData;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
+import com.oracle.truffle.r.library.gpu.utils.ASTxUtils.ScopeVarInfo;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.nodes.function.FunctionDefinitionNode;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
@@ -478,18 +480,24 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         RootCallTarget target = null;
         Object[] lexicalScopes = null;
+        String[] filterScopeVarNames = null;
 
         // Get the callTarget from the cache
         if (!RGPUCache.INSTANCE.contains(function)) {
             // Lexical scoping from the AST level
             String[] scopeVars = ASTxUtils.lexicalScopingAST(function);
-            lexicalScopes = ASTxUtils.getValueOfScopeArrays(scopeVars, function);
+            ScopeVarInfo valueOfScopeArrays = ASTxUtils.getValueOfScopeArrays(scopeVars, function);
+            lexicalScopes = valueOfScopeArrays.getScopeVars();
+            filterScopeVarNames = valueOfScopeArrays.getNameVars();
             RCacheObjects cachedObjects = new RCacheObjects(function.getTarget(), scopeVars, lexicalScopes);
             target = RGPUCache.INSTANCE.updateCacheObjects(function, cachedObjects);
         } else {
             target = RGPUCache.INSTANCE.getCallTarget(function);
             lexicalScopes = RGPUCache.INSTANCE.getCachedObjects(function).getLexicalScopeVars();
         }
+
+        System.out.println("LEXICAL SCOPE VARIABLES");
+        System.out.println(Arrays.toString(filterScopeVarNames));
 
         RAbstractVector mapResult = null;
 

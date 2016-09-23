@@ -1140,6 +1140,26 @@ public class ASTxUtils {
         return parray;
     }
 
+    public static class ScopeVarInfo {
+        private Object[] scopeVars;
+        private String[] nameVars;
+
+        public ScopeVarInfo(Object[] scopeVars, String[] nameVars) {
+            super();
+            this.scopeVars = scopeVars;
+            this.nameVars = nameVars;
+        }
+
+        public Object[] getScopeVars() {
+            return scopeVars;
+        }
+
+        public String[] getNameVars() {
+            return nameVars;
+        }
+
+    }
+
     /**
      * Given an array of scopeVars and the function, this method evaluates this variables and
      * returns an array with only the arrays.
@@ -1148,8 +1168,9 @@ public class ASTxUtils {
      * @param function
      * @return Object[]
      */
-    public static Object[] getValueOfScopeArrays(String[] scopeVars, RFunction function) {
+    public static ScopeVarInfo getValueOfScopeArrays(String[] scopeVars, RFunction function) {
         LinkedList<Object> scopes = new LinkedList<>();
+        LinkedList<String> varNames = new LinkedList<>();
         for (String var : scopeVars) {
             StringBuffer scopeVar = new StringBuffer(var);
             Source source = Source.fromText(scopeVar, "<eval>").withMimeType(RRuntime.R_APP_MIME);
@@ -1157,15 +1178,20 @@ public class ASTxUtils {
             Object val = null;
             try {
                 val = RContext.getEngine().parseAndEval(source, frame, false);
+                boolean added = false;
                 if (val instanceof RVector) {
-
                     if (val instanceof RDoubleVector) {
                         scopes.add(((RDoubleVector) val).getDataCopy());
+                        added = true;
                     } else if (val instanceof RIntVector) {
                         scopes.add(((RIntVector) val).getDataCopy());
+                        added = true;
                     } else {
                         throw new RuntimeException("Data type not supported yet");
                     }
+                }
+                if (added) {
+                    varNames.add(var);
                 }
             } catch (ParseException e) {
                 e.printStackTrace();
@@ -1175,7 +1201,10 @@ public class ASTxUtils {
         if (scopes.isEmpty()) {
             return null;
         }
-        return scopes.toArray();
+
+        ScopeVarInfo scopeVarInfo = new ScopeVarInfo(scopes.toArray(), varNames.stream().toArray(String[]::new));
+
+        return scopeVarInfo;
     }
 
     public static void printAST(RFunction function) {
