@@ -29,5 +29,4 @@ public class MarawaccTypeException extends Exception {
     public MarawaccTypeException(String message) {
         super(message);
     }
-
 }
