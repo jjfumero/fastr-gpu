@@ -453,12 +453,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     }
 
     private static RFunction scopeRewritting(RFunction function, String[] scopeVars) {
-        String code = "f <- function(x) x * x";
-
-        String originalCode = function.getRootNode().getSourceSection().getCode();
-        System.out.println(originalCode);
-
-        Source source = Source.fromText(code, "<eval>").withMimeType("application/x-r");
+        String rewriteFunction = ASTxUtils.rewriteFunction(function, scopeVars);
+        Source source = Source.fromText(rewriteFunction, "<eval>").withMimeType("application/x-r");
         try {
             RFunction parseAndEval = (RFunction) RContext.getEngine().parseAndEval(source, false);
             return parseAndEval;
@@ -518,8 +514,13 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             lexicalScopes = RGPUCache.INSTANCE.getCachedObjects(function).getLexicalScopeVars();
         }
 
-        RFunction scopeRewritting = scopeRewritting(function, filterScopeVarNames);
-        System.out.println("NEW FUNCTION: " + scopeRewritting);
+        if (ASTxOptions.scopeRewriting) {
+            RFunction scopeRewritting = scopeRewritting(function, filterScopeVarNames);
+            System.out.println("NEW FUNCTION: " + scopeRewritting.getRootNode().getSourceSection().getCode());
+            // if (scopeRewritting != null) {
+            // function = scopeRewritting;
+            // }
+        }
 
         RAbstractVector mapResult = null;
 

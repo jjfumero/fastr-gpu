@@ -89,6 +89,9 @@ public class ASTxUtils {
     private static final String regExpForArguments = "^function[ ]*\\(([a-zA-Z]+([, ]*[a-zA-Z0-9]+)*)\\)";
     private static final Pattern pattern = Pattern.compile(regExpForArguments);
 
+    private static final String signature = "^function[ ]*.*\\)";
+    private static final Pattern patternSignature = Pattern.compile(signature);
+
     /**
      * It returns the number of arguments for an {@link RFunction}.
      *
@@ -138,6 +141,27 @@ public class ASTxUtils {
             args = matcher.group(1).replace(" ", "").split(",");
         }
         return args;
+    }
+
+    public static String rewriteFunction(RFunction function, String[] additionalArguments) {
+        String newSourceCode = null;
+        String sourceCode = function.getRootNode().getSourceSection().getCode();
+        Matcher matcher = pattern.matcher(sourceCode);
+
+        String argsAdd = "";
+        for (String s : additionalArguments) {
+            argsAdd += "," + s;
+        }
+
+        if (matcher.find()) {
+            String group = matcher.group(1);
+            String newGroup = "function(" + group + argsAdd + ")";
+            Matcher m = patternSignature.matcher(sourceCode);
+            if (m.find()) {
+                newSourceCode = sourceCode.replace(m.group(0), newGroup);
+            }
+        }
+        return newSourceCode;
     }
 
     /**
