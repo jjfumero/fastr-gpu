@@ -207,7 +207,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     // Run in the interpreter and then JIT when the CFG is prepared for compilation
     private ArrayList<Object> runJavaOpenCLJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
-                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, RVector[] vectors) throws MarawaccExecutionException {
+                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes) throws MarawaccExecutionException {
 
         checkFunctionInCache(function, callTarget);
 
@@ -364,8 +364,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return resultFastR;
     }
 
-    private RAbstractVector computeOpenCLMApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes, RVector[] vectors) {
-
+    private RAbstractVector computeOpenCLMApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes) {
         // Type inference -> execution of the first element
         int nArgs = ASTxUtils.getNumberOfArguments(function);
         String[] argsName = ASTxUtils.getArgumentsNames(function);
@@ -395,7 +394,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         ArrayList<Object> result = null;
         long startExecution = System.nanoTime();
         try {
-            result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes, vectors);
+            result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes);
         } catch (MarawaccExecutionException e) {
             // Deoptimization
             System.out.println("Running in the DEOPT mode");
@@ -531,22 +530,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
 
         RAbstractVector mapResult = null;
-
-        // Prepare all inputs in an array of Objects
         if (!parrayFormat) {
-            RAbstractVector[] additionalInputs = ASTxUtils.getRArrayWithAdditionalArguments(args);
-            if (isRewritten()) {
-                RAbstractVector[] foo = new RAbstractVector[additionalInputs.length + lexicalScopes.length];
-                for (int i = 0; i < additionalInputs.length; i++) {
-                    foo[i] = additionalInputs[i];
-                }
-                int j = 0;
-                for (int i = additionalInputs.length; i < additionalInputs.length + lexicalScopes.length; i++) {
-                    foo[i] = vectors[j++];
-                }
-                additionalInputs = foo;
-            }
-            mapResult = computeOpenCLMApply(inputRArray, function, target, additionalInputs, lexicalScopes, vectors);
+            RAbstractVector[] additionalInputs = ASTxUtils.getAdditionalArguments(args, isRewritten, vectors, lexicalScopes.length);
+            mapResult = computeOpenCLMApply(inputRArray, function, target, additionalInputs, lexicalScopes);
         } else {
             PArray<?>[] additionalInputs = ASTxUtils.getPArrayWithAdditionalArguments(args);
             mapResult = computeOpenCLMApply(parrayInput, function, target, additionalInputs, lexicalScopes);

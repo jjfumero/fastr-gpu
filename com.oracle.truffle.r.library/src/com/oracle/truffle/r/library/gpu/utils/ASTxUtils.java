@@ -1298,6 +1298,22 @@ public class ASTxUtils {
         return additionalInputs;
     }
 
+    public static RAbstractVector[] getAdditionalArguments(RArgsValuesAndNames args, boolean isRewritten, RVector[] vectors, int lenthScope) {
+        RAbstractVector[] additionalInputs = ASTxUtils.getRArrayWithAdditionalArguments(args);
+        if (isRewritten) {
+            RAbstractVector[] copy = new RAbstractVector[additionalInputs.length + lenthScope];
+            for (int i = 0; i < additionalInputs.length; i++) {
+                copy[i] = additionalInputs[i];
+            }
+            int j = 0;
+            for (int i = additionalInputs.length; i < additionalInputs.length + lenthScope; i++) {
+                copy[i] = vectors[j++];
+            }
+            additionalInputs = copy;
+        }
+        return additionalInputs;
+    }
+
     public static PArray<?>[] getPArrayWithAdditionalArguments(RArgsValuesAndNames args) {
         PArray<?>[] additionalInputs = null;
         if (args.getLength() > 2) {
@@ -1305,6 +1321,22 @@ public class ASTxUtils {
             for (int i = 0; i < additionalInputs.length; i++) {
                 additionalInputs[i] = (PArray<?>) args.getArgument(i + 2);
             }
+        }
+        return additionalInputs;
+    }
+
+    public static PArray<?>[] getAdditionalArgumentsPArray(RArgsValuesAndNames args, boolean isRewritten, PArray<?>[] vectors, int lenthScope) {
+        PArray<?>[] additionalInputs = ASTxUtils.getPArrayWithAdditionalArguments(args);
+        if (isRewritten) {
+            PArray<?>[] copy = new PArray[additionalInputs.length + lenthScope];
+            for (int i = 0; i < additionalInputs.length; i++) {
+                copy[i] = additionalInputs[i];
+            }
+            int j = 0;
+            for (int i = additionalInputs.length; i < additionalInputs.length + lenthScope; i++) {
+                copy[i] = vectors[j++];
+            }
+            additionalInputs = copy;
         }
         return additionalInputs;
     }
