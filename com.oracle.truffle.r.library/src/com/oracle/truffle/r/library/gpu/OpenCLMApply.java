@@ -23,7 +23,6 @@
 package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.accelerator.profiler.Profiler;
@@ -75,10 +74,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private boolean isRewritten = false;
 
     ArrayList<com.oracle.graal.graph.Node> scopedNodes;
-
-    private boolean isRewritten() {
-        return this.isRewritten;
-    }
 
     /**
      * Given the {@link StructuredGraph}, this method invokes the OpenCL code generation. We also
