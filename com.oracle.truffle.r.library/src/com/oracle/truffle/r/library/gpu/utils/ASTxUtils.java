@@ -1421,14 +1421,14 @@ public class ASTxUtils {
         new GPUFrameStateEliminationPhase().apply(graph);
         CompilerUtils.dumpGraph(graph, "GPUFrameStateEliminationPhase");
 
-// new GPUInstanceOfRemovePhase().apply(graph);
-// CompilerUtils.dumpGraph(graph, "GPUInstanceOfRemovePhase");
-//
-// new GPUCheckCastRemovalPhase().apply(graph);
-// CompilerUtils.dumpGraph(graph, "GPUCheckCastRemovalPhase");
-//
-// new GPUFixedGuardRemovalPhase().apply(graph);
-// CompilerUtils.dumpGraph(graph, "GPUFixedGuardRemovalPhase");
+        // new GPUInstanceOfRemovePhase().apply(graph);
+        // CompilerUtils.dumpGraph(graph, "GPUInstanceOfRemovePhase");
+
+        // new GPUCheckCastRemovalPhase().apply(graph);
+        // CompilerUtils.dumpGraph(graph, "GPUCheckCastRemovalPhase");
+
+        // new GPUFixedGuardRemovalPhase().apply(graph);
+        // CompilerUtils.dumpGraph(graph, "GPUFixedGuardRemovalPhase");
 
         new GPUBoxingEliminationPhase().apply(graph);
         CompilerUtils.dumpGraph(graph, "GPUBoxingEliminationPhase");
@@ -1446,14 +1446,12 @@ public class ASTxUtils {
 
     public static ArrayList<com.oracle.graal.graph.Node> applyCompilationPhasesForOpenCL(StructuredGraph graph) {
         new GPUFrameStateEliminationPhase().apply(graph);
-// new GPUInstanceOfRemovePhase().apply(graph);
-// new GPUCheckCastRemovalPhase().apply(graph);
-// new GPUFixedGuardRemovalPhase().apply(graph);
+        // new GPUInstanceOfRemovePhase().apply(graph);
+        // new GPUCheckCastRemovalPhase().apply(graph);
+        // new GPUFixedGuardRemovalPhase().apply(graph);
         new GPUBoxingEliminationPhase().apply(graph);
-
         ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
         arraysDetectionPhase.apply(graph);
-
         ArrayList<com.oracle.graal.graph.Node> scopedNodes = null;
         if (arraysDetectionPhase.isScopeDetected()) {
             scopedNodes = arraysDetectionPhase.getScopedNodes();
