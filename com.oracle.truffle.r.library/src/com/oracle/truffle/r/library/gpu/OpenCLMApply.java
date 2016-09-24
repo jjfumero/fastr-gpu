@@ -57,10 +57,9 @@ import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils.ScopeVarInfo;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.nodes.function.FunctionDefinitionNode;
-import com.oracle.truffle.r.runtime.context.RContext;
 import com.oracle.truffle.r.runtime.context.Engine.ParseException;
+import com.oracle.truffle.r.runtime.context.RContext;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
-import com.oracle.truffle.r.runtime.data.RDataFactory;
 import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.RVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
@@ -73,8 +72,13 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private boolean gpuExecution = false;
     private static int iteration = 0;
     private final boolean ISTRUFFLE = true;
+    private boolean isRewritten = false;
 
     ArrayList<com.oracle.graal.graph.Node> scopedNodes;
+
+    private boolean isRewritten() {
+        return this.isRewritten;
+    }
 
     /**
      * Given the {@link StructuredGraph}, this method invokes the OpenCL code generation. We also
@@ -148,9 +152,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
                 throw new MarawaccExecutionException("Deoptimization");
             }
         }
-
         gpuExecution = true;
-
         ArrayList<Object> arrayList = new ArrayList<>();
         arrayList.add(result);
         return arrayList;
@@ -205,7 +207,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     // Run in the interpreter and then JIT when the CFG is prepared for compilation
     private ArrayList<Object> runJavaOpenCLJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
-                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes) throws MarawaccExecutionException {
+                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, RVector[] vectors) throws MarawaccExecutionException {
 
         checkFunctionInCache(function, callTarget);
 
@@ -362,7 +364,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return resultFastR;
     }
 
-    private RAbstractVector computeOpenCLMApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes) {
+    private RAbstractVector computeOpenCLMApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes, RVector[] vectors) {
 
         // Type inference -> execution of the first element
         int nArgs = ASTxUtils.getNumberOfArguments(function);
@@ -393,7 +395,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         ArrayList<Object> result = null;
         long startExecution = System.nanoTime();
         try {
-            result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes);
+            result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes, vectors);
         } catch (MarawaccExecutionException e) {
             // Deoptimization
             System.out.println("Running in the DEOPT mode");
@@ -496,16 +498,19 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         RootCallTarget target = null;
         Object[] lexicalScopes = null;
+        RVector[] vectors = null;
         String[] filterScopeVarNames = null;
+        String[] scopeVars = null;
 
         // Get the callTarget from the cache
         if (!RGPUCache.INSTANCE.contains(function)) {
             // Lexical scoping from the AST level
-            String[] scopeVars = ASTxUtils.lexicalScopingAST(function);
+            scopeVars = ASTxUtils.lexicalScopingAST(function);
             ScopeVarInfo valueOfScopeArrays = ASTxUtils.getValueOfScopeArrays(scopeVars, function);
             if (valueOfScopeArrays != null) {
                 lexicalScopes = valueOfScopeArrays.getScopeVars();
                 filterScopeVarNames = valueOfScopeArrays.getNameVars();
+                vectors = valueOfScopeArrays.getVector();
             }
             RCacheObjects cachedObjects = new RCacheObjects(function.getTarget(), scopeVars, lexicalScopes);
             target = RGPUCache.INSTANCE.updateCacheObjects(function, cachedObjects);
@@ -517,9 +522,12 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         if (ASTxOptions.scopeRewriting) {
             RFunction scopeRewritting = scopeRewritting(function, filterScopeVarNames);
             System.out.println("NEW FUNCTION: " + scopeRewritting.getRootNode().getSourceSection().getCode());
-            // if (scopeRewritting != null) {
-            // function = scopeRewritting;
-            // }
+            if (scopeRewritting != null) {
+                function = scopeRewritting;
+                isRewritten = true;
+                RCacheObjects cachedObjects = new RCacheObjects(function.getTarget(), scopeVars, lexicalScopes);
+                target = RGPUCache.INSTANCE.updateCacheObjects(function, cachedObjects);
+            }
         }
 
         RAbstractVector mapResult = null;
@@ -527,7 +535,18 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         // Prepare all inputs in an array of Objects
         if (!parrayFormat) {
             RAbstractVector[] additionalInputs = ASTxUtils.getRArrayWithAdditionalArguments(args);
-            mapResult = computeOpenCLMApply(inputRArray, function, target, additionalInputs, lexicalScopes);
+            if (isRewritten()) {
+                RAbstractVector[] foo = new RAbstractVector[additionalInputs.length + lexicalScopes.length];
+                for (int i = 0; i < additionalInputs.length; i++) {
+                    foo[i] = additionalInputs[i];
+                }
+                int j = 0;
+                for (int i = additionalInputs.length; i < additionalInputs.length + lexicalScopes.length; i++) {
+                    foo[i] = vectors[j++];
+                }
+                additionalInputs = foo;
+            }
+            mapResult = computeOpenCLMApply(inputRArray, function, target, additionalInputs, lexicalScopes, vectors);
         } else {
             PArray<?>[] additionalInputs = ASTxUtils.getPArrayWithAdditionalArguments(args);
             mapResult = computeOpenCLMApply(parrayInput, function, target, additionalInputs, lexicalScopes);

@@ -23,6 +23,7 @@
 package com.oracle.truffle.r.library.gpu.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -150,7 +151,7 @@ public class ASTxUtils {
 
         String argsAdd = "";
         for (String s : additionalArguments) {
-            argsAdd += "," + s;
+            argsAdd += ", " + s;
         }
 
         if (matcher.find()) {
@@ -199,6 +200,36 @@ public class ASTxUtils {
                 argsRFunction[i + 1] = args[i].getDataAtAsObject(idx);
             }
         }
+        // Create the package
+        Object[] argsPackage = RArguments.create(function, null, null, 0, argsRFunction, ArgumentsSignature.get(nameArgs), null);
+        return argsPackage;
+    }
+
+    public static Object[] createRArguments(int nArgs, RFunction function, RAbstractVector input, RAbstractVector[] args, String[] nameArgs, int idx, RVector[] lexicalScopes) {
+
+        System.out.println(Arrays.toString(lexicalScopes));
+
+        // prepare args for the function with varargs
+        Object[] argsRFunction = new Object[nArgs];
+
+        System.out.println("nArgs:" + nArgs);
+        System.out.println("lexicalScope #:" + lexicalScopes.length);
+
+        argsRFunction[0] = input.getDataAtAsObject(idx);
+        int last = 0;
+        if (args != null) {
+            System.out.println(args.length);
+            for (int i = 0; i < args.length; i++) {
+                argsRFunction[i + 1] = args[i].getDataAtAsObject(idx);
+                last = i;
+            }
+        }
+
+        for (int j = 0; j < lexicalScopes.length; j++) {
+            argsRFunction[last + 1] = lexicalScopes[j];
+            last++;
+        }
+
         // Create the package
         Object[] argsPackage = RArguments.create(function, null, null, 0, argsRFunction, ArgumentsSignature.get(nameArgs), null);
         return argsPackage;
@@ -1165,11 +1196,13 @@ public class ASTxUtils {
     public static class ScopeVarInfo {
         private Object[] scopeVars;
         private String[] nameVars;
+        private RVector[] vector;
 
-        public ScopeVarInfo(Object[] scopeVars, String[] nameVars) {
+        public ScopeVarInfo(Object[] scopeVars, String[] nameVars, RVector[] vector) {
             super();
             this.scopeVars = scopeVars;
             this.nameVars = nameVars;
+            this.vector = vector;
         }
 
         public Object[] getScopeVars() {
@@ -1178,6 +1211,10 @@ public class ASTxUtils {
 
         public String[] getNameVars() {
             return nameVars;
+        }
+
+        public RVector[] getVector() {
+            return vector;
         }
 
     }
@@ -1193,6 +1230,7 @@ public class ASTxUtils {
     public static ScopeVarInfo getValueOfScopeArrays(String[] scopeVars, RFunction function) {
         LinkedList<Object> scopes = new LinkedList<>();
         LinkedList<String> varNames = new LinkedList<>();
+        LinkedList<RVector> rVectors = new LinkedList<>();
         for (String var : scopeVars) {
             StringBuffer scopeVar = new StringBuffer(var);
             Source source = Source.fromText(scopeVar, "<eval>").withMimeType(RRuntime.R_APP_MIME);
@@ -1202,6 +1240,7 @@ public class ASTxUtils {
                 val = RContext.getEngine().parseAndEval(source, frame, false);
                 boolean added = false;
                 if (val instanceof RVector) {
+                    rVectors.add((RVector) val);
                     if (val instanceof RDoubleVector) {
                         scopes.add(((RDoubleVector) val).getDataCopy());
                         added = true;
@@ -1220,11 +1259,17 @@ public class ASTxUtils {
             }
         }
 
+        RVector[] vectors = new RVector[rVectors.size()];
+        int i = 0;
+        for (RVector v : rVectors) {
+            vectors[i++] = v;
+        }
+
         if (scopes.isEmpty()) {
             return null;
         }
 
-        ScopeVarInfo scopeVarInfo = new ScopeVarInfo(scopes.toArray(), varNames.stream().toArray(String[]::new));
+        ScopeVarInfo scopeVarInfo = new ScopeVarInfo(scopes.toArray(), varNames.stream().toArray(String[]::new), vectors);
 
         return scopeVarInfo;
     }
