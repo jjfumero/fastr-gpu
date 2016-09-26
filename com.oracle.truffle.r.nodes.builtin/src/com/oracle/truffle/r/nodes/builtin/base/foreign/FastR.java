@@ -160,7 +160,6 @@ public abstract class FastR extends RBuiltinNode {
                 return RNanoTimeBuiltinNodeGen.create();
             case "system.gc":
                 return RGCBuiltinNodeGen.create();
-
             case "marawacc.deviceInfo":
                 return MarawaccOCLInfoBuiltinNodeGen.create();
             case "marawacc.testGPU":
@@ -214,7 +213,6 @@ public abstract class FastR extends RBuiltinNode {
                 return ASTxTuple2NodeGen.create();
             case "astx.tuple3":
                 return ASTxTuple3NodeGen.create();
-
             default:
                 return null;
         }

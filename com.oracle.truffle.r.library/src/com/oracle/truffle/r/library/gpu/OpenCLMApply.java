@@ -56,6 +56,7 @@ import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils.ScopeVarInfo;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.nodes.function.FunctionDefinitionNode;
+import com.oracle.truffle.r.runtime.RRuntime;
 import com.oracle.truffle.r.runtime.context.Engine.ParseException;
 import com.oracle.truffle.r.runtime.context.RContext;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
@@ -68,10 +69,8 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
  */
 public final class OpenCLMApply extends RExternalBuiltinNode {
 
-    private static final String R_MIME_TYPE = "application/x-r";
     private static final String R_EVAL_DESCRIPTION = "<eval>";
     private static final boolean ISTRUFFLE = true;
-
     private static int iteration = 0;
 
     ArrayList<com.oracle.graal.graph.Node> scopedNodes;
@@ -493,7 +492,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     private static RFunction scopeRewritting(RFunction function, String[] scopeVars) {
         String newRewrittenFunction = ASTxUtils.rewriteFunction(function, scopeVars);
-        Source newSourceFunction = Source.fromText(newRewrittenFunction, R_EVAL_DESCRIPTION).withMimeType(R_MIME_TYPE);
+        Source newSourceFunction = Source.fromText(newRewrittenFunction, R_EVAL_DESCRIPTION).withMimeType(RRuntime.R_APP_MIME);
         try {
             RFunction newRFunction = (RFunction) RContext.getEngine().parseAndEval(newSourceFunction, false);
             return newRFunction;
@@ -583,6 +582,10 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             mapResult = computeOpenCLMApply(parrayInput, function, target, additionalInputs, lexicalScopes, numArgumentsOriginalFunction);
         }
         long end = System.nanoTime();
+
+        if (scopedNodes != null) {
+            scopedNodes.clear();
+        }
 
         // Write profiler information into a buffer
         if (ASTxOptions.profile_OCL_ASTx) {
