@@ -513,7 +513,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             lexicalScopes = RGPUCache.INSTANCE.getCachedObjects(function).getLexicalScopeVars();
         }
 
-        if (ASTxOptions.scopeRewriting) {
+        if (ASTxOptions.scopeRewriting && (filterScopeVarNames != null)) {
             RFunction scopeRewritting = scopeRewritting(function, filterScopeVarNames);
             System.out.println("NEW FUNCTION: " + scopeRewritting.getRootNode().getSourceSection().getCode());
             if (scopeRewritting != null) {
@@ -526,7 +526,12 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         RAbstractVector mapResult = null;
         if (!parrayFormat) {
-            RAbstractVector[] additionalInputs = ASTxUtils.getAdditionalArguments(args, isRewritten, vectors, lexicalScopes.length);
+            RAbstractVector[] additionalInputs = null;
+            if (isRewritten) {
+                additionalInputs = ASTxUtils.getAdditionalArguments(args, isRewritten, vectors, lexicalScopes.length);
+            } else {
+                additionalInputs = ASTxUtils.getRArrayWithAdditionalArguments(args);
+            }
             mapResult = computeOpenCLMApply(inputRArray, function, target, additionalInputs, lexicalScopes);
         } else {
             PArray<?>[] additionalInputs = ASTxUtils.getPArrayWithAdditionalArguments(args);
