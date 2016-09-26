@@ -68,6 +68,9 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
  */
 public final class OpenCLMApply extends RExternalBuiltinNode {
 
+    private static final String R_MIME_TYPE = "application/x-r";
+    private static final String R_EVAL_DESCRIPTION = "<eval>";
+
     private boolean gpuExecution = false;
     private static int iteration = 0;
     private final boolean ISTRUFFLE = true;
@@ -449,14 +452,13 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     }
 
     private static RFunction scopeRewritting(RFunction function, String[] scopeVars) {
-        String rewriteFunction = ASTxUtils.rewriteFunction(function, scopeVars);
-        Source source = Source.fromText(rewriteFunction, "<eval>").withMimeType("application/x-r");
+        String newRewrittenFunction = ASTxUtils.rewriteFunction(function, scopeVars);
+        Source newSourceFunction = Source.fromText(newRewrittenFunction, R_EVAL_DESCRIPTION).withMimeType(R_MIME_TYPE);
         try {
-            RFunction parseAndEval = (RFunction) RContext.getEngine().parseAndEval(source, false);
-            return parseAndEval;
+            RFunction newRFunction = (RFunction) RContext.getEngine().parseAndEval(newSourceFunction, false);
+            return newRFunction;
         } catch (ParseException e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException("[Fatal error] the function could not be rewritten");
         }
     }
 
@@ -514,14 +516,17 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
 
         if (ASTxOptions.scopeRewriting && (filterScopeVarNames != null)) {
+            int numArgumentsOriginalFunction = ASTxUtils.getNumberOfArguments(function);
             RFunction scopeRewritting = scopeRewritting(function, filterScopeVarNames);
-            System.out.println("NEW FUNCTION: " + scopeRewritting.getRootNode().getSourceSection().getCode());
-            if (scopeRewritting != null) {
-                function = scopeRewritting;
-                isRewritten = true;
-                RCacheObjects cachedObjects = new RCacheObjects(function.getTarget(), scopeVars, lexicalScopes);
-                target = RGPUCache.INSTANCE.updateCacheObjects(function, cachedObjects);
+
+            if (ASTxOptions.debug) {
+                System.out.println("NEW FUNCTION: " + scopeRewritting.getRootNode().getSourceSection().getCode());
             }
+
+            function = scopeRewritting;
+            isRewritten = true;
+            RCacheObjects cachedObjects = new RCacheObjects(function.getTarget(), scopeVars, lexicalScopes);
+            target = RGPUCache.INSTANCE.updateCacheObjects(function, cachedObjects);
         }
 
         RAbstractVector mapResult = null;
