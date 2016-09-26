@@ -165,6 +165,8 @@ public abstract class FastR extends RBuiltinNode {
                 return MarawaccOCLInfoBuiltinNodeGen.create();
             case "marawacc.testGPU":
                 return new OpenCLMApply();
+            case "marawacc.mapply":
+                return new OpenCLMApply();
             case "marawacc.sapply":
                 return new MarawaccSapplyBuiltin();
             case "marawacc.execute":
