@@ -79,7 +79,7 @@ public class ASTxOptions {
     /**
      * Get profiler information and show when the R VM is finalising.
      */
-    public static boolean profile_OCL_ASTx = getBoolean("astx.marawacc.profiler", true);
+    public static boolean profileOpenCLASTx = getBoolean("astx.marawacc.profiler", true);
 
     /**
      * The function it is rewritten itself with the scope variables as parameters. Therefore with

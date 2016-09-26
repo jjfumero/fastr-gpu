@@ -264,7 +264,7 @@ public class RCommand {
                                 RInternalError.reportError(e);
                             }
                         }
-                        if (ASTxOptions.profile_OCL_ASTx) {
+                        if (ASTxOptions.profileOpenCLASTx) {
                             StringBuffer logBuffers = Profiler.getInstance().getLogBuffers();
                             StringBuffer mediansOCLEvents = Profiler.getInstance().getMediansOCLEvents();
 

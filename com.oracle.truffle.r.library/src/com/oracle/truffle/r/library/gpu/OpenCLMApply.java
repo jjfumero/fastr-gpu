@@ -387,7 +387,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         long endUnmarshal = System.nanoTime();
 
         // Print profiler
-        if (ASTxOptions.profile_OCL_ASTx) {
+        if (ASTxOptions.profileOpenCLASTx) {
             writeProfilerIntoBuffers(startMarshal, endMarshal, startExecution, endExecution, startUnmarshal, endUnmarshal);
         }
         return resultFastR;
@@ -459,7 +459,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         long endUnmarshal = System.nanoTime();
 
         // Print profiler information into buffer
-        if (ASTxOptions.profile_OCL_ASTx) {
+        if (ASTxOptions.profileOpenCLASTx) {
             writeProfilerIntoBuffers(startMarshal, endMarshal, startExecution, endExecution, startUnmarshal, endUnmarshal);
         }
         return resultFastR;
@@ -588,7 +588,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
 
         // Write profiler information into a buffer
-        if (ASTxOptions.profile_OCL_ASTx) {
+        if (ASTxOptions.profileOpenCLASTx) {
             Profiler.getInstance().writeInBuffer("gpu start-end", (end - start));
             Profiler.getInstance().writeInBuffer("gpu start", start);
             Profiler.getInstance().writeInBuffer("gpu end", end);
