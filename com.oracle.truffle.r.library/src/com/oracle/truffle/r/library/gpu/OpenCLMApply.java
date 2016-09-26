@@ -501,6 +501,19 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
+    private RAbstractVector computeOpenCLMApplyForRVector(RArgsValuesAndNames args, boolean isRewritten, RVector[] vectors, Object[] lexicalScopes, RFunction function, RAbstractVector inputRArray,
+                    RootCallTarget target, int numArgumentsOriginalFunction) {
+        RAbstractVector mapResult = null;
+        RAbstractVector[] additionalInputs = null;
+        if (isRewritten) {
+            additionalInputs = ASTxUtils.getAdditionalArguments(args, isRewritten, vectors, lexicalScopes.length);
+        } else {
+            additionalInputs = ASTxUtils.getRArrayWithAdditionalArguments(args);
+        }
+        mapResult = computeOpenCLMApply(inputRArray, function, target, additionalInputs, lexicalScopes, numArgumentsOriginalFunction);
+        return mapResult;
+    }
+
     @Override
     public Object call(RArgsValuesAndNames args) {
         Profiler.getInstance().print("\nIteration: " + iteration++);
@@ -570,13 +583,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         RAbstractVector mapResult = null;
         if (!parrayFormat) {
-            RAbstractVector[] additionalInputs = null;
-            if (isRewritten) {
-                additionalInputs = ASTxUtils.getAdditionalArguments(args, isRewritten, vectors, lexicalScopes.length);
-            } else {
-                additionalInputs = ASTxUtils.getRArrayWithAdditionalArguments(args);
-            }
-            mapResult = computeOpenCLMApply(inputRArray, function, target, additionalInputs, lexicalScopes, numArgumentsOriginalFunction);
+            mapResult = computeOpenCLMApplyForRVector(args, isRewritten, vectors, lexicalScopes, function, inputRArray, target, numArgumentsOriginalFunction);
         } else {
             PArray<?>[] additionalInputs = ASTxUtils.getPArrayWithAdditionalArguments(args);
             mapResult = computeOpenCLMApply(parrayInput, function, target, additionalInputs, lexicalScopes, numArgumentsOriginalFunction);
