@@ -1328,7 +1328,7 @@ public class ASTxUtils {
     public static PArray<?>[] getAdditionalArgumentsPArray(RArgsValuesAndNames args, boolean isRewritten, PArray<?>[] vectors, int lenthScope) {
         PArray<?>[] additionalInputs = ASTxUtils.getPArrayWithAdditionalArguments(args);
         if (isRewritten) {
-            PArray<?>[] copy = new PArray[additionalInputs.length + lenthScope];
+            PArray<?>[] copy = new PArray<?>[additionalInputs.length + lenthScope];
             for (int i = 0; i < additionalInputs.length; i++) {
                 copy[i] = additionalInputs[i];
             }

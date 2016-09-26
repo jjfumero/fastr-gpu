@@ -285,6 +285,16 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return output;
     }
 
+    /**
+     * It checks if the function was already inserted into the cache. If it is that the case, we
+     * return the metadata associated with the value such as the return value, parameters and
+     * interoperable objects.
+     *
+     * @param input
+     * @param function
+     * @param additionalArgs
+     * @return {@link RFunctionMetadata}.
+     */
     private static RFunctionMetadata getCachedFunctionMetadata(PArray<?> input, RFunction function, PArray<?>[] additionalArgs) {
         if (RGPUCache.INSTANCE.getCachedObjects(function).getRFunctionMetadata() == null) {
             // Type inference -> execution of the first element
@@ -308,10 +318,47 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
-    private RAbstractVector computeOpenCLMApply(PArray<?> input, RFunction function, RootCallTarget target, PArray<?>[] additionalArgs, Object[] lexicalScopes) {
+    /**
+     * It checks if the function was already inserted into the cache. If it is that the case, we
+     * return the metadata associated with the value such as the return value, parameters and
+     * interoperable objects.
+     *
+     * @param input
+     * @param function
+     * @param additionalArgs
+     * @return {@link RFunctionMetadata}.
+     */
+    private static RFunctionMetadata getCachedFunctionMetadata(RAbstractVector input, RFunction function, RAbstractVector[] additionalArgs) {
+        if (RGPUCache.INSTANCE.getCachedObjects(function).getRFunctionMetadata() == null) {
+            // Type inference -> execution of the first element
+            int nArgs = ASTxUtils.getNumberOfArguments(function);
+            String[] argsName = ASTxUtils.getArgumentsNames(function);
+            Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, 0);
+            Object value = function.getTarget().call(argsPackage);
+
+            // Inter-operable objects
+            TypeInfo outputType = ASTxUtils.obtainTypeInfo(value);
+            InteropTable interop = ASTxUtils.obtainInterop(outputType);
+
+            Class<?>[] typeObject = ASTxUtils.createListSubTypes(interop, value);
+            Interoperable interoperable = (interop != null) ? new Interoperable(interop, typeObject) : null;
+
+            RFunctionMetadata metadata = new RFunctionMetadata(nArgs, argsName, argsPackage, value, outputType, interop, typeObject, interoperable);
+            RGPUCache.INSTANCE.getCachedObjects(function).insertRFuctionMetadata(metadata);
+            return metadata;
+        } else {
+            return RGPUCache.INSTANCE.getCachedObjects(function).getRFunctionMetadata();
+        }
+    }
+
+    private RAbstractVector computeOpenCLMApply(PArray<?> input, RFunction function, RootCallTarget target, PArray<?>[] additionalArgs, Object[] lexicalScopes, int numArgumentsOriginalFunction) {
 
         RFunctionMetadata cachedFunctionMetadata = getCachedFunctionMetadata(input, function, additionalArgs);
         int nArgs = cachedFunctionMetadata.getnArgs();
+        if (nArgs > numArgumentsOriginalFunction) {
+            // The function was rewritten
+        }
+
         String[] argsName = cachedFunctionMetadata.getArgsName();
         Object value = cachedFunctionMetadata.getFirstValue();
         TypeInfo outputType = cachedFunctionMetadata.getOutputType();
@@ -344,37 +391,41 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         // Print profiler
         if (ASTxOptions.profile_OCL_ASTx) {
-            // Marshal
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "start", startMarshal);
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end", endMarshal);
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end-start", (endMarshal - startMarshal));
-
-            // Execution
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "start", startExecution);
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "end", endExecution);
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "end-start", (endExecution - startExecution));
-
-            // Unmarshal
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "start", startUnmarshal);
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "end", endUnmarshal);
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "end-start", (endUnmarshal - startUnmarshal));
+            writeProfilerIntoBuffers(startMarshal, endMarshal, startExecution, endExecution, startUnmarshal, endUnmarshal);
         }
         return resultFastR;
     }
 
-    private RAbstractVector computeOpenCLMApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes) {
-        // Type inference -> execution of the first element
-        int nArgs = ASTxUtils.getNumberOfArguments(function);
-        String[] argsName = ASTxUtils.getArgumentsNames(function);
-        Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, 0);
-        Object value = function.getTarget().call(argsPackage);
+    private static void writeProfilerIntoBuffers(long startMarshal, long endMarshal, long startExecution, long endExecution, long startUnmarshal, long endUnmarshal) {
+        // Marshal
+        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "start", startMarshal);
+        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end", endMarshal);
+        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end-start", (endMarshal - startMarshal));
 
-        // Inter-operable objects
-        TypeInfo outputType = ASTxUtils.obtainTypeInfo(value);
-        InteropTable interop = ASTxUtils.obtainInterop(outputType);
+        // Execution
+        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "start", startExecution);
+        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "end", endExecution);
+        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "end-start", (endExecution - startExecution));
 
-        Class<?>[] typeObject = ASTxUtils.createListSubTypes(interop, value);
-        Interoperable interoperable = (interop != null) ? new Interoperable(interop, typeObject) : null;
+        // Unmarshal
+        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "start", startUnmarshal);
+        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "end", endUnmarshal);
+        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "end-start", (endUnmarshal - startUnmarshal));
+    }
+
+    private RAbstractVector computeOpenCLMApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes,
+                    int numArgumentsOriginalFunction) {
+
+        RFunctionMetadata cachedFunctionMetadata = getCachedFunctionMetadata(input, function, additionalArgs);
+        int nArgs = cachedFunctionMetadata.getnArgs();
+        if (nArgs > numArgumentsOriginalFunction) {
+            // The function was rewritten
+        }
+
+        String[] argsName = cachedFunctionMetadata.getArgsName();
+        Object value = cachedFunctionMetadata.getFirstValue();
+        TypeInfo outputType = cachedFunctionMetadata.getOutputType();
+        Interoperable interoperable = cachedFunctionMetadata.getInteroperable();
 
         TypeInfoList inputTypeList = null;
         if (ASTxOptions.usePArrays) {
@@ -395,7 +446,11 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes);
         } catch (MarawaccExecutionException e) {
             // Deoptimization
-            System.out.println("Running in the DEOPT mode");
+            if (ASTxOptions.debug) {
+                System.out.println("Running in the DEOPT mode");
+            }
+            // Run sequentially -- TODO: Provide a mechanism that allows to restart the execution in
+            // the correct place of the AST to specialise again
             result = runAfterDeopt(input, target, function, nArgs, additionalArgs, argsName, value, input.getLength());
         }
         long endExecution = System.nanoTime();
@@ -405,23 +460,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         RAbstractVector resultFastR = getResult(outputType, result);
         long endUnmarshal = System.nanoTime();
 
-        // Print profiler
+        // Print profiler information into buffer
         if (ASTxOptions.profile_OCL_ASTx) {
-
-            // Marshal
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "start", startMarshal);
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end", endMarshal);
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end-start", (endMarshal - startMarshal));
-
-            // Execution
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "start", startExecution);
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "end", endExecution);
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "end-start", (endExecution - startExecution));
-
-            // Unmarshal
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "start", startUnmarshal);
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "end", endUnmarshal);
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "end-start", (endUnmarshal - startUnmarshal));
+            writeProfilerIntoBuffers(startMarshal, endMarshal, startExecution, endExecution, startUnmarshal, endUnmarshal);
         }
         return resultFastR;
     }
@@ -464,14 +505,13 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     @Override
     public Object call(RArgsValuesAndNames args) {
-
         Profiler.getInstance().print("\nIteration: " + iteration++);
 
+        long start = System.nanoTime();
         if (ASTxOptions.usePArrays) {
             RVector.WITH_PARRAYS = true;
         }
 
-        long start = System.nanoTime();
         Object firstParam = args.getArgument(0);
         RFunction function = (RFunction) args.getArgument(1);
 
@@ -515,14 +555,14 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             lexicalScopes = RGPUCache.INSTANCE.getCachedObjects(function).getLexicalScopeVars();
         }
 
-        if (ASTxOptions.scopeRewriting && (filterScopeVarNames != null)) {
-            int numArgumentsOriginalFunction = ASTxUtils.getNumberOfArguments(function);
-            RFunction scopeRewritting = scopeRewritting(function, filterScopeVarNames);
+        int numArgumentsOriginalFunction = ASTxUtils.getNumberOfArguments(function);
 
+        // Function rewritting
+        if (ASTxOptions.scopeRewriting && (filterScopeVarNames != null)) {
+            RFunction scopeRewritting = scopeRewritting(function, filterScopeVarNames);
             if (ASTxOptions.debug) {
                 System.out.println("NEW FUNCTION: " + scopeRewritting.getRootNode().getSourceSection().getCode());
             }
-
             function = scopeRewritting;
             isRewritten = true;
             RCacheObjects cachedObjects = new RCacheObjects(function.getTarget(), scopeVars, lexicalScopes);
@@ -537,19 +577,20 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             } else {
                 additionalInputs = ASTxUtils.getRArrayWithAdditionalArguments(args);
             }
-            mapResult = computeOpenCLMApply(inputRArray, function, target, additionalInputs, lexicalScopes);
+            mapResult = computeOpenCLMApply(inputRArray, function, target, additionalInputs, lexicalScopes, numArgumentsOriginalFunction);
         } else {
             PArray<?>[] additionalInputs = ASTxUtils.getPArrayWithAdditionalArguments(args);
-            mapResult = computeOpenCLMApply(parrayInput, function, target, additionalInputs, lexicalScopes);
+            mapResult = computeOpenCLMApply(parrayInput, function, target, additionalInputs, lexicalScopes, numArgumentsOriginalFunction);
         }
-
         long end = System.nanoTime();
 
+        // Write profiler information into a buffer
         if (ASTxOptions.profile_OCL_ASTx) {
             Profiler.getInstance().writeInBuffer("gpu start-end", (end - start));
             Profiler.getInstance().writeInBuffer("gpu start", start);
             Profiler.getInstance().writeInBuffer("gpu end", end);
         }
+
         return mapResult;
     }
 }
