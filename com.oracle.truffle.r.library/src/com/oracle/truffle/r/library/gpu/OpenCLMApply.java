@@ -70,11 +70,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     private static final String R_MIME_TYPE = "application/x-r";
     private static final String R_EVAL_DESCRIPTION = "<eval>";
+    private static final boolean ISTRUFFLE = true;
 
-    private boolean gpuExecution = false;
     private static int iteration = 0;
-    private final boolean ISTRUFFLE = true;
-    private boolean isRewritten = false;
 
     ArrayList<com.oracle.graal.graph.Node> scopedNodes;
 
@@ -132,14 +130,13 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
      * @throws MarawaccExecutionException
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalGPUCompilationUnit gpuCompilationUnit) throws MarawaccExecutionException {
-
+    private static ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalGPUCompilationUnit gpuCompilationUnit, RFunction function)
+                    throws MarawaccExecutionException {
         GraalGPUExecutor executor = CacheGPUExecutor.INSTANCE.getExecutor(gpuCompilationUnit);
         if (executor == null) {
             executor = new GraalGPUExecutor();
             CacheGPUExecutor.INSTANCE.insert(gpuCompilationUnit, executor);
         }
-
         AcceleratorPArray copyToDevice = executor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
         AcceleratorPArray executeOnTheDevice = executor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType(), gpuCompilationUnit.getScopeArrays());
         PArray result = executor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
@@ -150,7 +147,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
                 throw new MarawaccExecutionException("Deoptimization");
             }
         }
-        gpuExecution = true;
+        RGPUCache.INSTANCE.getCachedObjects(function).enableGPUExecution();
         ArrayList<Object> arrayList = new ArrayList<>();
         arrayList.add(result);
         return arrayList;
@@ -186,7 +183,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
-    private ArrayList<Object> checkAndRun(GraalGPUCompilationUnit gpuCompilationUnit, RootCallTarget callTarget, int index, JITMetaInput meta) throws MarawaccExecutionException {
+    private ArrayList<Object> checkAndRun(GraalGPUCompilationUnit gpuCompilationUnit, RootCallTarget callTarget, int index, JITMetaInput meta, RFunction function) throws MarawaccExecutionException {
         /*
          * Check if the graph is prepared for GPU compilation and invoke the compilation and
          * execution. On Stack Replacement (OSR): switch to compiled GPU code
@@ -198,7 +195,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             }
             GraalGPUCompilationUnit oclCompileUnit = compileForMarawaccBackend(meta.inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, meta.firstValue, meta.interoperable,
                             meta.lexicalScopes);
-            return runWithMarawaccAccelerator(meta.inputPArray, graphToCompile, oclCompileUnit);
+            return runWithMarawaccAccelerator(meta.inputPArray, graphToCompile, oclCompileUnit, function);
         }
         return null;
     }
@@ -213,7 +210,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
         if (graphToCompile != null && gpuCompilationUnit != null) {
-            return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
+            return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit, function);
         }
 
         JITMetaInput meta = new JITMetaInput(firstValue, interoperable, lexicalScopes, inputPArray);
@@ -222,7 +219,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             Object value = callTarget.call(argsPackage);
             output.add(value);
-            ArrayList<Object> checkAndRun = checkAndRun(gpuCompilationUnit, callTarget, i, meta);
+            ArrayList<Object> checkAndRun = checkAndRun(gpuCompilationUnit, callTarget, i, meta, function);
             if (checkAndRun != null) {
                 return checkAndRun;
             }
@@ -240,7 +237,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
         if (graphToCompile != null && gpuCompilationUnit != null) {
-            ArrayList<Object> runWithMarawaccAccelerator = runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit);
+            ArrayList<Object> runWithMarawaccAccelerator = runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit, function);
             return runWithMarawaccAccelerator;
         }
 
@@ -251,7 +248,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             Object value = callTarget.call(argsPackage);
             output.add(value);
-            ArrayList<Object> checkAndRun = checkAndRun(gpuCompilationUnit, callTarget, i, meta);
+            ArrayList<Object> checkAndRun = checkAndRun(gpuCompilationUnit, callTarget, i, meta, function);
             if (checkAndRun != null) {
                 return checkAndRun;
             }
@@ -385,8 +382,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         long endExecution = System.nanoTime();
 
         // Get the result (un-marshal)
+        boolean isGPUExecution = RGPUCache.INSTANCE.getCachedObjects(function).isGPUExecution();
         long startUnmarshal = System.nanoTime();
-        RAbstractVector resultFastR = getResultFromPArray(outputType, result);
+        RAbstractVector resultFastR = getResultFromPArray(isGPUExecution, outputType, result);
         long endUnmarshal = System.nanoTime();
 
         // Print profiler
@@ -456,8 +454,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         long endExecution = System.nanoTime();
 
         // Get the result (un-marshal)
+        boolean isGPUExecution = RGPUCache.INSTANCE.getCachedObjects(function).isGPUExecution();
         long startUnmarshal = System.nanoTime();
-        RAbstractVector resultFastR = getResult(outputType, result);
+        RAbstractVector resultFastR = getResult(isGPUExecution, outputType, result);
         long endUnmarshal = System.nanoTime();
 
         // Print profiler information into buffer
@@ -468,7 +467,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings({"rawtypes"})
-    private RAbstractVector getResult(TypeInfo outputType, ArrayList<Object> result) {
+    private static RAbstractVector getResult(boolean gpuExecution, TypeInfo outputType, ArrayList<Object> result) {
         if (!gpuExecution) {
             // get the output in R-Type format
             return ASTxUtils.unMarshallResultFromArrayList(outputType, result);
@@ -482,7 +481,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings({"rawtypes"})
-    private RAbstractVector getResultFromPArray(TypeInfo outputType, ArrayList<Object> result) {
+    private static RAbstractVector getResultFromPArray(boolean gpuExecution, TypeInfo outputType, ArrayList<Object> result) {
         if (!gpuExecution) {
             // get the output in R-Type format
             return ASTxUtils.unMarshallResultFromArrayList(outputType, result);
@@ -556,8 +555,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
 
         int numArgumentsOriginalFunction = ASTxUtils.getNumberOfArguments(function);
+        boolean isRewritten = false;
 
-        // Function rewritting
+        // Function rewriting
         if (ASTxOptions.scopeRewriting && (filterScopeVarNames != null)) {
             RFunction scopeRewritting = scopeRewritting(function, filterScopeVarNames);
             if (ASTxOptions.debug) {

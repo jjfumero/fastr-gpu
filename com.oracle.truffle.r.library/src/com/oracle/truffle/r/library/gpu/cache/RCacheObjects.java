@@ -7,6 +7,7 @@ public class RCacheObjects {
     private RootCallTarget rootCallTarget;
     private String[] scopeVars;
     private Object[] lexicalScopeVars;
+    private boolean gpuExecution = false;
 
     private RFunctionMetadata rfunctionMetadata;
     private int idExecution;
@@ -48,5 +49,13 @@ public class RCacheObjects {
 
     public int getIDExecution() {
         return idExecution;
+    }
+
+    public void enableGPUExecution() {
+        this.gpuExecution = true;
+    }
+
+    public boolean isGPUExecution() {
+        return gpuExecution;
     }
 }
