@@ -56,6 +56,7 @@ import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.phases.GPUBoxingEliminationPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUFrameStateEliminationPhase;
 import com.oracle.truffle.r.library.gpu.phases.scope.ScopeArraysDetectionPhase;
+import com.oracle.truffle.r.library.gpu.phases.scope.ScopeArraysWithDeopt;
 import com.oracle.truffle.r.library.gpu.phases.scope.ScopeData;
 import com.oracle.truffle.r.library.gpu.phases.scope.ScopeDetectionPhase;
 import com.oracle.truffle.r.library.gpu.scope.ASTLexicalScoping;
@@ -1557,6 +1558,10 @@ public class ASTxUtils {
 
         ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
         arraysDetectionPhase.apply(graph);
+
+        // New Experimental scope phase
+        ScopeArraysWithDeopt scopeWithDeopt = new ScopeArraysWithDeopt();
+        scopeWithDeopt.apply(graph);
 
         ArrayList<com.oracle.graal.graph.Node> scopedNodes = null;
         if (arraysDetectionPhase.isScopeDetected()) {
