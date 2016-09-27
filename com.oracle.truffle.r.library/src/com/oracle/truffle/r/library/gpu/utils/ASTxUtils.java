@@ -1159,7 +1159,7 @@ public class ASTxUtils {
     @SuppressWarnings("rawtypes")
     public static PArray<?> marshal(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
         PArray parray = null;
-        if (additionalArgs == null) {
+        if (additionalArgs == null || infoList.size() == 1) {
             parray = marshalSimplePArrays(infoList.get(0), input);
         } else {
             parray = marshalWithTuples(input, additionalArgs, infoList);
@@ -1179,7 +1179,7 @@ public class ASTxUtils {
     @SuppressWarnings("rawtypes")
     public static PArray<?> marshalWithReferences(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
         PArray parray = null;
-        if (additionalArgs == null) {
+        if (additionalArgs == null && infoList.size() == 1) {
             parray = getReferencePArray(infoList.get(0), input);
         } else {
             parray = marshalUpdateReferenceWithTuples(input, additionalArgs, infoList);
@@ -1322,13 +1322,14 @@ public class ASTxUtils {
 
     public static RAbstractVector[] getAdditionalArguments(RArgsValuesAndNames args, boolean isRewritten, RVector[] vectors, int lenthScope) {
         RAbstractVector[] additionalInputs = ASTxUtils.getRArrayWithAdditionalArguments(args);
+        int baseSize = additionalInputs == null ? 0 : additionalInputs.length;
         if (isRewritten) {
-            RAbstractVector[] copy = new RAbstractVector[additionalInputs.length + lenthScope];
-            for (int i = 0; i < additionalInputs.length; i++) {
+            RAbstractVector[] copy = new RAbstractVector[baseSize + lenthScope];
+            for (int i = 0; i < baseSize; i++) {
                 copy[i] = additionalInputs[i];
             }
             int j = 0;
-            for (int i = additionalInputs.length; i < additionalInputs.length + lenthScope; i++) {
+            for (int i = baseSize; i < (baseSize + lenthScope); i++) {
                 copy[i] = vectors[j++];
             }
             additionalInputs = copy;

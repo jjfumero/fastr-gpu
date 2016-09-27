@@ -87,7 +87,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
      * @return {@link GraalGPUCompilationUnit}
      */
     private GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue, Interoperable interoperable,
-                    Object[] lexicalScope) {
+                    Object[] lexicalScope, int nArgs) {
 
         ScopeData scopeData = ASTxUtils.scopeArrayDetection(graphToCompile);
 
@@ -106,7 +106,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         CompilerUtils.dumpGraph(graphToCompile, "Filter");
 
         GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToOpenCL(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData(),
-                        scopedNodes);
+                        scopedNodes, nArgs);
         gpuCompilationUnit.setScopeArrays(scopeData.getData());
         gpuCompilationUnit.setScopeNodes(scopedNodes);
 
@@ -182,7 +182,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
-    private ArrayList<Object> checkAndRun(GraalGPUCompilationUnit gpuCompilationUnit, RootCallTarget callTarget, int index, JITMetaInput meta, RFunction function) throws MarawaccExecutionException {
+    private ArrayList<Object> checkAndRun(GraalGPUCompilationUnit gpuCompilationUnit, RootCallTarget callTarget, int index, JITMetaInput meta, RFunction function, int inputArgs)
+                    throws MarawaccExecutionException {
         /*
          * Check if the graph is prepared for GPU compilation and invoke the compilation and
          * execution. On Stack Replacement (OSR): switch to compiled GPU code
@@ -193,7 +194,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
                 System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU - Iteration: " + index);
             }
             GraalGPUCompilationUnit oclCompileUnit = compileForMarawaccBackend(meta.inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, meta.firstValue, meta.interoperable,
-                            meta.lexicalScopes);
+                            meta.lexicalScopes, inputArgs);
             return runWithMarawaccAccelerator(meta.inputPArray, graphToCompile, oclCompileUnit, function);
         }
         return null;
@@ -201,7 +202,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     // Run in the interpreter and then JIT when the CFG is prepared for compilation
     private ArrayList<Object> runJavaOpenCLJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
-                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes) throws MarawaccExecutionException {
+                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int argsOriginal) throws MarawaccExecutionException {
 
         checkFunctionInCache(function, callTarget);
 
@@ -218,7 +219,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             Object value = callTarget.call(argsPackage);
             output.add(value);
-            ArrayList<Object> checkAndRun = checkAndRun(gpuCompilationUnit, callTarget, i, meta, function);
+            ArrayList<Object> checkAndRun = checkAndRun(gpuCompilationUnit, callTarget, i, meta, function, argsOriginal);
             if (checkAndRun != null) {
                 return checkAndRun;
             }
@@ -228,7 +229,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     // Run in the interpreter and then JIT when the CFG is prepared for compilation
     private ArrayList<Object> runJavaOpenCLJIT(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
-                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int totalSize) throws MarawaccExecutionException {
+                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int totalSize, int inputArgs) throws MarawaccExecutionException {
 
         checkFunctionInCache(function, callTarget);
 
@@ -247,7 +248,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             Object value = callTarget.call(argsPackage);
             output.add(value);
-            ArrayList<Object> checkAndRun = checkAndRun(gpuCompilationUnit, callTarget, i, meta, function);
+            ArrayList<Object> checkAndRun = checkAndRun(gpuCompilationUnit, callTarget, i, meta, function, inputArgs);
             if (checkAndRun != null) {
                 return checkAndRun;
             }
@@ -369,7 +370,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         ArrayList<Object> result = null;
         long startExecution = System.nanoTime();
         try {
-            result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes, totalSize);
+            result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes, totalSize, numArgumentsOriginalFunction);
         } catch (MarawaccExecutionException e) {
             // Deoptimization
             System.out.println("Running in the DEOPT mode");
@@ -429,6 +430,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         // Get input types list
         int extraParams = nArgs - numArgumentsOriginalFunction;
         TypeInfoList inputTypeList = createTypeInfoList(input, additionalArgs, extraParams);
+        System.out.println(inputTypeList);
 
         // Marshal
         long startMarshal = System.nanoTime();
@@ -439,7 +441,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         ArrayList<Object> result = null;
         long startExecution = System.nanoTime();
         try {
-            result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArray, interoperable, lexicalScopes);
+            result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArray, interoperable, lexicalScopes, numArgumentsOriginalFunction);
         } catch (MarawaccExecutionException e) {
             // Deoptimization
             if (ASTxOptions.debug) {

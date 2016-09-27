@@ -85,7 +85,7 @@ public class ASTxOptions {
      * The function it is rewritten itself with the scope variables as parameters. Therefore with
      * this option side effects are not allowed.
      */
-    public static boolean scopeRewriting = getBoolean("astx.marawacc.scoperewriting", true);
+    public static boolean scopeRewriting = getBoolean("astx.marawacc.scoperewriting", false);
 
     private static boolean getBoolean(String property, boolean defaultValue) {
         if (System.getProperty(property) == null) {
