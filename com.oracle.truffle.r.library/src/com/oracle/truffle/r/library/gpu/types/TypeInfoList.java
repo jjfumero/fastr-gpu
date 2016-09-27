@@ -43,4 +43,15 @@ public class TypeInfoList {
     public int size() {
         return list.size();
     }
+
+    @Override
+    public String toString() {
+        StringBuffer buffer = new StringBuffer("TypeInfoList(");
+        int i = 0;
+        for (TypeInfo t : list) {
+            buffer.append("\t" + (i++) + " -> " + t.toString() + "\n");
+        }
+        buffer.append(")");
+        return buffer.toString();
+    }
 }

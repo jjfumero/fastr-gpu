@@ -482,11 +482,33 @@ public class ASTxUtils {
         return list;
     }
 
+    public static TypeInfoList typeInference(RAbstractVector input, RAbstractVector[] additionalArgs, int extraParams) throws MarawaccTypeException {
+        TypeInfoList list = new TypeInfoList();
+        list.add(typeInference(input));
+        if (additionalArgs != null) {
+            for (int i = 0; i < (additionalArgs.length - extraParams); i++) {
+                list.add(typeInference(additionalArgs[i]));
+            }
+        }
+        return list;
+    }
+
     public static TypeInfoList typeInferenceWithPArray(RAbstractVector input, RAbstractVector[] additionalArgs) throws MarawaccTypeException {
         TypeInfoList list = new TypeInfoList();
         list.add(typeInferenceWithPArrays(input));
         if (additionalArgs != null) {
             for (int i = 0; i < additionalArgs.length; i++) {
+                list.add(typeInferenceWithPArrays(additionalArgs[i]));
+            }
+        }
+        return list;
+    }
+
+    public static TypeInfoList typeInferenceWithPArray(RAbstractVector input, RAbstractVector[] additionalArgs, int extraParams) throws MarawaccTypeException {
+        TypeInfoList list = new TypeInfoList();
+        list.add(typeInferenceWithPArrays(input));
+        if (additionalArgs != null) {
+            for (int i = 0; i < (additionalArgs.length - extraParams); i++) {
                 list.add(typeInferenceWithPArrays(additionalArgs[i]));
             }
         }
@@ -1423,10 +1445,32 @@ public class ASTxUtils {
         return inputTypeList;
     }
 
+    public static TypeInfoList createTypeInfoListForInput(RAbstractVector input, RAbstractVector[] additionalArgs, int extraParams) {
+        TypeInfoList inputTypeList = null;
+        try {
+            inputTypeList = ASTxUtils.typeInference(input, additionalArgs, extraParams);
+        } catch (MarawaccTypeException e) {
+            // TODO: DEOPTIMIZE
+            e.printStackTrace();
+        }
+        return inputTypeList;
+    }
+
     public static TypeInfoList createTypeInfoListForInputWithPArrays(RAbstractVector input, RAbstractVector[] additionalArgs) {
         TypeInfoList inputTypeList = null;
         try {
             inputTypeList = ASTxUtils.typeInferenceWithPArray(input, additionalArgs);
+        } catch (MarawaccTypeException e) {
+            // TODO: DEOPTIMIZE
+            e.printStackTrace();
+        }
+        return inputTypeList;
+    }
+
+    public static TypeInfoList createTypeInfoListForInputWithPArrays(RAbstractVector input, RAbstractVector[] additionalArgs, int extraParams) {
+        TypeInfoList inputTypeList = null;
+        try {
+            inputTypeList = ASTxUtils.typeInferenceWithPArray(input, additionalArgs, extraParams);
         } catch (MarawaccTypeException e) {
             // TODO: DEOPTIMIZE
             e.printStackTrace();

@@ -349,12 +349,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     private RAbstractVector computeOpenCLMApply(PArray<?> input, RFunction function, RootCallTarget target, PArray<?>[] additionalArgs, Object[] lexicalScopes, int numArgumentsOriginalFunction) {
 
+        // Get the metadata from the cache
         RFunctionMetadata cachedFunctionMetadata = getCachedFunctionMetadata(input, function, additionalArgs);
         int nArgs = cachedFunctionMetadata.getnArgs();
-        if (nArgs > numArgumentsOriginalFunction) {
-            // The function was rewritten
-        }
-
         String[] argsName = cachedFunctionMetadata.getArgsName();
         Object value = cachedFunctionMetadata.getFirstValue();
         TypeInfo outputType = cachedFunctionMetadata.getOutputType();
@@ -410,37 +407,41 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "end-start", (endUnmarshal - startUnmarshal));
     }
 
+    private static TypeInfoList createTypeInfoList(RAbstractVector input, RAbstractVector[] additionalArgs, int extraParams) {
+        if (ASTxOptions.usePArrays) {
+            return ASTxUtils.createTypeInfoListForInputWithPArrays(input, additionalArgs, extraParams);
+        } else {
+            return ASTxUtils.createTypeInfoListForInput(input, additionalArgs, extraParams);
+        }
+    }
+
     private RAbstractVector computeOpenCLMApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes,
                     int numArgumentsOriginalFunction) {
 
+        // Objects from cache
         RFunctionMetadata cachedFunctionMetadata = getCachedFunctionMetadata(input, function, additionalArgs);
         int nArgs = cachedFunctionMetadata.getnArgs();
-        if (nArgs > numArgumentsOriginalFunction) {
-            // The function was rewritten
-        }
-
         String[] argsName = cachedFunctionMetadata.getArgsName();
         Object value = cachedFunctionMetadata.getFirstValue();
         TypeInfo outputType = cachedFunctionMetadata.getOutputType();
         Interoperable interoperable = cachedFunctionMetadata.getInteroperable();
 
-        TypeInfoList inputTypeList = null;
-        if (ASTxOptions.usePArrays) {
-            inputTypeList = ASTxUtils.createTypeInfoListForInputWithPArrays(input, additionalArgs);
-        } else {
-            inputTypeList = ASTxUtils.createTypeInfoListForInput(input, additionalArgs);
-        }
+        // Get input types list
+        int extraParams = nArgs - numArgumentsOriginalFunction;
+        TypeInfoList inputTypeList = createTypeInfoList(input, additionalArgs, extraParams);
+        System.out.println(inputTypeList);
 
         // Marshal
         long startMarshal = System.nanoTime();
-        PArray<?> inputPArrayFormat = ASTxUtils.createPArrays(input, additionalArgs, inputTypeList);
+        PArray<?> inputPArray = ASTxUtils.createPArrays(input, additionalArgs, inputTypeList);
         long endMarshal = System.nanoTime();
+        System.out.println(inputPArray);
 
         // Execution
         ArrayList<Object> result = null;
         long startExecution = System.nanoTime();
         try {
-            result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes);
+            result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArray, interoperable, lexicalScopes);
         } catch (MarawaccExecutionException e) {
             // Deoptimization
             if (ASTxOptions.debug) {

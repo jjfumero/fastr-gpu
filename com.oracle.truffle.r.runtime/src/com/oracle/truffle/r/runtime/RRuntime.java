@@ -58,7 +58,7 @@ public class RRuntime {
         "R is a collaborative project with many contributors.\n" +
         "Type 'contributors()' for more information.\n" +
         "\n" +
-        "NOTE: This compiler includes a backend for OpenCL\n" +
+        "This compiler includes a backend for OpenCL\n" +
         "Type 'q()' to quit R.";
 
     public static final String LICENSE =
