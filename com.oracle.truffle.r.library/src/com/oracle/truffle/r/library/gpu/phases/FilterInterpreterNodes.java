@@ -79,17 +79,20 @@ public class FilterInterpreterNodes extends Phase {
             }
         }
 
+        int i = 0;
         if (!subTree.isEmpty()) {
             Node node = subTree.get(0);
             Node first = node.successors().first();
             boolean notFound = true;
             while (notFound) {
+                boolean added = false;
                 if (first.getClass() == CheckCastNode.class || first.getClass() == FixedGuardNode.class) {
                     if (first instanceof CheckCastNode) {
                         Node guard = first.successors().first();
                         if (guard instanceof FixedGuardNode) {
                             LogicNode condition = ((FixedGuardNode) guard).condition();
                             if (condition instanceof IsNullNode) {
+                                added = true;
                                 guardNodes.add(guard);
                                 isNullNodes.add(condition);
                                 checkCastNodes.add(first);
@@ -97,7 +100,12 @@ public class FilterInterpreterNodes extends Phase {
                             }
                         }
                     }
-                    first = guardNodes.get(guardNodes.size() - 1).successors().first();
+                    if (added) {
+                        first = guardNodes.get(guardNodes.size() - 1).successors().first();
+                    } else {
+                        i++;
+                        first = subTree.get(i).successors().first();
+                    }
                 } else {
                     notFound = false;
                 }
@@ -111,7 +119,7 @@ public class FilterInterpreterNodes extends Phase {
         }
         deadCodeElimination(graph);
 
-        int i = 0;
+        i = 0;
         for (Node n : checkCastNodes) {
             removeCheckCast(n, prevList.get(i), graph);
             i++;
@@ -122,6 +130,10 @@ public class FilterInterpreterNodes extends Phase {
             removeGuards(n, graph);
         }
         deadCodeElimination(graph);
+
+        isNullNodes.clear();
+        checkCastNodes.clear();
+        guardNodes.clear();
 
     }
 }
