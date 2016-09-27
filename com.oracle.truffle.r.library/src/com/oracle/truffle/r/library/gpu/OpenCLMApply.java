@@ -429,13 +429,11 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         // Get input types list
         int extraParams = nArgs - numArgumentsOriginalFunction;
         TypeInfoList inputTypeList = createTypeInfoList(input, additionalArgs, extraParams);
-        System.out.println(inputTypeList);
 
         // Marshal
         long startMarshal = System.nanoTime();
         PArray<?> inputPArray = ASTxUtils.createPArrays(input, additionalArgs, inputTypeList);
         long endMarshal = System.nanoTime();
-        System.out.println(inputPArray);
 
         // Execution
         ArrayList<Object> result = null;
