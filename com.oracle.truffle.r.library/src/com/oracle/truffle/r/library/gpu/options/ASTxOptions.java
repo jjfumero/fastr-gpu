@@ -87,6 +87,12 @@ public class ASTxOptions {
      */
     public static boolean scopeRewriting = getBoolean("astx.marawacc.scoperewriting", false);
 
+    /**
+     * First version where we had a clean up for all the graph, assuming no deopt points. Just for
+     * debugging and fast development. Do not use unless is just for testing.
+     */
+    public static boolean oldCleanPhases = getBoolean("astx.marawacc.oldCleanPhases", false);
+
     private static boolean getBoolean(String property, boolean defaultValue) {
         if (System.getProperty(property) == null) {
             return defaultValue;

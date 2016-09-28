@@ -54,7 +54,11 @@ import com.oracle.truffle.r.library.gpu.exceptions.MarawaccRuntimeTypeException;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.phases.GPUBoxingEliminationPhase;
+import com.oracle.truffle.r.library.gpu.phases.GPUCheckCastRemovalPhase;
+import com.oracle.truffle.r.library.gpu.phases.GPUFixedGuardRemovalPhase;
 import com.oracle.truffle.r.library.gpu.phases.GPUFrameStateEliminationPhase;
+import com.oracle.truffle.r.library.gpu.phases.GPUInstanceOfRemovePhase;
+import com.oracle.truffle.r.library.gpu.phases.scope.CleanFixedGuardNodes;
 import com.oracle.truffle.r.library.gpu.phases.scope.ScopeArraysDetectionPhase;
 import com.oracle.truffle.r.library.gpu.phases.scope.ScopeArraysWithDeopt;
 import com.oracle.truffle.r.library.gpu.phases.scope.ScopeData;
@@ -1544,44 +1548,66 @@ public class ASTxUtils {
         new GPUFrameStateEliminationPhase().apply(graph);
         CompilerUtils.dumpGraph(graph, "GPUFrameStateEliminationPhase");
 
-        // new GPUInstanceOfRemovePhase().apply(graph);
-        // CompilerUtils.dumpGraph(graph, "GPUInstanceOfRemovePhase");
+        if (ASTxOptions.oldCleanPhases) {
+            new GPUInstanceOfRemovePhase().apply(graph);
+            CompilerUtils.dumpGraph(graph, "GPUInstanceOfRemovePhase");
 
-        // new GPUCheckCastRemovalPhase().apply(graph);
-        // CompilerUtils.dumpGraph(graph, "GPUCheckCastRemovalPhase");
+            new GPUCheckCastRemovalPhase().apply(graph);
+            CompilerUtils.dumpGraph(graph, "GPUCheckCastRemovalPhase");
 
-        // new GPUFixedGuardRemovalPhase().apply(graph);
-        // CompilerUtils.dumpGraph(graph, "GPUFixedGuardRemovalPhase");
+            new GPUFixedGuardRemovalPhase().apply(graph);
+            CompilerUtils.dumpGraph(graph, "GPUFixedGuardRemovalPhase");
+        }
 
         new GPUBoxingEliminationPhase().apply(graph);
         CompilerUtils.dumpGraph(graph, "GPUBoxingEliminationPhase");
-
-        ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
-        arraysDetectionPhase.apply(graph);
 
         // New Experimental scope phase
         ScopeArraysWithDeopt scopeWithDeopt = new ScopeArraysWithDeopt();
         scopeWithDeopt.apply(graph);
 
         ArrayList<com.oracle.graal.graph.Node> scopedNodes = null;
-        if (arraysDetectionPhase.isScopeDetected()) {
-            scopedNodes = arraysDetectionPhase.getScopedNodes();
-            System.out.println(scopedNodes);
+        if (scopeWithDeopt.isScopeDetected()) {
+            System.out.println(scopeWithDeopt.getGuardNodes());
+            CleanFixedGuardNodes clean = new CleanFixedGuardNodes(scopeWithDeopt.getGuardNodes());
+            clean.apply(graph);
+            CompilerUtils.dumpGraph(graph, "Scope Clean Phase");
+
+            ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
+            arraysDetectionPhase.apply(graph);
+            if (arraysDetectionPhase.isScopeDetected()) {
+                scopedNodes = arraysDetectionPhase.getScopedNodes();
+                System.out.println(scopedNodes);
+            }
         }
+
         return scopedNodes;
     }
 
     public static ArrayList<com.oracle.graal.graph.Node> applyCompilationPhasesForOpenCL(StructuredGraph graph) {
         new GPUFrameStateEliminationPhase().apply(graph);
-        // new GPUInstanceOfRemovePhase().apply(graph);
-        // new GPUCheckCastRemovalPhase().apply(graph);
-        // new GPUFixedGuardRemovalPhase().apply(graph);
+        if (ASTxOptions.oldCleanPhases) {
+            new GPUInstanceOfRemovePhase().apply(graph);
+            new GPUCheckCastRemovalPhase().apply(graph);
+            new GPUFixedGuardRemovalPhase().apply(graph);
+        }
         new GPUBoxingEliminationPhase().apply(graph);
-        ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
-        arraysDetectionPhase.apply(graph);
+
+        // New Experimental scope phase
+        ScopeArraysWithDeopt scopeWithDeopt = new ScopeArraysWithDeopt();
+        scopeWithDeopt.apply(graph);
+
         ArrayList<com.oracle.graal.graph.Node> scopedNodes = null;
-        if (arraysDetectionPhase.isScopeDetected()) {
-            scopedNodes = arraysDetectionPhase.getScopedNodes();
+        if (scopeWithDeopt.isScopeDetected()) {
+            System.out.println(scopeWithDeopt.getGuardNodes());
+            CleanFixedGuardNodes clean = new CleanFixedGuardNodes(scopeWithDeopt.getGuardNodes());
+            clean.apply(graph);
+
+            ScopeArraysDetectionPhase arraysDetectionPhase = new ScopeArraysDetectionPhase();
+            arraysDetectionPhase.apply(graph);
+            if (arraysDetectionPhase.isScopeDetected()) {
+                scopedNodes = arraysDetectionPhase.getScopedNodes();
+            }
         }
         return scopedNodes;
     }

@@ -17,7 +17,7 @@ NUMBODIES <- size
 DELTA <- 0.005
 ESPSQRT <- 500
 
-CHECK <- FALSE
+CHECK <- TRUE
 
 nbodyCPU <- function(px, py, pz, vx, vy, vz) {
 	acc1 <- 0
@@ -115,11 +115,11 @@ benchmark <- function(inputSize) {
 		positions[idx+3] <<- runif(1) # mass
 	}
 
-	seq <- mapply(nbodyCPU, vx, vy, vz, px, py, pz)
+	seq <- mapply(nbodyCPU, px, py, pz, vx, vy, vz)
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
-		result <- marawacc.gpusapply(vx, nbodyFunction, vy, vz, px, py, pz);
+		result <- marawacc.gpusapply(px, nbodyFunction, py, pz, vx, vy, vz);
 		end <- nanotime()
 		total <- end - start
 		print(total)
