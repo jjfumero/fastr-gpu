@@ -40,7 +40,7 @@ import com.oracle.graal.phases.Phase;
  * The array constant node "always" (based on experimentation) is the input for
  * {@link LoadIndexedNode}. One way of detecting is to analyse the inputs for LoadIndexNode. If it
  * receives a @{@link ConstantNode} with its value as an array of primitive data types, we can
- * handle it in the code generation for GPUs and manage it as {@link PArray}.
+ * handle it in the code generation for OpenCL and manage it as {@link PArray}.
  *
  */
 public class ScopeDetectionPhase extends Phase {

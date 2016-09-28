@@ -89,7 +89,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue, Interoperable interoperable,
                     Object[] lexicalScope, int nArgs) {
 
-        ScopeData scopeData = ASTxUtils.scopeArrayDetection(graphToCompile);
+        ScopeData scopeData = ASTxUtils.scopeArrayConstantDetection(graphToCompile);
 
         if (lexicalScope != null) {
             scopeData.setData(lexicalScope);

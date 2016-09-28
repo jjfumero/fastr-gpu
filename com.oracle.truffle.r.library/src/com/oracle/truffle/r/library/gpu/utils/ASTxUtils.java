@@ -1534,7 +1534,14 @@ public class ASTxUtils {
         return inputPArrayFormat;
     }
 
-    public static ScopeData scopeArrayDetection(StructuredGraph graph) {
+    /**
+     * It searches for constant array nodes and get its references for copying in into the OpenCL
+     * buffers later on.
+     *
+     * @param graph
+     * @return {@link ScopeData}
+     */
+    public static ScopeData scopeArrayConstantDetection(StructuredGraph graph) {
         ScopeDetectionPhase scopeDetection = new ScopeDetectionPhase();
         scopeDetection.apply(graph);
         ScopeData scopeData = new ScopeData(scopeDetection.getDataArray());
