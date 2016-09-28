@@ -141,8 +141,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         PArray result = executor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
         PArray<Integer> deopt = executor.getDeoptBuffer();
         if (deopt != null) {
-            System.out.println("DEOPT: " + deopt);
             if (deopt.get(0) == 1) {
+                System.out.println("DEOPT: " + deopt);
                 throw new MarawaccExecutionException("Deoptimization");
             }
         }
@@ -430,7 +430,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         // Get input types list
         int extraParams = nArgs - numArgumentsOriginalFunction;
         TypeInfoList inputTypeList = createTypeInfoList(input, additionalArgs, extraParams);
-        System.out.println(inputTypeList);
 
         // Marshal
         long startMarshal = System.nanoTime();
