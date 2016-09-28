@@ -5,6 +5,7 @@ import java.lang.management.ManagementFactory;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 
 public abstract class RGCBuiltin extends RExternalBuiltinNode.Arg0 {
@@ -24,15 +25,19 @@ public abstract class RGCBuiltin extends RExternalBuiltinNode.Arg0 {
                 garbageCollectionTime += time;
             }
         }
-        System.out.println("Total Garbage Collections: " + totalGarbageCollections);
-        System.out.println("Total Garbage Collection Time (ms): " + garbageCollectionTime);
+        if (ASTxOptions.debug) {
+            System.out.println("Total Garbage Collections: " + totalGarbageCollections);
+            System.out.println("Total Garbage Collection Time (ms): " + garbageCollectionTime);
+        }
     }
 
     @TruffleBoundary
     private static void memoryUsage() {
         Runtime rt = Runtime.getRuntime();
         long usedMB = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024;
-        System.out.println("Memory usage: " + usedMB + " MB");
+        if (ASTxOptions.debug) {
+            System.out.println("Memory usage: " + usedMB + " MB");
+        }
     }
 
     @Specialization
