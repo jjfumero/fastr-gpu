@@ -1,5 +1,12 @@
 # ChangeLog ASTx GPU Compiler Framework
 
+## astx-0.10
+	* Deoptimizations supported with a flag in OpenCL
+	* New scope phases
+	* Truffle annotation system for OpenCL node filtering and deopt
+	* Javadoc
+	* Refactor of the main OpenCL builtin
+
 ## astx-0.9
 	* Garbage collector builtin provided
 	* R root node for OpenCL execution equivalent to normal FastR
