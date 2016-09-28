@@ -39,18 +39,22 @@ public class ScopeArraysDetectionPhase extends Phase {
     private ArrayList<Node> notValidNodes;
     private ArrayList<Class<?>> scopePattern;
 
+    /**
+     * The pattern does not include the deopt nodes. Therefore, previous to this phase, it should be
+     * a phase where the deopt for the scope are gone.
+     */
     public ScopeArraysDetectionPhase() {
         notValidNodes = new ArrayList<>();
         scopePattern = new ArrayList<>();
 
-        // Pattern
-        scopePattern.add(LoadFieldNode.class);
-        scopePattern.add(ArrayLengthNode.class);
-        scopePattern.add(LoadIndexedNode.class);
-        scopePattern.add(LoadFieldNode.class);
-        scopePattern.add(UnsafeLoadNode.class);
-        scopePattern.add(LoadFieldNode.class);
-        scopePattern.add(LoadFieldNode.class);
+        // Pattern for R
+        scopePattern.add(LoadFieldNode.class);          // LoadField#FrameWithoutBoxing.tags
+        scopePattern.add(ArrayLengthNode.class);        // ArrayLength
+        scopePattern.add(LoadIndexedNode.class);        // LoadIdexed
+        scopePattern.add(LoadFieldNode.class);          // LoadField#FrameWithoutBoxing.locals
+        scopePattern.add(UnsafeLoadNode.class);         // UnsafeLoad
+        scopePattern.add(LoadFieldNode.class);          // LoadField#RAttributeStorage.attributes
+        scopePattern.add(LoadFieldNode.class);          // LoadField#RDoubleVector.data
     }
 
     @Override
