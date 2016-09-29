@@ -141,9 +141,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         PArray result = executor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
         PArray<Integer> deopt = executor.getDeoptBuffer();
         if (deopt != null) {
-            if (deopt.get(0) == 1) {
+            if (deopt.get(0) != 0) {
                 System.out.println("DEOPT: " + deopt);
-                throw new MarawaccExecutionException("Deoptimization");
+                throw new MarawaccExecutionException("Deoptimization", deopt.get(0));
             }
         }
         RGPUCache.INSTANCE.getCachedObjects(function).enableGPUExecution();
@@ -446,6 +446,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             if (ASTxOptions.debug) {
                 System.out.println("Running in the DEOPT mode");
             }
+            int threadID = e.getThreadID();
             // Run sequentially -- TODO: Provide a mechanism that allows to restart the execution in
             // the correct place of the AST to specialise again
             result = runAfterDeopt(input, target, function, nArgs, additionalArgs, argsName, value, input.getLength());
