@@ -16,11 +16,7 @@ REPETITIONS <- 11
 ## Lambda expression for the computation
 benchmark <- function(inputSize) {
 
-	piFunction <- function(x) {
-		seed <- x
-		sum <- 0.0
-		x <- 0.12312
-		y <- 0.871283971
+	piFunction <- function(x, y) {
 		s <- x*x + y+y 
 		if (s < 1) {
 			return(1)
@@ -29,12 +25,13 @@ benchmark <- function(inputSize) {
 		}
 	}
 
-	x <- 1:size;
+	x <- runif(size)
+	y <- runif(size)
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
 
-		piMap <- marawacc.testGPU(x, piFunction)
+		piMap <- marawacc.testGPU(x, piFunction, y)
 		reductionOp <- marawacc.reduce(piMap, function(x, y) x + y, neutral=0)
 		result <- marawacc.execute(reductionOp)
 
