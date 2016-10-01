@@ -1552,10 +1552,10 @@ public class ASTxUtils {
 
         CompilerUtils.dumpGraph(graph, "beforeOptomisations");
 
-        new GPUFrameStateEliminationPhase().apply(graph);
-        CompilerUtils.dumpGraph(graph, "GPUFrameStateEliminationPhase");
-
         if (ASTxOptions.oldCleanPhases) {
+            new GPUFrameStateEliminationPhase().apply(graph);
+            CompilerUtils.dumpGraph(graph, "GPUFrameStateEliminationPhase");
+
             new GPUInstanceOfRemovePhase().apply(graph);
             CompilerUtils.dumpGraph(graph, "GPUInstanceOfRemovePhase");
 

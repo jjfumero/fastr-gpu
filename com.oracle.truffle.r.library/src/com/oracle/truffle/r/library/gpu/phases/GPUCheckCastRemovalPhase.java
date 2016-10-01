@@ -65,7 +65,6 @@ public class GPUCheckCastRemovalPhase extends Phase {
         while (iterator.hasNext()) {
             Node node = iterator.next();
             if (node instanceof CheckCastNode) {
-                System.out.println("Replacing " + node + " for : " + prev);
                 graph.replaceFixed((FixedWithNextNode) node, prev);
             }
             prev = node;

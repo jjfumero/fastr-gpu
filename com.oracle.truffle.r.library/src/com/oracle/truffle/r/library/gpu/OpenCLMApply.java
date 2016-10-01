@@ -446,6 +446,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             if (ASTxOptions.debug) {
                 System.out.println("Running in the DEOPT mode");
             }
+            @SuppressWarnings("unused")
             int threadID = e.getThreadID();
             // Run sequentially -- TODO: Provide a mechanism that allows to restart the execution in
             // the correct place of the AST to specialise again

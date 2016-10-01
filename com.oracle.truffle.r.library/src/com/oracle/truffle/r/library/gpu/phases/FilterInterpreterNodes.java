@@ -72,7 +72,6 @@ public class FilterInterpreterNodes extends Phase {
                     ConstantNode constant = (ConstantNode) index;
                     Constant value = constant.getValue();
                     if (value.toValueString().equals(new Integer(idx).toString())) {
-                        System.out.println("Node in the interpreter we are looking at");
                         subTree.add(node);
                     }
                 }

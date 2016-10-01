@@ -45,7 +45,6 @@ public class ScopeCleanPhase extends Phase {
 
             for (Node s : scopedNodes) {
                 if (s.equals(node)) {
-                    System.out.println("Trying to remove: " + node);
                     if (s instanceof LoadFieldNode) {
                         LoadFieldNode f = (LoadFieldNode) s;
                         ValueNode value = f.getValue();

@@ -85,7 +85,7 @@ public class ASTxOptions {
      * The function it is rewritten itself with the scope variables as parameters. Therefore with
      * this option side effects are not allowed.
      */
-    public static boolean scopeRewriting = getBoolean("astx.marawacc.scoperewriting", false);
+    public static boolean scopeRewriting = getBoolean("astx.marawacc.scoperewriting", true);
 
     /**
      * First version where we had a clean up for all the graph, assuming no deopt points. Just for
