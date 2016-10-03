@@ -475,6 +475,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         } else if (ASTxOptions.usePArrays) {
             // get the references
             return ASTxUtils.unMarshallFromFullPArrays(outputType, (PArray) result.get(0));
+        } else if (ASTxOptions.newPArrayStrategy) {
+            // Get the stored array reference
+            return ASTxUtils.getResultInPrimitiveArray(outputType, (PArray) result.get(0));
         } else {
             // Real un-marshal
             return ASTxUtils.unMarshallResultFromPArrays(outputType, (PArray) result.get(0));
@@ -571,7 +574,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         int numArgumentsOriginalFunction = ASTxUtils.getNumberOfArguments(function);
         boolean isRewritten = false;
 
-        // Function rewriting
+        // Function rewriting for the scope variable detection
         if (ASTxOptions.scopeRewriting && (filterScopeVarNames != null)) {
             RFunction scopeRewritting = scopeRewritting(function, filterScopeVarNames);
             if (ASTxOptions.debug) {

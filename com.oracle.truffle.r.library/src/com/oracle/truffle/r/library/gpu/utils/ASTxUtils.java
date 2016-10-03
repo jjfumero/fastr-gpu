@@ -845,6 +845,15 @@ public class ASTxUtils {
         }
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static RAbstractVector getResultInPrimitiveArray(TypeInfo type, PArray result) {
+        if (type == TypeInfo.DOUBLE) {
+            return getDoubleVector(result);
+        } else {
+            throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
+        }
+    }
+
     public static RAbstractVector unMarshallResultFromArrayList(TypeInfo type, ArrayList<Object> result) {
         if (type == TypeInfo.INT) {
             return getIntVector(result);
@@ -900,7 +909,6 @@ public class ASTxUtils {
             case RDoubleSequence:
                 return buildDoublePArrayForSequence(input);
             case RIntVector:
-                // return ((RIntVector) input).getPArray();
                 PArray<Integer> parrayI = new PArray<>(input.getLength(), TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER);
                 // Real marshal
                 for (int k = 0; k < input.getLength(); k++) {
@@ -960,6 +968,29 @@ public class ASTxUtils {
         // Real marshal
         for (int k = 0; k < parray.size(); k++) {
             parray.put(k, input.getDataAtAsObject(k));
+        }
+        return parray;
+    }
+
+    public static PArray<?> primitivePArraySimple(TypeInfo type, RAbstractVector input) {
+        PArray<?> parray = null;
+        switch (type) {
+            case INT:
+            case RIntegerSequence:
+            case RIntVector:
+                int[] dataInt = ((RIntVector) input).getDataWithoutCopying();
+                parray = new PArray<>(input.getLength(), TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER, false);
+                parray.setIntArray(dataInt);
+                break;
+            case DOUBLE:
+            case RDoubleSequence:
+            case RDoubleVector:
+                double[] dataDouble = ((RDoubleVector) input).getDataWithoutCopying();
+                parray = new PArray<>(input.getLength(), TypeFactory.Double(), StorageMode.OPENCL_BYTE_BUFFER, false);
+                parray.setDoubleArray(dataDouble);
+                break;
+            default:
+                throw new MarawaccRuntimeTypeException("Data type not supported: " + input.getClass() + " [ " + __LINE__.print() + "]");
         }
         return parray;
     }
@@ -1054,6 +1085,41 @@ public class ASTxUtils {
                 }
                 return parray;
 
+            default:
+                throw new MarawaccRuntimeTypeException("Tuple not supported yet: " + infoList.size() + " [ " + __LINE__.print() + "]");
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    private static void insertCorrectArray(TypeInfo typeInfo, PArray parray, RAbstractVector input, int idx) {
+        if (typeInfo == TypeInfo.RIntVector) {
+            parray.setIntArray(idx, ((RIntVector) input).getDataWithoutCopying());
+        } else if (typeInfo == TypeInfo.RIntegerSequence) {
+            parray.setIntArray(idx, ((RIntVector) input).getDataWithoutCopying());
+        } else if (typeInfo == TypeInfo.INT) {
+            parray.setIntArray(idx, ((RIntVector) input).getDataWithoutCopying());
+        } else if (typeInfo == TypeInfo.RDoubleVector) {
+            parray.setDoubleArray(idx, ((RDoubleVector) input).getDataWithoutCopying());
+        } else if (typeInfo == TypeInfo.RDoubleSequence) {
+            parray.setDoubleArray(idx, ((RDoubleVector) input).getDataWithoutCopying());
+        } else if (typeInfo == TypeInfo.DOUBLE) {
+            parray.setDoubleArray(idx, ((RDoubleVector) input).getDataWithoutCopying());
+        } else {
+            System.out.println("DATA TYPE NOT SUPPOTED: " + typeInfo);
+        }
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    public static PArray<?> primitivePArraysWithTuples(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
+        String returns = composeReturnType(infoList);
+
+        // PArray with no buffer allocation
+        PArray parray = new PArray<>(input.getLength(), TypeFactory.Tuple(returns), StorageMode.OPENCL_BYTE_BUFFER, false);
+        switch (infoList.size()) {
+            case 2:
+                insertCorrectArray(infoList.get(0), parray, input, 0);
+                insertCorrectArray(infoList.get(1), parray, additionalArgs[0], 1);
+                return parray;
             default:
                 throw new MarawaccRuntimeTypeException("Tuple not supported yet: " + infoList.size() + " [ " + __LINE__.print() + "]");
         }
@@ -1168,6 +1234,17 @@ public class ASTxUtils {
             parray = marshalSimplePArrays(infoList.get(0), input);
         } else {
             parray = marshalWithTuples(input, additionalArgs, infoList);
+        }
+        return parray;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static PArray<?> createPArrayForPrimitives(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList infoList) {
+        PArray parray = null;
+        if (additionalArgs == null || infoList.size() == 1) {
+            parray = primitivePArraySimple(infoList.get(0), input);
+        } else {
+            parray = primitivePArraysWithTuples(input, additionalArgs, infoList);
         }
         return parray;
     }
@@ -1504,6 +1581,9 @@ public class ASTxUtils {
         } else if (ASTxOptions.usePArrays && !ASTxOptions.optimizeRSequence) {
             // RTypes with PArray information
             inputPArrayFormat = ASTxUtils.marshalWithReferences(input, additionalArgs, inputTypeList);
+        } else if (ASTxOptions.newPArrayStrategy) {
+            // No marshal, just passing primitive vectors
+            inputPArrayFormat = ASTxUtils.createPArrayForPrimitives(input, additionalArgs, inputTypeList);
         } else {
             // real marshal
             inputPArrayFormat = ASTxUtils.marshal(input, additionalArgs, inputTypeList);

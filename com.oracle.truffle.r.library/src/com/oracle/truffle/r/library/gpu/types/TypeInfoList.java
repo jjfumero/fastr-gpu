@@ -26,29 +26,29 @@ import java.util.ArrayList;
 
 public class TypeInfoList {
 
-    private ArrayList<TypeInfo> list;
+    private ArrayList<TypeInfo> listTypes;
 
     public TypeInfoList() {
-        list = new ArrayList<>();
+        listTypes = new ArrayList<>();
     }
 
     public void add(TypeInfo type) {
-        list.add(type);
+        listTypes.add(type);
     }
 
     public TypeInfo get(int idx) {
-        return list.get(idx);
+        return listTypes.get(idx);
     }
 
     public int size() {
-        return list.size();
+        return listTypes.size();
     }
 
     @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer("TypeInfoList(");
         int i = 0;
-        for (TypeInfo t : list) {
+        for (TypeInfo t : listTypes) {
             buffer.append("\t" + (i++) + " -> " + t.toString() + "\n");
         }
         buffer.append(")");
