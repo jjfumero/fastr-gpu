@@ -468,8 +468,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings({"rawtypes"})
-    private static RAbstractVector getResult(boolean gpuExecution, TypeInfo outputType, ArrayList<Object> result) {
-        if (!gpuExecution) {
+    private static RAbstractVector getResult(boolean wasExecutedOnGPU, TypeInfo outputType, ArrayList<Object> result) {
+        if (!wasExecutedOnGPU) {
             // get the output in R-Type format
             return ASTxUtils.unMarshallResultFromArrayList(outputType, result);
         } else if (ASTxOptions.usePArrays) {
@@ -477,7 +477,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             return ASTxUtils.unMarshallFromFullPArrays(outputType, (PArray) result.get(0));
         } else if (ASTxOptions.newPArrayStrategy) {
             // Get the stored array reference
-            return ASTxUtils.getResultInPrimitiveArray(outputType, (PArray) result.get(0));
+            return ASTxUtils.unMarshallResultFromPArrays(outputType, (PArray) result.get(0));
         } else {
             // Real un-marshal
             return ASTxUtils.unMarshallResultFromPArrays(outputType, (PArray) result.get(0));

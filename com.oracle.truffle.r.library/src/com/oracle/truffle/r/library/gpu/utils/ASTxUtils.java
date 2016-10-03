@@ -845,15 +845,6 @@ public class ASTxUtils {
         }
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public static RAbstractVector getResultInPrimitiveArray(TypeInfo type, PArray result) {
-        if (type == TypeInfo.DOUBLE) {
-            return getDoubleVector(result);
-        } else {
-            throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
-        }
-    }
-
     public static RAbstractVector unMarshallResultFromArrayList(TypeInfo type, ArrayList<Object> result) {
         if (type == TypeInfo.INT) {
             return getIntVector(result);
