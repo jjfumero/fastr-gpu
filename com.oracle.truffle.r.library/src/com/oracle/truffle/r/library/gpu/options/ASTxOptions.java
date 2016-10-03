@@ -22,6 +22,8 @@
  */
 package com.oracle.truffle.r.library.gpu.options;
 
+import uk.ac.ed.datastructures.common.PArray;
+
 import com.oracle.truffle.r.runtime.data.RSequence;
 
 /**
@@ -92,6 +94,11 @@ public class ASTxOptions {
      * debugging and fast development. Do not use unless is just for testing.
      */
     public static boolean oldCleanPhases = getBoolean("astx.marawacc.oldCleanPhases", false);
+
+    /**
+     * It uses the new {@link PArray} strategy for passing primitive array vectors.
+     */
+    public static boolean newPArrayStrategy = getBoolean("astx.marawacc.primArrays", true);
 
     private static boolean getBoolean(String property, boolean defaultValue) {
         if (System.getProperty(property) == null) {

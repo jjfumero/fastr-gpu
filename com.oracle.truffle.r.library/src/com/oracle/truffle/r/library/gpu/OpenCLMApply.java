@@ -575,7 +575,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         if (ASTxOptions.scopeRewriting && (filterScopeVarNames != null)) {
             RFunction scopeRewritting = scopeRewritting(function, filterScopeVarNames);
             if (ASTxOptions.debug) {
-                System.out.println("NEW FUNCTION: " + scopeRewritting.getRootNode().getSourceSection().getCode());
+                System.out.println("[DEBUG] New R Function rewritten => " + scopeRewritting.getRootNode().getSourceSection().getCode());
             }
             function = scopeRewritting;
             isRewritten = true;
