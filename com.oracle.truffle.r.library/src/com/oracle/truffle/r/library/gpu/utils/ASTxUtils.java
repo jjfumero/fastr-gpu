@@ -676,7 +676,7 @@ public class ASTxUtils {
      */
     public static RList composeRListFromTuple2(PArray<Tuple2<?, ?>> array) {
 
-        if (!array.isPrimitiveArray()) {
+        if (!array.isPrimitiveArray(0)) {
             // DEOPT TO THE OLD STRATEGY
             return getRListFromTuple2(array);
         }
@@ -685,20 +685,21 @@ public class ASTxUtils {
         RuntimeObjectTypeInfo[] nestedTypes = runtimeObjectTypeInfo.getNestedTypes();
 
         int i = 0;
-        Object[] data = new Object[array.size() * 2];
+        final int TUPLE_DIM = 2;
+        Object[] data = new Object[array.size() * TUPLE_DIM];
         for (RuntimeObjectTypeInfo r : nestedTypes) {
             if (r.getClassObject() == Double.class) {
                 double[] asDoubleArray = array.asDoubleArray(i);
                 final int j = i;
                 IntStream.range(0, array.size()).parallel().forEach(idx -> {
-                    data[idx * 2 + j] = asDoubleArray[idx];
+                    data[idx * TUPLE_DIM + j] = asDoubleArray[idx];
                 });
 
             } else if (r.getClassObject() == Integer.class) {
                 int[] asIntegerArray = array.asIntegerArray(0);
                 final int j = i;
                 IntStream.range(0, array.size()).parallel().forEach(idx -> {
-                    data[idx * 2 + j] = asIntegerArray[idx];
+                    data[idx * TUPLE_DIM + j] = asIntegerArray[idx];
                 });
             } else {
                 throw new RuntimeException("Data type not supported yet: " + r.getClassObject());
@@ -707,7 +708,49 @@ public class ASTxUtils {
             i++;
         }
 
-        RList list = RDataFactory.createList(data, new int[]{2, array.size()});
+        RList list = RDataFactory.createList(data, new int[]{TUPLE_DIM, array.size()});
+        return list;
+    }
+
+    public static RList composeRListFromTuple6(PArray<Tuple6<?, ?, ?, ?, ?, ?>> array) {
+
+        if (!array.isPrimitiveArray(0)) {
+            // DEOPT TO THE OLD STRATEGY
+            System.out.println("DEOPT!!!");
+            return getRListFromTuple6(array);
+        }
+
+        final int TUPLE_DIM = 6;
+
+        RuntimeObjectTypeInfo runtimeObjectTypeInfo = array.getRuntimeObjectTypeInfo();
+        RuntimeObjectTypeInfo[] nestedTypes = runtimeObjectTypeInfo.getNestedTypes();
+
+        int i = 0;
+        Object[] data = new Object[array.size() * TUPLE_DIM];
+        for (RuntimeObjectTypeInfo r : nestedTypes) {
+
+            if (r.getClassObject() == Double.class) {
+                double[] asDoubleArray = array.asDoubleArray(i);
+                final int j = i;
+                IntStream.range(0, array.size()).parallel().forEach(idx -> {
+                    data[idx * TUPLE_DIM + j] = asDoubleArray[idx];
+                });
+
+            } else if (r.getClassObject() == Integer.class) {
+                int[] asIntegerArray = array.asIntegerArray(0);
+                final int j = i;
+                IntStream.range(0, array.size()).parallel().forEach(idx -> {
+                    data[idx * TUPLE_DIM + j] = asIntegerArray[idx];
+                });
+
+            } else {
+                throw new RuntimeException("Data type not supported yet: " + r.getClassObject());
+            }
+
+            i++;
+        }
+
+        RList list = RDataFactory.createList(data, new int[]{TUPLE_DIM, array.size()});
         return list;
     }
 
@@ -898,6 +941,8 @@ public class ASTxUtils {
             return getDoubleVector(result);
         } else if (type == TypeInfo.TUPLE2) {
             return composeRListFromTuple2(result);
+        } else if (type == TypeInfo.TUPLE6) {
+            return composeRListFromTuple6(result);
         } else {
             throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
         }
@@ -1163,7 +1208,7 @@ public class ASTxUtils {
         } else if (typeInfo == TypeInfo.DOUBLE) {
             parray.setDoubleArray(idx, ((RDoubleVector) input).getDataWithoutCopying());
         } else {
-            System.out.println("DATA TYPE NOT SUPPOTED: " + typeInfo);
+            throw new MarawaccRuntimeTypeException("Tuple not supported yet: " + typeInfo + " [ " + __LINE__.print() + "]");
         }
     }
 
@@ -1173,13 +1218,19 @@ public class ASTxUtils {
 
         // PArray with no buffer allocation
         PArray parray = new PArray<>(input.getLength(), TypeFactory.Tuple(returns), StorageMode.OPENCL_BYTE_BUFFER, false);
-        switch (infoList.size()) {
-            case 2:
-                insertCorrectArray(infoList.get(0), parray, input, 0);
-                insertCorrectArray(infoList.get(1), parray, additionalArgs[0], 1);
-                return parray;
-            default:
-                throw new MarawaccRuntimeTypeException("Tuple not supported yet: " + infoList.size() + " [ " + __LINE__.print() + "]");
+        if (infoList.size() == 2) {
+            insertCorrectArray(infoList.get(0), parray, input, 0);
+            insertCorrectArray(infoList.get(1), parray, additionalArgs[0], 1);
+            return parray;
+        } else if (infoList.size() > 2) {
+            int max = infoList.size() - 1;
+            insertCorrectArray(infoList.get(0), parray, input, 0);
+            for (int i = 0; i < max; i++) {
+                insertCorrectArray(infoList.get(i + 1), parray, additionalArgs[i], i + 1);
+            }
+            return parray;
+        } else {
+            throw new MarawaccRuntimeTypeException("Tuple not supported yet: " + infoList.size() + " [ " + __LINE__.print() + "]");
         }
     }
 

@@ -129,7 +129,8 @@ benchmark <- function(inputSize) {
 			j <- 1
 			while (k < size) {
 			    lseq <- c(seq[[k]], seq[[k+1]], seq[[k+2]], seq[[k+3]], seq[[k+4]], seq[[k+5]])
-    			lgpu <- c(result[[j]][[1]], result[[j]][[2]], result[[j]][[3]], result[[j]][[4]], result[[j]][[5]], result[[j]][[6]])
+			    lgpu <- c(result[[k]], result[[k+1]], result[[k+2]], result[[k+3]], result[[k+4]], result[[k+5]])
+    			#lgpu <- c(result[[j]][[1]], result[[j]][[2]], result[[j]][[3]], result[[j]][[4]], result[[j]][[5]], result[[j]][[6]])
 	
 				for (ii in 1:6) {
 		    		# check the elements for the tuple
