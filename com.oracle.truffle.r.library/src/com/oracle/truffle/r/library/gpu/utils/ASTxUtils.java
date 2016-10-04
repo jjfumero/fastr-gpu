@@ -716,7 +716,6 @@ public class ASTxUtils {
 
         if (!array.isPrimitiveArray(0)) {
             // DEOPT TO THE OLD STRATEGY
-            System.out.println("DEOPT!!!");
             return getRListFromTuple6(array);
         }
 
