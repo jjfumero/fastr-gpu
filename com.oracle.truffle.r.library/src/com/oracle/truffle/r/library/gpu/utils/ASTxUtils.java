@@ -431,7 +431,7 @@ public class ASTxUtils {
     public static TypeInfo typeInferenceWithPArrays(RAbstractVector input) throws MarawaccTypeException {
         TypeInfo type = null;
         if (input instanceof RIntSequence) {
-            type = TypeInfo.RIntegerSequence;
+            type = TypeInfo.RIntSequence;
         } else if (input instanceof RIntVector) {
             type = TypeInfo.RIntVector;
         } else if (input instanceof RDoubleSequence) {
@@ -463,13 +463,13 @@ public class ASTxUtils {
     public static TypeInfo typeInference(RAbstractVector input) throws MarawaccTypeException {
         TypeInfo type = null;
         if (input instanceof RIntSequence) {
-            type = TypeInfo.INT;
+            type = TypeInfo.RIntSequence;
         } else if (input instanceof RIntVector) {
-            type = TypeInfo.INT;
+            type = TypeInfo.RIntVector;
         } else if (input instanceof RDoubleSequence) {
-            type = TypeInfo.DOUBLE;
+            type = TypeInfo.RDoubleSequence;
         } else if (input instanceof RDoubleVector) {
-            type = TypeInfo.DOUBLE;
+            type = TypeInfo.RDoubleVector;
         } else if (input instanceof RLogicalVector) {
             type = TypeInfo.BOOLEAN;
         } else {
@@ -997,7 +997,7 @@ public class ASTxUtils {
 
     public static PArray<?> getReferencePArrayWithOptimizationsSequence(TypeInfo type, RAbstractVector input) {
         switch (type) {
-            case RIntegerSequence:
+            case RIntSequence:
                 return buildIntPArrayForSequence(input);
             case RDoubleSequence:
                 return buildDoublePArrayForSequence(input);
@@ -1024,7 +1024,7 @@ public class ASTxUtils {
 
     public static PArray<?> getReferencePArray(TypeInfo type, RAbstractVector input) {
         switch (type) {
-            case RIntegerSequence:
+            case RIntSequence:
                 return ((RIntSequence) input).getPArray();
             case RDoubleSequence:
                 return ((RDoubleSequence) input).getPArray();
@@ -1042,7 +1042,7 @@ public class ASTxUtils {
         PArray parray = null;
         switch (type) {
             case INT:
-            case RIntegerSequence:
+            case RIntSequence:
             case RIntVector:
                 parray = new PArray<>(input.getLength(), TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER);
                 break;
@@ -1065,18 +1065,33 @@ public class ASTxUtils {
         return parray;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static int[] materializeIntSequence(RIntSequence sequence) {
+        final int start = sequence.start();
+        final int stride = sequence.stride();
+        int[] array = new int[sequence.getLength()];
+        IntStream.range(0, array.length).parallel().forEach(i -> array[i] = start + stride * i);
+        return array;
+    }
+
+    private static double[] materializeDoubleSequence(RDoubleSequence sequence) {
+        final double start = sequence.start();
+        final double stride = sequence.stride();
+        double[] array = new double[sequence.getLength()];
+        IntStream.range(0, array.length).parallel().forEach(i -> array[i] = start + stride * i);
+        return array;
+    }
+
+    @SuppressWarnings({"rawtypes"})
     public static PArray<?> primitivePArraySimple(TypeInfo type, RAbstractVector input) {
         PArray parray = null;
         switch (type) {
-            case INT:
-            case RIntegerSequence:
-                // FIXME: I have to do the real marshal until the RSequence is supported with new
-                // PArray primitive
-                parray = new PArray<>(input.getLength(), TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER);
-                // Real marshal
-                for (int k = 0; k < parray.size(); k++) {
-                    parray.put(k, input.getDataAtAsObject(k));
+            case RIntSequence:
+                if (ASTxOptions.optimizeRSequence) {
+                    parray = buildIntPArrayForSequence(input);
+                } else {
+                    int[] array = materializeIntSequence((RIntSequence) input);
+                    parray = new PArray<>(input.getLength(), TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER, false);
+                    parray.setIntArray(array);
                 }
                 break;
             case RIntVector:
@@ -1084,8 +1099,14 @@ public class ASTxUtils {
                 parray = new PArray<>(input.getLength(), TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER, false);
                 parray.setIntArray(dataInt);
                 break;
-            case DOUBLE:
             case RDoubleSequence:
+                if (ASTxOptions.optimizeRSequence) {
+                    parray = buildDoublePArrayForSequence(input);
+                } else {
+                    double[] array = materializeDoubleSequence((RDoubleSequence) input);
+                    parray = new PArray<>(input.getLength(), TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER, false);
+                    parray.setDoubleArray(array);
+                }
             case RDoubleVector:
                 double[] dataDouble = ((RDoubleVector) input).getDataWithoutCopying();
                 parray = new PArray<>(input.getLength(), TypeFactory.Double(), StorageMode.OPENCL_BYTE_BUFFER, false);
@@ -1196,16 +1217,22 @@ public class ASTxUtils {
     private static void insertCorrectArray(TypeInfo typeInfo, PArray parray, RAbstractVector input, int idx) {
         if (typeInfo == TypeInfo.RIntVector) {
             parray.setIntArray(idx, ((RIntVector) input).getDataWithoutCopying());
-        } else if (typeInfo == TypeInfo.RIntegerSequence) {
-            parray.setIntArray(idx, ((RIntVector) input).getDataWithoutCopying());
-        } else if (typeInfo == TypeInfo.INT) {
-            parray.setIntArray(idx, ((RIntVector) input).getDataWithoutCopying());
+        } else if (typeInfo == TypeInfo.RIntSequence) {
+
+            if (!ASTxOptions.optimizeRSequence) {
+                int[] array = materializeIntSequence((RIntSequence) input);
+                parray.setIntArray(idx, array);
+            }
+
         } else if (typeInfo == TypeInfo.RDoubleVector) {
             parray.setDoubleArray(idx, ((RDoubleVector) input).getDataWithoutCopying());
         } else if (typeInfo == TypeInfo.RDoubleSequence) {
-            parray.setDoubleArray(idx, ((RDoubleVector) input).getDataWithoutCopying());
-        } else if (typeInfo == TypeInfo.DOUBLE) {
-            parray.setDoubleArray(idx, ((RDoubleVector) input).getDataWithoutCopying());
+
+            if (!ASTxOptions.optimizeRSequence) {
+                double[] array = materializeDoubleSequence((RDoubleSequence) input);
+                parray.setDoubleArray(idx, array);
+            }
+
         } else {
             throw new MarawaccRuntimeTypeException("Tuple not supported yet: " + typeInfo + " [ " + __LINE__.print() + "]");
         }
@@ -1300,6 +1327,9 @@ public class ASTxUtils {
         PArray<?> parray = new PArray<>(totalSize, TypeFactory.Tuple(returns), false);
         boolean sequence = isFullPArraySequence(input, additionalArgs);
         PArray<?> b = additionalArgs[0];
+
+        // I support the cases we need for the experiments. It is just a matter of time to complete
+        // it.
         switch (infoList.size()) {
             case 2:
                 parray.setBuffer(0, input.getArrayReference(), input.isSequence());
@@ -1686,9 +1716,15 @@ public class ASTxUtils {
         if (ASTxOptions.usePArrays && ASTxOptions.optimizeRSequence) {
             // Optimise with RSequences data types (openCL logic to compute the data) and no
             // input copy.
+
+            // XXX: This branch is deprecated
+
             inputPArrayFormat = ASTxUtils.marshalWithReferencesAndSequenceOptimize(input, additionalArgs, inputTypeList);
         } else if (ASTxOptions.usePArrays && !ASTxOptions.optimizeRSequence) {
             // RTypes with PArray information
+
+            // XXX: This branch is deprecated
+
             inputPArrayFormat = ASTxUtils.marshalWithReferences(input, additionalArgs, inputTypeList);
         } else if (ASTxOptions.newPArrayStrategy) {
             // No marshal, just passing primitive vectors

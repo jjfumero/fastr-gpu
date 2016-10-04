@@ -51,10 +51,9 @@ public abstract class PArrayBuiltinNode extends RExternalBuiltinNode.Arg1 {
         }
 
         if (ASTxOptions.optimizeRSequence) {
-            // Rsequence optimization
             parray = ASTxUtils.marshalWithReferencesAndSequenceOptimize(input, additionalArgs, inputTypeList);
         } else {
-            // Normal marshal (from RAbstractVector to PArray)
+            // Do real marshal (from RAbstractVector to PArray)
             parray = ASTxUtils.marshal(input, additionalArgs, inputTypeList);
         }
         return parray;

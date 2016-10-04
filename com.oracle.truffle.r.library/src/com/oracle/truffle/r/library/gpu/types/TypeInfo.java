@@ -25,7 +25,7 @@ package com.oracle.truffle.r.library.gpu.types;
 public enum TypeInfo {
 
     // FastR specific
-    RIntegerSequence("Integer", "RIntSequence"),
+    RIntSequence("Integer", "RIntSequence"),
     RIntVector("Integer", "RIntVector"),
     RDoubleSequence("Double", "RDoubleSequence"),
     RDoubleVector("Double", "RDoubleVector"),
