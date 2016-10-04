@@ -408,6 +408,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "end-start", (endUnmarshal - startUnmarshal));
     }
 
+    @SuppressWarnings("deprecation")
     private static TypeInfoList createTypeInfoList(RAbstractVector input, RAbstractVector[] additionalArgs, int extraParams) {
         if (ASTxOptions.usePArrays) {
             return ASTxUtils.createTypeInfoListForInputWithPArrays(input, additionalArgs, extraParams);
@@ -467,7 +468,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return resultFastR;
     }
 
-    @SuppressWarnings({"rawtypes"})
+    @SuppressWarnings({"rawtypes", "deprecation"})
     private static RAbstractVector getResult(boolean wasExecutedOnGPU, TypeInfo outputType, ArrayList<Object> result) {
         if (!wasExecutedOnGPU) {
             // get the output in R-Type format
@@ -519,11 +520,13 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return mapResult;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Object call(RArgsValuesAndNames args) {
         Profiler.getInstance().print("\nIteration: " + iteration++);
 
         long start = System.nanoTime();
+
         if (ASTxOptions.usePArrays) {
             RVector.WITH_PARRAYS = true;
         }

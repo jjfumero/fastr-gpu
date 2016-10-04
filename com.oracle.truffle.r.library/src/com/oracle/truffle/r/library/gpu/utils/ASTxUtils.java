@@ -675,13 +675,18 @@ public class ASTxUtils {
      * @return {@link RList}
      */
     public static RList composeRListFromTuple2(PArray<Tuple2<?, ?>> array) {
+
+        if (!array.isPrimitiveArray()) {
+            // DEOPT TO THE OLD STRATEGY
+            return getRListFromTuple2(array);
+        }
+
         RuntimeObjectTypeInfo runtimeObjectTypeInfo = array.getRuntimeObjectTypeInfo();
         RuntimeObjectTypeInfo[] nestedTypes = runtimeObjectTypeInfo.getNestedTypes();
 
         int i = 0;
         Object[] data = new Object[array.size() * 2];
         for (RuntimeObjectTypeInfo r : nestedTypes) {
-
             if (r.getClassObject() == Double.class) {
                 double[] asDoubleArray = array.asDoubleArray(i);
                 final int j = i;
@@ -1016,11 +1021,20 @@ public class ASTxUtils {
         return parray;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static PArray<?> primitivePArraySimple(TypeInfo type, RAbstractVector input) {
-        PArray<?> parray = null;
+        PArray parray = null;
         switch (type) {
             case INT:
             case RIntegerSequence:
+                // FIXME: I have to do the real marshal until the RSequence is supported with new
+                // PArray primitive
+                parray = new PArray<>(input.getLength(), TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER);
+                // Real marshal
+                for (int k = 0; k < parray.size(); k++) {
+                    parray.put(k, input.getDataAtAsObject(k));
+                }
+                break;
             case RIntVector:
                 int[] dataInt = ((RIntVector) input).getDataWithoutCopying();
                 parray = new PArray<>(input.getLength(), TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER, false);
