@@ -1218,7 +1218,6 @@ public class ASTxUtils {
         if (typeInfo == TypeInfo.RIntVector) {
             parray.setIntArray(idx, ((RIntVector) input).getDataWithoutCopying());
         } else if (typeInfo == TypeInfo.RIntSequence) {
-
             if (!ASTxOptions.optimizeRSequence) {
                 int[] array = materializeIntSequence((RIntSequence) input);
                 parray.setIntArray(idx, array);
@@ -1231,7 +1230,6 @@ public class ASTxUtils {
                 // Note: When building the output, get it from the totalSize if sequence is enabled
                 throw new MarawaccRuntimeTypeException("NotImplemented yet [ " + __LINE__.print() + "]");
             }
-
         } else if (typeInfo == TypeInfo.RDoubleVector) {
             parray.setDoubleArray(idx, ((RDoubleVector) input).getDataWithoutCopying());
         } else if (typeInfo == TypeInfo.RDoubleSequence) {
