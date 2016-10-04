@@ -12,7 +12,9 @@ public abstract class RListProbe extends RExternalBuiltinNode.Arg0 {
     @Specialization
     public RList checkRList() {
 
-        // Create c(list(1, 2), list(3, 4))
+        // This is an example of creating R List with different arrays.
+        // Each array simulates an output from a Tuple. In this case
+        // I provide two outputs => Tuple2.
 
         double[] a = new double[10];
         double[] b = new double[10];

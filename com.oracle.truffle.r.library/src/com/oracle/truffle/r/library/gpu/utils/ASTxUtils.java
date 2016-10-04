@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.PArray.StorageMode;
@@ -678,23 +679,31 @@ public class ASTxUtils {
         RuntimeObjectTypeInfo[] nestedTypes = runtimeObjectTypeInfo.getNestedTypes();
 
         int i = 0;
-        Object[] foo = new Object[2];
-        RList l1;
-        RList l2;
+        Object[] data = new Object[array.size() * 2];
         for (RuntimeObjectTypeInfo r : nestedTypes) {
+
             if (r.getClassObject() == Double.class) {
-                foo[i] = RDataFactory.createDoubleVector(array.asDoubleArray(i), false);
-                l1 = RDataFactory.createList(new Object[]{foo[i]});
+                double[] asDoubleArray = array.asDoubleArray(i);
+                final int j = i;
+                IntStream.range(0, array.size()).parallel().forEach(idx -> {
+                    data[idx * 2 + j] = asDoubleArray[idx];
+                });
+
             } else if (r.getClassObject() == Integer.class) {
-                foo[i] = RDataFactory.createIntVector(array.asIntegerArray(0), false);
+                int[] asIntegerArray = array.asIntegerArray(0);
+                final int j = i;
+                IntStream.range(0, array.size()).parallel().forEach(idx -> {
+                    data[idx * 2 + j] = asIntegerArray[idx];
+                });
             } else {
                 throw new RuntimeException("Data type not supported yet: " + r.getClassObject());
             }
+
             i++;
         }
 
-        RList createList = RDataFactory.createList(foo, new int[]{10, 2});
-        return createList;
+        RList list = RDataFactory.createList(data, new int[]{2, array.size()});
+        return list;
     }
 
     /**
@@ -883,7 +892,6 @@ public class ASTxUtils {
         } else if (type == TypeInfo.DOUBLE) {
             return getDoubleVector(result);
         } else if (type == TypeInfo.TUPLE2) {
-            System.out.println("Getting result from Tuple!!!");
             return composeRListFromTuple2(result);
         } else {
             throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
@@ -1021,7 +1029,6 @@ public class ASTxUtils {
             case DOUBLE:
             case RDoubleSequence:
             case RDoubleVector:
-                System.out.println("Simple Double!!!!");
                 double[] dataDouble = ((RDoubleVector) input).getDataWithoutCopying();
                 parray = new PArray<>(input.getLength(), TypeFactory.Double(), StorageMode.OPENCL_BYTE_BUFFER, false);
                 parray.setDoubleArray(dataDouble);
@@ -1621,7 +1628,6 @@ public class ASTxUtils {
             inputPArrayFormat = ASTxUtils.marshalWithReferences(input, additionalArgs, inputTypeList);
         } else if (ASTxOptions.newPArrayStrategy) {
             // No marshal, just passing primitive vectors
-            System.out.println("!!!!!!!!!!! New PArray strategy");
             inputPArrayFormat = ASTxUtils.createPArrayForPrimitives(input, additionalArgs, inputTypeList);
         } else {
             // real marshal

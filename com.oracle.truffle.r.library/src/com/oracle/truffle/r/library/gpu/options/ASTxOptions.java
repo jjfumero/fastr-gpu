@@ -53,6 +53,11 @@ public class ASTxOptions {
     public static boolean useAsyncMemoisation = true;
 
     /**
+     * Enable to print the GC statistics when calling to the GC in FastR.
+     */
+    public static boolean printGCStatistics = getBoolean("astx.marawacc.printGCStats", false);
+
+    /**
      * Print internal messages such as deoptimisations, data types and so on for debugging.
      */
     public static boolean debug = true;

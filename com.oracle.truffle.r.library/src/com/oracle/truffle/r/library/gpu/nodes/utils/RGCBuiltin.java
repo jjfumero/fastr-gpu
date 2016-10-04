@@ -25,26 +25,25 @@ public abstract class RGCBuiltin extends RExternalBuiltinNode.Arg0 {
                 garbageCollectionTime += time;
             }
         }
-        if (ASTxOptions.debug) {
-            System.out.println("Total Garbage Collections: " + totalGarbageCollections);
-            System.out.println("Total Garbage Collection Time (ms): " + garbageCollectionTime);
-        }
+        System.out.println("Total Garbage Collections: " + totalGarbageCollections);
+        System.out.println("Total Garbage Collection Time (ms): " + garbageCollectionTime);
     }
 
     @TruffleBoundary
     private static void memoryUsage() {
         Runtime rt = Runtime.getRuntime();
         long usedMB = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024;
-        if (ASTxOptions.debug) {
-            System.out.println("Memory usage: " + usedMB + " MB");
-        }
+        System.out.println("Memory usage: " + usedMB + " MB");
+
     }
 
     @Specialization
     public int garbageCollection() {
         System.gc();
-        printGCStats();
-        memoryUsage();
+        if (ASTxOptions.printGCStatistics) {
+            printGCStats();
+            memoryUsage();
+        }
         return 0;
     }
 }
