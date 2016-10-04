@@ -1222,6 +1222,14 @@ public class ASTxUtils {
             if (!ASTxOptions.optimizeRSequence) {
                 int[] array = materializeIntSequence((RIntSequence) input);
                 parray.setIntArray(idx, array);
+            } else {
+                // 1. Build parray intermediate with sequence
+                // 2. Update the reference to the parray instead of the setIntArray
+                // 3. Store totalSize
+                // 4. Sequence enable
+
+                // Note: When building the output, get it from the totalSize if sequence is enabled
+                throw new MarawaccRuntimeTypeException("NotImplemented yet [ " + __LINE__.print() + "]");
             }
 
         } else if (typeInfo == TypeInfo.RDoubleVector) {
@@ -1231,8 +1239,10 @@ public class ASTxUtils {
             if (!ASTxOptions.optimizeRSequence) {
                 double[] array = materializeDoubleSequence((RDoubleSequence) input);
                 parray.setDoubleArray(idx, array);
+            } else {
+                // See the RIntSequence Implementation
+                throw new MarawaccRuntimeTypeException("NotImplemented yet [ " + __LINE__.print() + "]");
             }
-
         } else {
             throw new MarawaccRuntimeTypeException("Tuple not supported yet: " + typeInfo + " [ " + __LINE__.print() + "]");
         }
