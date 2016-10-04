@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.PArray.StorageMode;
+import uk.ac.ed.datastructures.common.RuntimeObjectTypeInfo;
 import uk.ac.ed.datastructures.common.TypeFactory;
 import uk.ac.ed.datastructures.interop.InteropTable;
 import uk.ac.ed.datastructures.tuples.Tuple;
@@ -649,7 +650,7 @@ public class ASTxUtils {
     }
 
     /**
-     * This method is time consuming (unmarshalling data from PArray to Tuple2)
+     * This method is time consuming (un-marshaling data from PArray to Tuple2)
      *
      * @param array
      * @return {@link RList}
@@ -664,6 +665,36 @@ public class ASTxUtils {
             output.setElement(i, v);
         }
         return output;
+    }
+
+    /**
+     * Method for updating the references when a {@link PArray} is represented as primitive type.
+     *
+     * @param array
+     * @return {@link RList}
+     */
+    public static RList composeRListFromTuple2(PArray<Tuple2<?, ?>> array) {
+        RuntimeObjectTypeInfo runtimeObjectTypeInfo = array.getRuntimeObjectTypeInfo();
+        RuntimeObjectTypeInfo[] nestedTypes = runtimeObjectTypeInfo.getNestedTypes();
+
+        int i = 0;
+        Object[] foo = new Object[2];
+        RList l1;
+        RList l2;
+        for (RuntimeObjectTypeInfo r : nestedTypes) {
+            if (r.getClassObject() == Double.class) {
+                foo[i] = RDataFactory.createDoubleVector(array.asDoubleArray(i), false);
+                l1 = RDataFactory.createList(new Object[]{foo[i]});
+            } else if (r.getClassObject() == Integer.class) {
+                foo[i] = RDataFactory.createIntVector(array.asIntegerArray(0), false);
+            } else {
+                throw new RuntimeException("Data type not supported yet: " + r.getClassObject());
+            }
+            i++;
+        }
+
+        RList createList = RDataFactory.createList(foo, new int[]{10, 2});
+        return createList;
     }
 
     /**
@@ -845,6 +876,20 @@ public class ASTxUtils {
         }
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static RAbstractVector unmarshalFromPrimitivePArrays(TypeInfo type, PArray result) {
+        if (type == TypeInfo.INT) {
+            return getIntVector(result);
+        } else if (type == TypeInfo.DOUBLE) {
+            return getDoubleVector(result);
+        } else if (type == TypeInfo.TUPLE2) {
+            System.out.println("Getting result from Tuple!!!");
+            return composeRListFromTuple2(result);
+        } else {
+            throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
+        }
+    }
+
     public static RAbstractVector unMarshallResultFromArrayList(TypeInfo type, ArrayList<Object> result) {
         if (type == TypeInfo.INT) {
             return getIntVector(result);
@@ -976,6 +1021,7 @@ public class ASTxUtils {
             case DOUBLE:
             case RDoubleSequence:
             case RDoubleVector:
+                System.out.println("Simple Double!!!!");
                 double[] dataDouble = ((RDoubleVector) input).getDataWithoutCopying();
                 parray = new PArray<>(input.getLength(), TypeFactory.Double(), StorageMode.OPENCL_BYTE_BUFFER, false);
                 parray.setDoubleArray(dataDouble);
@@ -1563,6 +1609,7 @@ public class ASTxUtils {
         return inputTypeList;
     }
 
+    @SuppressWarnings("deprecation")
     public static PArray<?> createPArrays(RAbstractVector input, RAbstractVector[] additionalArgs, TypeInfoList inputTypeList) {
         PArray<?> inputPArrayFormat = null;
         if (ASTxOptions.usePArrays && ASTxOptions.optimizeRSequence) {
@@ -1574,6 +1621,7 @@ public class ASTxUtils {
             inputPArrayFormat = ASTxUtils.marshalWithReferences(input, additionalArgs, inputTypeList);
         } else if (ASTxOptions.newPArrayStrategy) {
             // No marshal, just passing primitive vectors
+            System.out.println("!!!!!!!!!!! New PArray strategy");
             inputPArrayFormat = ASTxUtils.createPArrayForPrimitives(input, additionalArgs, inputTypeList);
         } else {
             // real marshal

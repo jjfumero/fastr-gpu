@@ -225,3 +225,7 @@ astx.sync <- function(arrayThreadsIDs) {
 	.FastR(.NAME="astx.sync", arrayThreadsIDs)
 }
 
+## Experiments
+mylist <- function() {
+	.FastR(.NAME="mylist")
+}

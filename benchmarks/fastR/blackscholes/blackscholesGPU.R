@@ -13,7 +13,7 @@ size <- as.integer(args[1])
 
 REPETITIONS <- 11
 
-CHECK <- FALSE
+CHECK <- TRUE
 
 ## Lambda expression for the computation
 benchmark <- function(inputSize) {
@@ -189,7 +189,11 @@ benchmark <- function(inputSize) {
 			j <- 1
 			while (k < size) {
 				lseq <- c(seq[[k]], seq[[k+1]])
-				lgpu <- c(result[[j]][[1]], result[[j]][[2]])
+				#lgpu <- c(result[[j]][[1]], result[[j]][[2]])
+				lgpu <- c(result[[k]], result[[k+1]])
+	
+				print(lseq)
+				print(lgpu)
 	
 				# check the elements for the tuple
 				if (abs(lseq[1] - lgpu[1]) > 0.1) {
