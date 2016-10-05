@@ -488,7 +488,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     @SuppressWarnings({"rawtypes"})
     private static RAbstractVector getResultFromPArray(boolean gpuExecution, TypeInfo outputType, ArrayList<Object> result) {
         if (!gpuExecution) {
-            // get the output in R-Type format
+            // get the output in R-Type format from the PArray Format
             return ASTxUtils.unMarshallResultFromArrayList(outputType, result);
         } else {
             // get the references

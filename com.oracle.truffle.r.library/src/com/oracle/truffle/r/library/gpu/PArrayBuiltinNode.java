@@ -33,7 +33,7 @@ import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 /**
- * Builtin to transform the RVector to PArray<RVector>. By doing this, when the apply method is
+ * Built-in to transform the RVector to {@link PArray}. By doing this, when the apply method is
  * perform, the data is already prepared and there is no need to marshal the data.
  *
  */
@@ -48,6 +48,7 @@ public abstract class PArrayBuiltinNode extends RExternalBuiltinNode.Arg1 {
             inputTypeList = ASTxUtils.typeInferenceWithPArray(input, additionalArgs);
         } catch (MarawaccTypeException e) {
             e.printStackTrace();
+            throw new RuntimeException("Error with type inference");
         }
 
         if (ASTxOptions.optimizeRSequence) {
