@@ -48,6 +48,7 @@ import uk.ac.ed.datastructures.tuples.Tuple9;
 import uk.ac.ed.marawacc.graal.CompilerUtils;
 
 import com.oracle.graal.nodes.StructuredGraph;
+import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
@@ -1223,12 +1224,13 @@ public class ASTxUtils {
                 parray.setIntArray(idx, array);
             } else {
                 // 1. Build parray intermediate with sequence
-                // 2. Update the reference to the parray instead of the setIntArray
-                // 3. Store totalSize
-                // 4. Sequence enable
-
-                // Note: When building the output, get it from the totalSize if sequence is enabled
-                throw new MarawaccRuntimeTypeException("NotImplemented yet [ " + __LINE__.print() + "]");
+                // 2. Store totalSize
+                // 3. Update the reference to the parray instead of the setIntArray with
+                // sequence enable
+                PArray parraySequence = buildIntPArrayForSequence(input);
+                boolean sequence = true;
+                parray.setTotalSize(input.getLength());
+                parray.setBuffer(idx, parraySequence.getArrayReference(), sequence);
             }
         } else if (typeInfo == TypeInfo.RDoubleVector) {
             parray.setDoubleArray(idx, ((RDoubleVector) input).getDataWithoutCopying());
@@ -1735,7 +1737,8 @@ public class ASTxUtils {
 
             inputPArrayFormat = ASTxUtils.marshalWithReferences(input, additionalArgs, inputTypeList);
         } else if (ASTxOptions.newPArrayStrategy) {
-            // No marshal, just passing primitive vectors
+            // No marshal, just passing primitive vectors, we completely save the marshal and
+            // unmarshal
             inputPArrayFormat = ASTxUtils.createPArrayForPrimitives(input, additionalArgs, inputTypeList);
         } else {
             // real marshal

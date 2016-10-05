@@ -21,7 +21,7 @@ benchmark <- function(inputSize) {
 	y <- 1:size
 
 	# Seq code
-	resultSeq <- 0.12 * x + y
+	resultSeq <- (0.12 * x) + y
 
 	for (i in 1:REPETITIONS) {
 		system.gc()
@@ -36,17 +36,14 @@ benchmark <- function(inputSize) {
 		if (!nonError) {
 			for (i in seq(result)) {
 				if (abs(resultSeq[i] - result[i]) > 0.1) {
-					print(nonError)
+					print("Result is wrong")
+					print(paste("Iteration:", i))
+					print(resultSeq[i])
+					print(result[i])
 					correct <- FALSE
 					break;
 				}
 			}
-			if (correct) {
-				print("Result is correct")
-			}
-				
-		} else {
-			print("Result is correct")
 		}
 		#print(result);
 	}
