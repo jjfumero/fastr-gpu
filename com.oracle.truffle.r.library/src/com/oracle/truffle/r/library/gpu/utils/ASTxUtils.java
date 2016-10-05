@@ -29,6 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
+import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.PArray.StorageMode;
 import uk.ac.ed.datastructures.common.RuntimeObjectTypeInfo;
@@ -1227,10 +1228,15 @@ public class ASTxUtils {
                 // 2. Store totalSize
                 // 3. Update the reference to the parray instead of the setIntArray with
                 // sequence enable
+
                 PArray parraySequence = buildIntPArrayForSequence(input);
                 boolean sequence = true;
                 parray.setTotalSize(input.getLength());
                 parray.setBuffer(idx, parraySequence.getArrayReference(), sequence);
+
+                // Guarantee the new parray primitive branch in marawacc
+                GraalAcceleratorOptions.newPArraysPrimitive = true;
+
             }
         } else if (typeInfo == TypeInfo.RDoubleVector) {
             parray.setDoubleArray(idx, ((RDoubleVector) input).getDataWithoutCopying());
@@ -1239,6 +1245,7 @@ public class ASTxUtils {
                 double[] array = materializeDoubleSequence((RDoubleSequence) input);
                 parray.setDoubleArray(idx, array);
             } else {
+                GraalAcceleratorOptions.newPArraysPrimitive = true;
                 PArray parraySequence = buildDoublePArrayForSequence(input);
                 parray.setTotalSize(input.getLength());
                 parray.setBuffer(idx, parraySequence.getArrayReference(), true);
