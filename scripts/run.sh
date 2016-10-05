@@ -74,7 +74,7 @@ function spectralNorm() {
 	#$GNUR/Rscript benchmarks/fastR/spectralNorm/spectralNormGNU.R 32768 > spectralNormGNU.log
 }
 
-DIRECTORY=tmp
+DIRECTORY=`date +%Y-%m-%d_%H_%M_%S`
 
 mkdir $DIRECTORY
 
