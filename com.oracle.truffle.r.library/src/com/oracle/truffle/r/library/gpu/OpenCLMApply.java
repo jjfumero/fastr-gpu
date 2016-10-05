@@ -507,15 +507,20 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
-    private RAbstractVector computeOpenCLMApplyForRVector(RArgsValuesAndNames args, boolean isRewritten, RVector[] vectors, Object[] lexicalScopes, RFunction function, RAbstractVector inputRArray,
-                    RootCallTarget target, int numArgumentsOriginalFunction) {
-        RAbstractVector mapResult = null;
+    private static RAbstractVector[] getAddiotionalInputs(RArgsValuesAndNames args, boolean isRewritten, RVector[] vectors, Object[] lexicalScopes) {
         RAbstractVector[] additionalInputs = null;
         if (isRewritten) {
             additionalInputs = ASTxUtils.getAdditionalArguments(args, isRewritten, vectors, lexicalScopes.length);
         } else {
             additionalInputs = ASTxUtils.getRArrayWithAdditionalArguments(args);
         }
+        return additionalInputs;
+    }
+
+    private RAbstractVector computeOpenCLMApplyForRVector(RArgsValuesAndNames args, boolean isRewritten, RVector[] vectors, Object[] lexicalScopes, RFunction function, RAbstractVector inputRArray,
+                    RootCallTarget target, int numArgumentsOriginalFunction) {
+        RAbstractVector mapResult = null;
+        RAbstractVector[] additionalInputs = getAddiotionalInputs(args, isRewritten, vectors, lexicalScopes);
         mapResult = computeOpenCLMApply(inputRArray, function, target, additionalInputs, lexicalScopes, numArgumentsOriginalFunction);
         return mapResult;
     }
