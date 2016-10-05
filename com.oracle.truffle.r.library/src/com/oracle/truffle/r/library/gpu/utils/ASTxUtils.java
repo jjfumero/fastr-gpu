@@ -48,7 +48,6 @@ import uk.ac.ed.datastructures.tuples.Tuple9;
 import uk.ac.ed.marawacc.graal.CompilerUtils;
 
 import com.oracle.graal.nodes.StructuredGraph;
-import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
@@ -970,8 +969,8 @@ public class ASTxUtils {
         }
     }
 
-    public static void printPArray(PArray<?> result) {
-        System.out.println(result);
+    public static void printPArray(PArray<?> array) {
+        System.out.println(array);
     }
 
     public static PArray<?> buildIntPArrayForSequence(RAbstractVector input) {
@@ -1108,6 +1107,7 @@ public class ASTxUtils {
                     parray = new PArray<>(input.getLength(), TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER, false);
                     parray.setDoubleArray(array);
                 }
+                break;
             case RDoubleVector:
                 double[] dataDouble = ((RDoubleVector) input).getDataWithoutCopying();
                 parray = new PArray<>(input.getLength(), TypeFactory.Double(), StorageMode.OPENCL_BYTE_BUFFER, false);

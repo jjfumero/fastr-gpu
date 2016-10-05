@@ -143,7 +143,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         if (deopt != null) {
             if (deopt.get(0) != 0) {
                 System.out.println("DEOPT: " + deopt);
-                throw new MarawaccExecutionException("Deoptimization", deopt.get(0));
+                throw new MarawaccExecutionException("Deoptimization in thread: ", deopt.get(0));
             }
         }
         RGPUCache.INSTANCE.getCachedObjects(function).enableGPUExecution();
@@ -182,20 +182,20 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
-    private ArrayList<Object> checkAndRun(GraalGPUCompilationUnit gpuCompilationUnit, RootCallTarget callTarget, int index, JITMetaInput meta, RFunction function, int inputArgs)
+    /*
+     * Check if the graph is prepared for GPU compilation and invoke the compilation and execution.
+     * On Stack Replacement (OSR): switch to compiled GPU code
+     */
+    private ArrayList<Object> checkAndRunWithOpenCL(GraalGPUCompilationUnit gpuCompilationUnit, RootCallTarget callTarget, int index, JITMetaInput meta, RFunction function, int inputArgs)
                     throws MarawaccExecutionException {
-        /*
-         * Check if the graph is prepared for GPU compilation and invoke the compilation and
-         * execution. On Stack Replacement (OSR): switch to compiled GPU code
-         */
         StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         if ((graphToCompile != null) && (gpuCompilationUnit == null)) {
             if (ASTxOptions.debug) {
                 System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU - Iteration: " + index);
             }
-            GraalGPUCompilationUnit oclCompileUnit = compileForMarawaccBackend(meta.inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, meta.firstValue, meta.interoperable,
+            GraalGPUCompilationUnit openCLCompileUnit = compileForMarawaccBackend(meta.inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, meta.firstValue, meta.interoperable,
                             meta.lexicalScopes, inputArgs);
-            return runWithMarawaccAccelerator(meta.inputPArray, graphToCompile, oclCompileUnit, function);
+            return runWithMarawaccAccelerator(meta.inputPArray, graphToCompile, openCLCompileUnit, function);
         }
         return null;
     }
@@ -219,7 +219,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             Object value = callTarget.call(argsPackage);
             output.add(value);
-            ArrayList<Object> checkAndRun = checkAndRun(gpuCompilationUnit, callTarget, i, meta, function, argsOriginal);
+            ArrayList<Object> checkAndRun = checkAndRunWithOpenCL(gpuCompilationUnit, callTarget, i, meta, function, argsOriginal);
             if (checkAndRun != null) {
                 return checkAndRun;
             }
@@ -248,7 +248,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             Object value = callTarget.call(argsPackage);
             output.add(value);
-            ArrayList<Object> checkAndRun = checkAndRun(gpuCompilationUnit, callTarget, i, meta, function, inputArgs);
+            ArrayList<Object> checkAndRun = checkAndRunWithOpenCL(gpuCompilationUnit, callTarget, i, meta, function, inputArgs);
             if (checkAndRun != null) {
                 return checkAndRun;
             }
