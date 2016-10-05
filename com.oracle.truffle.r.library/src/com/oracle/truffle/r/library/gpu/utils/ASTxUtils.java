@@ -1235,13 +1235,13 @@ public class ASTxUtils {
         } else if (typeInfo == TypeInfo.RDoubleVector) {
             parray.setDoubleArray(idx, ((RDoubleVector) input).getDataWithoutCopying());
         } else if (typeInfo == TypeInfo.RDoubleSequence) {
-
             if (!ASTxOptions.optimizeRSequence) {
                 double[] array = materializeDoubleSequence((RDoubleSequence) input);
                 parray.setDoubleArray(idx, array);
             } else {
-                // See the RIntSequence Implementation
-                throw new MarawaccRuntimeTypeException("NotImplemented yet [ " + __LINE__.print() + "]");
+                PArray parraySequence = buildDoublePArrayForSequence(input);
+                parray.setTotalSize(input.getLength());
+                parray.setBuffer(idx, parraySequence.getArrayReference(), true);
             }
         } else {
             throw new MarawaccRuntimeTypeException("Tuple not supported yet: " + typeInfo + " [ " + __LINE__.print() + "]");
