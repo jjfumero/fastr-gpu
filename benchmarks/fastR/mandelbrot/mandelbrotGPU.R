@@ -1,8 +1,5 @@
 
-## ASTx
 ## Mandelbrot benchmark 
-
-## Parse arguments
 args <- commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
@@ -13,12 +10,11 @@ size <- as.integer(args[1])
 
 REPETITIONS <- 11
 
-CHECK_RESULT <- TRUE
-
+CHECK_RESULT <- FALSE
 
 mandelbrotOpenCL <- function(indexIDX, indexJDX) {
 	iterations <- 10000
-	space <- 2/size
+	space <- 2.0/size
 	Zr <- 0
     Zi <- 0
     Cr <- (1 * indexJDX * space - 1.5)
@@ -29,7 +25,7 @@ mandelbrotOpenCL <- function(indexIDX, indexJDX) {
     y <- 0
 
 	for (i in 1:iterations) {
-		if ((ZiN + ZrN) <= 4) {
+		if ((y < iterations) && ((ZiN + ZrN) <= 4)) {
 			Zi <- 2.0 * Zr * Zi + Ci
     	    Zr <- 1 * ZrN - ZiN + Cr
         	ZiN <- Zi * Zi
@@ -46,7 +42,7 @@ mandelbrotOpenCL <- function(indexIDX, indexJDX) {
 
 mandelbrotCPU <- function(indexIDX, indexJDX) {
 	iterations <- 10000
-	space <- 2/size
+	space <- 2.0/size
 	Zr <- 0
     Zi <- 0
     Cr <- (1 * indexJDX * space - 1.5)
@@ -56,12 +52,16 @@ mandelbrotCPU <- function(indexIDX, indexJDX) {
     ZiN <- 0
     y <- 0
 
-	while ((y < iterations) && ((ZiN + ZrN) <= 4)) {
-		Zi <- 2.0 * Zr * Zi + Ci;
-        Zr <- 1 * ZrN - ZiN + Cr;
-        ZiN <- Zi * Zi;
-        ZrN <- Zr * Zr;
-		y <- y + 1
+	for (i in 1:iterations) {
+		if ((y < iterations) && ((ZiN + ZrN) <= 4)) {
+			Zi <- 2.0 * Zr * Zi + Ci
+    	    Zr <- 1 * ZrN - ZiN + Cr
+        	ZiN <- Zi * Zi
+	        ZrN <- Zr * Zr
+			y <- y + 1
+		} else {
+			break;
+		}
 	}
 
 	result <- ((y * 255) / iterations);
@@ -89,8 +89,11 @@ for (i in 1:REPETITIONS) {
 		nonError <- identical(resultSeq, result)
 		if (!nonError) {
 			for (i in 1:totalSize) {
-				if (abs(resultSeq[i] - result[i]) > 0.1) {
+				if (abs(resultSeq[i] - result[i]) > 0.5) {
 					print("Result is wrong")
+					print(paste("Iteration: ", i))
+					print(resultSeq[i])
+					print(result[i])
 					break;
 				}
 			}
