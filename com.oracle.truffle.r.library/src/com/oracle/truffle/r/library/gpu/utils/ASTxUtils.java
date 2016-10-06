@@ -716,9 +716,9 @@ public class ASTxUtils {
         long end = System.nanoTime();
 
         if (ASTxOptions.profileOpenCLASTx) {
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_RLIST_CONVERSION, "start", start);
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_RLIST_CONVERSION, "end", end);
-            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_RLIST_CONVERSION, "total", (end - start));
+            Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_RLIST_CONVERSION, "start", start);
+            Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_RLIST_CONVERSION, "end", end);
+            Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_RLIST_CONVERSION, "total", (end - start));
         }
 
         return list;

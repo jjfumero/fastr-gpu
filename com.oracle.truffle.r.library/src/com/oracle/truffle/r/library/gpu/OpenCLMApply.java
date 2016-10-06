@@ -393,19 +393,19 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     private static void writeProfilerIntoBuffers(long startMarshal, long endMarshal, long startExecution, long endExecution, long startUnmarshal, long endUnmarshal) {
         // Marshal
-        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "start", startMarshal);
-        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end", endMarshal);
-        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_MARSHAL, "end-start", (endMarshal - startMarshal));
+        Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_MARSHAL, "start", startMarshal);
+        Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_MARSHAL, "end", endMarshal);
+        Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_MARSHAL, "end-start", (endMarshal - startMarshal));
 
         // Execution
-        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "start", startExecution);
-        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "end", endExecution);
-        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_EXECUTE, "end-start", (endExecution - startExecution));
+        Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_EXECUTE, "start", startExecution);
+        Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_EXECUTE, "end", endExecution);
+        Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_EXECUTE, "end-start", (endExecution - startExecution));
 
         // Unmarshal
-        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "start", startUnmarshal);
-        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "end", endUnmarshal);
-        Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_UNMARSHAL, "end-start", (endUnmarshal - startUnmarshal));
+        Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_UNMARSHAL, "start", startUnmarshal);
+        Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_UNMARSHAL, "end", endUnmarshal);
+        Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_UNMARSHAL, "end-start", (endUnmarshal - startUnmarshal));
     }
 
     @SuppressWarnings("deprecation")
