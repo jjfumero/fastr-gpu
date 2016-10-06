@@ -30,6 +30,8 @@ import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
+import uk.ac.ed.accelerator.profiler.Profiler;
+import uk.ac.ed.accelerator.profiler.ProfilerType;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.PArray.StorageMode;
 import uk.ac.ed.datastructures.common.RuntimeObjectTypeInfo;
@@ -682,6 +684,7 @@ public class ASTxUtils {
             return getRListFromTuple2(array);
         }
 
+        long start = System.nanoTime();
         RuntimeObjectTypeInfo runtimeObjectTypeInfo = array.getRuntimeObjectTypeInfo();
         RuntimeObjectTypeInfo[] nestedTypes = runtimeObjectTypeInfo.getNestedTypes();
 
@@ -710,6 +713,14 @@ public class ASTxUtils {
         }
 
         RList list = RDataFactory.createList(data, new int[]{TUPLE_DIM, array.size()});
+        long end = System.nanoTime();
+
+        if (ASTxOptions.profileOpenCLASTx) {
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_RLIST_CONVERSION, "start", start);
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_RLIST_CONVERSION, "end", end);
+            Profiler.getInstance().writeInBuffer(ProfilerType.AST_R_RLIST_CONVERSION, "total", (end - start));
+        }
+
         return list;
     }
 
