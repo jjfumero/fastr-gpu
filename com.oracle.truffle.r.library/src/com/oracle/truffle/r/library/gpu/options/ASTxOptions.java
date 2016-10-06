@@ -29,7 +29,7 @@ import com.oracle.truffle.r.runtime.data.RSequence;
 /**
  * ASTx runtime options.
  */
-public class ASTxOptions {
+public final class ASTxOptions {
 
     /**
      * Print internal results. Debugging purposes.
@@ -73,7 +73,7 @@ public class ASTxOptions {
     public static boolean printAST = getBoolean("astx.marawacc.printast", false);
 
     /**
-     * Use the references provided in the PArray to avoid marshal and unmarshal
+     * Use the references provided in the PArray to avoid marshal and un-marshal
      */
     @Deprecated public static boolean usePArrays = getBoolean("astx.marawacc.usePArrays", false);
 
@@ -92,7 +92,7 @@ public class ASTxOptions {
      * The function it is rewritten itself with the scope variables as parameters. Therefore with
      * this option side effects are not allowed.
      */
-    public static boolean scopeRewriting = getBoolean("astx.marawacc.scoperewriting", false);
+    public static boolean scopeRewriting = getBoolean("astx.marawacc.scoperewriting", true);
 
     /**
      * First version where we had a clean up for all the graph, assuming no deopt points. Just for
