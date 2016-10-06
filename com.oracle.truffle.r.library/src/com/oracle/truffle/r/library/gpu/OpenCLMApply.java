@@ -533,6 +533,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         long start = System.nanoTime();
 
         if (ASTxOptions.usePArrays) {
+            // This will be deprecated
             RVector.WITH_PARRAYS = true;
         }
 

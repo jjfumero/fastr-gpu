@@ -13,62 +13,32 @@ size <- as.integer(args[1])
 
 REPETITIONS <- 11
 
-CHECK_RESULT <- TRUE
+CHECK_RESULT <- FALSE
 
 ## Lambda expression for the computation
 benchmark <- function(inputSize) {
 
-	montecarloGPUFunction <- function(input) {
+	montecarloGPUFunction <- function(idx) {
 		iterations <- 25000
 
-		seed <- input
 		sum <- 0.0
 		
-		for (i in 1:iterations) {
-			x <- rx[input] 
-			y <- ry[input] 
+		x <- rx[idx] 
+		y <- ry[idx] 
 
-			d <- x * x + y * y			
-			dist <- sqrt(d)
+		d <- x * x + y * y			
+		dist <- sqrt(d)
 			
-			## The limit in just the first iteration is 0.5
-			## to create the explicit branch
-			limit <- 1.0
-			if (i == 1) {
-				limit <- 0.5
-			}
-		
-			if (dist <= limit) {
-				sum <- sum + 1.0;
-			} 
-		}
+		if (dist <= 1.0) {
+			sum <- sum + 1.0;
+		} 
 
-		sum <- sum * 4
-		result <- sum/iterations
-		return(result)
-	}
-
-	montecarloCPUFunction <- function(input) {
-		iter <- 25000
-		sum <- 0.0
-		for (j in 1:iter) {
-			x <- rx[input] 
-			y <- ry[input] 
-			dist <- sqrt(x*x + y * y)
-			if (dist <= 1.0) {
-				sum <- sum + 1.0;
-			}
-		}
-		sum <- sum * 4
-		result <- sum/iter
-		return(result)
+		return(sum)		
 	}
 
 	x <- 1:size;
 	rx <<- runif(size)
 	ry <<- runif(size)
-
-	resultSeq <- mapply(montecarloCPUFunction, x)
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
