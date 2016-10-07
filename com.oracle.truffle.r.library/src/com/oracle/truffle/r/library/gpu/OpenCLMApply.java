@@ -31,8 +31,8 @@ import uk.ac.ed.datastructures.common.AcceleratorPArray;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.interop.InteropTable;
 import uk.ac.ed.datastructures.interop.Interoperable;
-import uk.ac.ed.jpai.graal.GraalOpenCLCompilationUnit;
 import uk.ac.ed.jpai.graal.GraalGPUCompiler;
+import uk.ac.ed.jpai.graal.GraalOpenCLCompilationUnit;
 import uk.ac.ed.jpai.graal.GraalOpenCLExecutor;
 import uk.ac.ed.marawacc.compilation.MarawaccGraalIRCache;
 import uk.ac.ed.marawacc.graal.CompilerUtils;
@@ -267,6 +267,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     }
 
     // Run in the interpreter and then JIT when the CFG is prepared for compilation
+    @SuppressWarnings("unused")
     private static ArrayList<Object> runAfterDeopt(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
                     Object firstValue, int totalSize) {
         checkFunctionInCache(function, callTarget);
@@ -473,25 +474,21 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         try {
             result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArray, interoperable, lexicalScopes, numArgumentsOriginalFunction);
         } catch (MarawaccExecutionException e) {
-            // Deoptimization
+            // Deoptimization technique
             if (ASTxOptions.debug) {
                 System.out.println("Running in the DEOPT mode");
             }
-
             int threadID = e.getThreadID();
-
             runAfterDeopt(input, target, function, nArgs, additionalArgs, argsName, value, threadID);
-
-            // Run sequentially -- TODO: Provide a mechanism that allows to restart the execution in
-            // the correct place of the AST to specialise again
             deoptimization(function, target);
             try {
                 result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArray, interoperable, lexicalScopes, numArgumentsOriginalFunction);
             } catch (MarawaccExecutionException e1) {
-                // TODO Auto-generated catch block
+                // Another deopt?
                 e1.printStackTrace();
             }
         }
+
         long endExecution = System.nanoTime();
 
         // Get the result (un-marshal)
