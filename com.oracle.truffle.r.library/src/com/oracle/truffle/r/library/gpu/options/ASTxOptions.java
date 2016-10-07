@@ -70,7 +70,7 @@ public final class ASTxOptions {
     /**
      * Print AST for the R function to be executed on the GPU
      */
-    public static boolean printAST = getBoolean("astx.marawacc.printast", false);
+    public static boolean printASTforRFunction = getBoolean("astx.marawacc.printast", false);
 
     /**
      * Use the references provided in the PArray to avoid marshal and un-marshal
@@ -86,7 +86,7 @@ public final class ASTxOptions {
     /**
      * Get profiler information and show when the R VM is finalising.
      */
-    public static boolean profileOpenCLASTx = getBoolean("astx.marawacc.profiler", true);
+    public static boolean profileOpenCL_ASTx = getBoolean("astx.marawacc.profiler", true);
 
     /**
      * The function it is rewritten itself with the scope variables as parameters. Therefore with

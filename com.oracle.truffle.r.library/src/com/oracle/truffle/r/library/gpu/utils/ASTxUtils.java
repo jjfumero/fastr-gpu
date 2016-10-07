@@ -715,7 +715,7 @@ public class ASTxUtils {
         RList list = RDataFactory.createList(data, new int[]{TUPLE_DIM, array.size()});
         long end = System.nanoTime();
 
-        if (ASTxOptions.profileOpenCLASTx) {
+        if (ASTxOptions.profileOpenCL_ASTx) {
             Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_RLIST_CONVERSION, "start", start);
             Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_RLIST_CONVERSION, "end", end);
             Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_RLIST_CONVERSION, "total", (end - start));
