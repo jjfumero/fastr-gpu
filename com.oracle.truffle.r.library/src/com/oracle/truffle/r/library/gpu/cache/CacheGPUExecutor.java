@@ -2,12 +2,12 @@ package com.oracle.truffle.r.library.gpu.cache;
 
 import java.util.HashMap;
 
-import uk.ac.ed.jpai.graal.GraalGPUCompilationUnit;
-import uk.ac.ed.jpai.graal.GraalGPUExecutor;
+import uk.ac.ed.jpai.graal.GraalOpenCLCompilationUnit;
+import uk.ac.ed.jpai.graal.GraalOpenCLExecutor;
 
 public class CacheGPUExecutor {
 
-    private HashMap<GraalGPUCompilationUnit, GraalGPUExecutor> cache;
+    private HashMap<GraalOpenCLCompilationUnit, GraalOpenCLExecutor> cache;
 
     public static final CacheGPUExecutor INSTANCE = new CacheGPUExecutor();
 
@@ -15,11 +15,11 @@ public class CacheGPUExecutor {
         this.cache = new HashMap<>();
     }
 
-    public void insert(GraalGPUCompilationUnit unit, GraalGPUExecutor executor) {
+    public void insert(GraalOpenCLCompilationUnit unit, GraalOpenCLExecutor executor) {
         cache.put(unit, executor);
     }
 
-    public GraalGPUExecutor getExecutor(GraalGPUCompilationUnit unit) {
+    public GraalOpenCLExecutor getExecutor(GraalOpenCLCompilationUnit unit) {
         return cache.get(unit);
     }
 }

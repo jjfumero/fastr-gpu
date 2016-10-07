@@ -24,13 +24,13 @@ package com.oracle.truffle.r.library.gpu.cache;
 
 import java.util.HashMap;
 
-import uk.ac.ed.jpai.graal.GraalGPUCompilationUnit;
+import uk.ac.ed.jpai.graal.GraalOpenCLCompilationUnit;
 
 import com.oracle.graal.nodes.StructuredGraph;
 
 public class InternalGraphCache {
 
-    private HashMap<StructuredGraph, GraalGPUCompilationUnit> cache;
+    private HashMap<StructuredGraph, GraalOpenCLCompilationUnit> cache;
 
     public static final InternalGraphCache INSTANCE = new InternalGraphCache();
 
@@ -38,13 +38,13 @@ public class InternalGraphCache {
         cache = new HashMap<>();
     }
 
-    public void installGPUBinaryIntoCache(StructuredGraph graph, GraalGPUCompilationUnit gpuCompilationUnit) {
+    public void installGPUBinaryIntoCache(StructuredGraph graph, GraalOpenCLCompilationUnit gpuCompilationUnit) {
         if (!cache.containsKey(graph)) {
             cache.put(graph, gpuCompilationUnit);
         }
     }
 
-    public GraalGPUCompilationUnit getGPUCompilationUnit(StructuredGraph graph) {
+    public GraalOpenCLCompilationUnit getGPUCompilationUnit(StructuredGraph graph) {
         if (cache.containsKey(graph)) {
             return cache.get(graph);
         }

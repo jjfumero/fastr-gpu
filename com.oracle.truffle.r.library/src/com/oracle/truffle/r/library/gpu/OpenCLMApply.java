@@ -31,9 +31,9 @@ import uk.ac.ed.datastructures.common.AcceleratorPArray;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.interop.InteropTable;
 import uk.ac.ed.datastructures.interop.Interoperable;
-import uk.ac.ed.jpai.graal.GraalGPUCompilationUnit;
+import uk.ac.ed.jpai.graal.GraalOpenCLCompilationUnit;
 import uk.ac.ed.jpai.graal.GraalGPUCompiler;
-import uk.ac.ed.jpai.graal.GraalGPUExecutor;
+import uk.ac.ed.jpai.graal.GraalOpenCLExecutor;
 import uk.ac.ed.marawacc.compilation.MarawaccGraalIR;
 import uk.ac.ed.marawacc.graal.CompilerUtils;
 
@@ -84,9 +84,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
      * @param callTarget
      * @param graphToCompile
      * @param firstValue
-     * @return {@link GraalGPUCompilationUnit}
+     * @return {@link GraalOpenCLCompilationUnit}
      */
-    private GraalGPUCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue, Interoperable interoperable,
+    private GraalOpenCLCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue, Interoperable interoperable,
                     Object[] lexicalScope, int nArgs) {
 
         ScopeData scopeData = ASTxUtils.scopeArrayConstantDetection(graphToCompile);
@@ -105,7 +105,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         new FilterInterpreterNodes(6).apply(graphToCompile);
         CompilerUtils.dumpGraph(graphToCompile, "Filter");
 
-        GraalGPUCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToOpenCL(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData(),
+        GraalOpenCLCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToOpenCL(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData(),
                         scopedNodes, nArgs);
         gpuCompilationUnit.setScopeArrays(scopeData.getData());
         gpuCompilationUnit.setScopeNodes(scopedNodes);
@@ -117,7 +117,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     }
 
     /**
-     * Given the {@link GraalGPUCompilationUnit}, this method executes the OpenCL code. It copies
+     * Given the {@link GraalOpenCLCompilationUnit}, this method executes the OpenCL code. It copies
      * the data to the device, runs the kernel and copies back the result.
      *
      * It returns an array list with one element, the result in Object format (PArray).
@@ -129,11 +129,11 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
      * @throws MarawaccExecutionException
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalGPUCompilationUnit gpuCompilationUnit, RFunction function)
+    private static ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalOpenCLCompilationUnit gpuCompilationUnit, RFunction function)
                     throws MarawaccExecutionException {
-        GraalGPUExecutor executor = CacheGPUExecutor.INSTANCE.getExecutor(gpuCompilationUnit);
+        GraalOpenCLExecutor executor = CacheGPUExecutor.INSTANCE.getExecutor(gpuCompilationUnit);
         if (executor == null) {
-            executor = new GraalGPUExecutor();
+            executor = new GraalOpenCLExecutor();
             CacheGPUExecutor.INSTANCE.insert(gpuCompilationUnit, executor);
         }
         AcceleratorPArray copyToDevice = executor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
@@ -186,14 +186,14 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
      * Check if the graph is prepared for GPU compilation and invoke the compilation and execution.
      * On Stack Replacement (OSR): switch to compiled GPU code
      */
-    private ArrayList<Object> checkAndRunWithOpenCL(GraalGPUCompilationUnit gpuCompilationUnit, RootCallTarget callTarget, int index, JITMetaInput meta, RFunction function, int inputArgs)
+    private ArrayList<Object> checkAndRunWithOpenCL(GraalOpenCLCompilationUnit gpuCompilationUnit, RootCallTarget callTarget, int index, JITMetaInput meta, RFunction function, int inputArgs)
                     throws MarawaccExecutionException {
         StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         if ((graphToCompile != null) && (gpuCompilationUnit == null)) {
             if (ASTxOptions.debug) {
                 System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU - Iteration: " + index);
             }
-            GraalGPUCompilationUnit openCLCompileUnit = compileForMarawaccBackend(meta.inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, meta.firstValue, meta.interoperable,
+            GraalOpenCLCompilationUnit openCLCompileUnit = compileForMarawaccBackend(meta.inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, meta.firstValue, meta.interoperable,
                             meta.lexicalScopes, inputArgs);
             return runWithMarawaccAccelerator(meta.inputPArray, graphToCompile, openCLCompileUnit, function);
         }
@@ -207,7 +207,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         checkFunctionInCache(function, callTarget);
 
         StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
-        GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
+        GraalOpenCLCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
         if (graphToCompile != null && gpuCompilationUnit != null) {
             return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit, function);
@@ -234,7 +234,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         checkFunctionInCache(function, callTarget);
 
         StructuredGraph graphToCompile = MarawaccGraalIR.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
-        GraalGPUCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
+        GraalOpenCLCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
         if (graphToCompile != null && gpuCompilationUnit != null) {
             ArrayList<Object> runWithMarawaccAccelerator = runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit, function);
