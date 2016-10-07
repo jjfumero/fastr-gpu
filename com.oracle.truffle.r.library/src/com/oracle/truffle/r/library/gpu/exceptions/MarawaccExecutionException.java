@@ -27,9 +27,9 @@ public class MarawaccExecutionException extends MarawaccException {
     private static final long serialVersionUID = 1L;
     private int threadID;
 
-    public MarawaccExecutionException(String message, int threadID) {
+    public MarawaccExecutionException(String message, int threadIDX) {
         super(message);
-        this.threadID = threadID;
+        this.threadID = threadIDX;
     }
 
     public int getThreadID() {
