@@ -480,7 +480,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
             int threadID = e.getThreadID();
 
-            runAfterDeopt(input, target, function, nArgs, additionalArgs, argsName, value, input.getLength());
+            runAfterDeopt(input, target, function, nArgs, additionalArgs, argsName, value, threadID);
 
             // Run sequentially -- TODO: Provide a mechanism that allows to restart the execution in
             // the correct place of the AST to specialise again
