@@ -58,4 +58,10 @@ public class RCacheObjects {
     public boolean isGPUExecution() {
         return gpuExecution;
     }
+
+    public void deoptimize() {
+        this.gpuExecution = false;
+        this.rootCallTarget.resetIDForOpenCL();
+        this.idExecution = 0;
+    }
 }

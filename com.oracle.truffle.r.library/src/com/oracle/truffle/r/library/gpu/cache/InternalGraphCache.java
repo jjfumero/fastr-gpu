@@ -50,4 +50,8 @@ public class InternalGraphCache {
         }
         return null;
     }
+
+    public void deoptimize(StructuredGraph graph) {
+        cache.remove(graph);
+    }
 }
