@@ -81,6 +81,7 @@ benchmark <- function(inputSize) {
 	v <<- rep(1, size)
 
 	for (i in 1:REPETITIONS) {
+		system.gc()
 
 		start <- nanotime()
 		resultA <- marawacc.testGPU(x, spectralNorm1);
