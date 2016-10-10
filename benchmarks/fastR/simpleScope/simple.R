@@ -17,8 +17,7 @@ ESPSQRT <- 500
 simpleFunction <- function(px) {
 	acc1 <- 0
 	for (i in 1:size) {
-		idx <- i * 2
-		r1 <- positions[idx] * positions[idx+1]	
+		r1 <- positions[i]	
         acc1 <- acc1 + r1;
     }
 	result <-acc1
@@ -27,12 +26,11 @@ simpleFunction <- function(px) {
 
 benchmark <- function(inputSize) {
 	px <- runif(size)
-	positions <<- 1:size*2
+	positions <<- 1:size
 
 	for (i in 1:size) {
-		idx <- i * 2
+		idx <- i 
 		positions[idx] <<- px[i]
-		positions[idx+1] <<- px[i]
 	}
 
 	for (i in 1:REPETITIONS) {

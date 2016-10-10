@@ -620,7 +620,6 @@ public final class ReadVariableNode extends RNode implements RSyntaxNode, Visibi
         if (FastROptions.PrintComplexLookups.getBooleanValue() && levels.size() > 1 && complex) {
             System.out.println(identifier + " " + lastLevel);
         }
-
         return lastLevel;
     }
 

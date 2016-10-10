@@ -1,3 +1,4 @@
+
 default: parallel
 
 all:
@@ -20,5 +21,3 @@ sample:
 
 clean:
 	mx clean
-
-
