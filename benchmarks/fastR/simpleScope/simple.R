@@ -10,13 +10,13 @@ size <- as.integer(args[1])
 
 REPETITIONS <- 11
 
-NUMBODIES <- size
+size <- size
 DELTA <- 0.005
 ESPSQRT <- 500
 
-nbodyFunction <- function(px) {
+simpleFunction <- function(px) {
 	acc1 <- 0
-	for (i in 1:NUMBODIES) {
+	for (i in 1:size) {
 		idx <- i * 2
 		r1 <- positions[idx] * positions[idx+1]	
         acc1 <- acc1 + r1;
@@ -37,7 +37,7 @@ benchmark <- function(inputSize) {
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
-		result <- marawacc.gpusapply(px, nbodyFunction);
+		result <- marawacc.gpusapply(px, simpleFunction);
 		end <- nanotime()
 		total <- end - start
 		print(total)
