@@ -42,6 +42,7 @@ import com.oracle.graal.truffle.OptimizedCallTarget;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.r.library.gpu.cache.CacheGPUExecutor;
+import com.oracle.truffle.r.library.gpu.cache.CacheInputBuffers;
 import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
 import com.oracle.truffle.r.library.gpu.cache.RCacheObjects;
 import com.oracle.truffle.r.library.gpu.cache.RFunctionMetadata;
@@ -129,13 +130,15 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
      * @throws MarawaccExecutionException
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalOpenCLCompilationUnit gpuCompilationUnit, RFunction function)
+    private static ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalOpenCLCompilationUnit gpuCompilationUnit, RFunction function, boolean newAllocation)
                     throws MarawaccExecutionException {
         GraalOpenCLExecutor executor = CacheGPUExecutor.INSTANCE.getExecutor(gpuCompilationUnit);
         if (executor == null) {
             executor = new GraalOpenCLExecutor();
             CacheGPUExecutor.INSTANCE.insert(gpuCompilationUnit, executor);
         }
+
+        executor.setNewAllocation(newAllocation);
         AcceleratorPArray copyToDevice = executor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
         AcceleratorPArray executeOnTheDevice = executor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType(), gpuCompilationUnit.getScopeArrays());
         PArray result = executor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
@@ -195,9 +198,49 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             }
             GraalOpenCLCompilationUnit openCLCompileUnit = compileForMarawaccBackend(meta.inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, meta.firstValue, meta.interoperable,
                             meta.lexicalScopes, inputArgs);
-            return runWithMarawaccAccelerator(meta.inputPArray, graphToCompile, openCLCompileUnit, function);
+            return runWithMarawaccAccelerator(meta.inputPArray, graphToCompile, openCLCompileUnit, function, false);
         }
         return null;
+    }
+
+    private static boolean newAllocationBuffer(RAbstractVector input, RAbstractVector[] additionalArgs, RFunction function) {
+        int len = (additionalArgs == null) ? 1 : additionalArgs.length + 1;
+        RAbstractVector[] v = new RAbstractVector[len];
+        v[0] = input;
+        if (additionalArgs != null) {
+            for (int i = 0; i < additionalArgs.length; i++) {
+                v[i + 1] = additionalArgs[0];
+            }
+        }
+        if (CacheInputBuffers.getInstance().constainsRVector(function)) {
+            if (!CacheInputBuffers.getInstance().check(function, v)) {
+                CacheInputBuffers.getInstance().add(function, v);
+                return true;
+            }
+        } else {
+            CacheInputBuffers.getInstance().add(function, v);
+        }
+        return false;
+    }
+
+    private static boolean newAllocationBuffer(PArray<?> input, PArray<?>[] additionalArgs, RFunction function) {
+        int len = (additionalArgs == null) ? 1 : additionalArgs.length + 1;
+        PArray<?>[] v = new PArray<?>[len];
+        v[0] = input;
+        if (additionalArgs != null) {
+            for (int i = 0; i < additionalArgs.length; i++) {
+                v[i + 1] = additionalArgs[0];
+            }
+        }
+        if (CacheInputBuffers.getInstance().constainsRVector(function)) {
+            if (!CacheInputBuffers.getInstance().check(function, v)) {
+                CacheInputBuffers.getInstance().add(function, v);
+                return true;
+            }
+        } else {
+            CacheInputBuffers.getInstance().add(function, v);
+        }
+        return false;
     }
 
     // Run in the interpreter and then JIT when the CFG is prepared for compilation
@@ -209,8 +252,10 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         StructuredGraph graphToCompile = MarawaccGraalIRCache.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         GraalOpenCLCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
+        boolean newAllocation = newAllocationBuffer(input, additionalArgs, function);
+
         if (graphToCompile != null && gpuCompilationUnit != null) {
-            return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit, function);
+            return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit, function, newAllocation);
         }
 
         JITMetaInput meta = new JITMetaInput(firstValue, interoperable, lexicalScopes, inputPArray);
@@ -219,9 +264,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             Object value = callTarget.call(argsPackage);
             output.add(value);
-            ArrayList<Object> checkAndRun = checkAndRunWithOpenCL(gpuCompilationUnit, callTarget, i, meta, function, argsOriginal);
-            if (checkAndRun != null) {
-                return checkAndRun;
+            ArrayList<Object> result = checkAndRunWithOpenCL(gpuCompilationUnit, callTarget, i, meta, function, argsOriginal);
+            if (result != null) {
+                return result;
             }
         }
         return output;
@@ -246,8 +291,10 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         StructuredGraph graphToCompile = MarawaccGraalIRCache.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         GraalOpenCLCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
+        boolean newAllocation = newAllocationBuffer(input, additionalArgs, function);
+
         if (graphToCompile != null && gpuCompilationUnit != null) {
-            ArrayList<Object> runWithMarawaccAccelerator = runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit, function);
+            ArrayList<Object> runWithMarawaccAccelerator = runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit, function, newAllocation);
             return runWithMarawaccAccelerator;
         }
 
