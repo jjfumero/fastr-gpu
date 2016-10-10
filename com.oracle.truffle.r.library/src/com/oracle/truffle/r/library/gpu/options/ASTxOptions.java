@@ -28,6 +28,7 @@ import com.oracle.truffle.r.runtime.data.RSequence;
 
 /**
  * ASTx runtime options.
+ *
  */
 public final class ASTxOptions {
 
