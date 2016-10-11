@@ -164,6 +164,8 @@ public final class ReadVariableNode extends RNode implements RSyntaxNode, Visibi
     private final ReadKind kind;
     private final boolean visibilityChange;
 
+    @SuppressWarnings("unused") private static boolean scope;
+
     @CompilationFinal private final boolean[] seenValueKinds = new boolean[FrameSlotKind.values().length];
 
     private ReadVariableNode(Object identifier, RType mode, ReadKind kind, boolean visibilityChange) {
@@ -172,6 +174,10 @@ public final class ReadVariableNode extends RNode implements RSyntaxNode, Visibi
         this.mode = mode;
         this.kind = kind;
         this.visibilityChange = visibilityChange;
+
+        if (this.kind == ReadKind.Super) {
+            scope = true;
+        }
 
         isPromiseProfile = kind == ReadKind.UnforcedSilentLocal && mode == RType.Any ? null : ConditionProfile.createBinaryProfile();
         copyProfile = kind != ReadKind.Copying ? null : ConditionProfile.createBinaryProfile();
@@ -618,13 +624,14 @@ public final class ReadVariableNode extends RNode implements RSyntaxNode, Visibi
         }
 
         if (FastROptions.PrintComplexLookups.getBooleanValue() && levels.size() > 1 && complex) {
-            System.out.println(identifier + " " + lastLevel);
+            System.out.println(identifier + " " + lastLevel + " : " + lastLevel.getClass());
         }
         return lastLevel;
     }
 
     @TruffleBoundary
     public static RFunction lookupFunction(String identifier, Frame variableFrame, boolean localOnly) {
+
         Frame current = variableFrame;
         do {
             // see if the current frame has a value of the given name
