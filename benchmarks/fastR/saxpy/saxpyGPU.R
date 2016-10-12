@@ -46,13 +46,12 @@ benchmark <- function(inputSize) {
 				}
 			}
 			if (correct) {
-				print("Result is correct")
+				#print("Result is correct")
 			}
 				
 		} else {
-			print("Result is correct")
+			#print("Result is correct")
 		}
-		#print(result);
 	}
 }
 
