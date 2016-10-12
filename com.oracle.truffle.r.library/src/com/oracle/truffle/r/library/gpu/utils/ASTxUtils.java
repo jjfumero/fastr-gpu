@@ -1111,7 +1111,6 @@ public class ASTxUtils {
         switch (type) {
             case RIntSequence:
                 if (ASTxOptions.optimizeRSequence) {
-                    System.out.println("Allocating new sequence");
                     parray = buildIntPArrayForSequencePrimitve(input);
                     // Guarantee the new parray primitive branch in marawacc
                     GraalAcceleratorOptions.newPArraysPrimitive = true;
