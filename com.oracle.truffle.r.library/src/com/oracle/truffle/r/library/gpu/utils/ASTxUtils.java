@@ -681,6 +681,7 @@ public class ASTxUtils {
 
         if (!array.isPrimitiveArray(0)) {
             // DEOPT TO THE OLD STRATEGY
+            System.out.println("UNMARSHAL OLD");
             return getRListFromTuple2(array);
         }
 
@@ -1100,6 +1101,8 @@ public class ASTxUtils {
             case RIntSequence:
                 if (ASTxOptions.optimizeRSequence) {
                     parray = buildIntPArrayForSequence(input);
+                    // Guarantee the new parray primitive branch in marawacc
+                    GraalAcceleratorOptions.newPArraysPrimitive = true;
                 } else {
                     int[] array = materializeIntSequence((RIntSequence) input);
                     parray = new PArray<>(input.getLength(), TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER, false);
@@ -1114,6 +1117,8 @@ public class ASTxUtils {
             case RDoubleSequence:
                 if (ASTxOptions.optimizeRSequence) {
                     parray = buildDoublePArrayForSequence(input);
+                    // Guarantee the new parray primitive branch in marawacc
+                    GraalAcceleratorOptions.newPArraysPrimitive = true;
                 } else {
                     double[] array = materializeDoubleSequence((RDoubleSequence) input);
                     parray = new PArray<>(input.getLength(), TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER, false);

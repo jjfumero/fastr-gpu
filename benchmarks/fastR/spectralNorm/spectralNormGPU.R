@@ -13,7 +13,7 @@ size <- as.integer(args[1])
 
 REPETITIONS <- 11
 
-CHECK_RESULT <- FALSE
+CHECK_RESULT <- TRUE
 
 benchmark <- function(inputSize) {
 
@@ -94,10 +94,9 @@ benchmark <- function(inputSize) {
 		if (CHECK_RESULT) {
 			nonError <- identical(resultSeq, resultB)
 			if (!nonError) {
-				for (i in seq(resultSeq)) {
-					if (abs(resultSeq[i] - resultB[i]) > 0.1) {
+				for (i in 1:size) {
+					if (abs(resultSeq[i] - resultB[i]) > 0.5) {
 						print("Result is wrong")
-						correct <- FALSE
 						break;
 					}
 				}
