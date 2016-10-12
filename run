@@ -12,6 +12,6 @@ mx Rscript --J @'-DR:+IgnoreVisibility
 -Dmarawacc.dumpGraph=false 
 -Dastx.marawacc.profiler=true  
 -Dastx.marawacc.optimizeRSequence=true 
--Dastx.marawacc.primArrays=false 
+-Dastx.marawacc.primArrays=true 
 -Dastx.marawacc.scoperewriting=false ' $* 
 
