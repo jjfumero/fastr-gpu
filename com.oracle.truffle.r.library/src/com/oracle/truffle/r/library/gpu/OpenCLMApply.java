@@ -435,7 +435,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     private RAbstractVector computeOpenCLMApply(PArray<?> input, RFunction function, RootCallTarget target, PArray<?>[] additionalArgs, Object[] lexicalScopes, int numArgumentsOriginalFunction) {
 
-        // Get the metadata from the cache
+        // Get the meta-data from the cache
         RFunctionMetadata cachedFunctionMetadata = getCachedFunctionMetadata(input, function, additionalArgs);
         int nArgs = cachedFunctionMetadata.getnArgs();
         String[] argsName = cachedFunctionMetadata.getArgsName();
@@ -446,7 +446,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         int totalSize = ASTxUtils.getSize(input, additionalArgs);
         TypeInfoList inputTypeList = ASTxUtils.createTypeInfoListForInputWithPArrays(input, additionalArgs);
 
-        // Marshal
+        // Marshal from R to OpenCL (PArray)
         long startMarshal = System.nanoTime();
         PArray<?> inputPArrayFormat = ASTxUtils.createPArrays(input, additionalArgs, inputTypeList);
         long endMarshal = System.nanoTime();
@@ -458,29 +458,37 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes, totalSize, numArgumentsOriginalFunction);
         } catch (AcceleratorExecutionException e) {
 
-            // Deoptimization
             if (ASTxOptions.debug) {
                 System.out.println("Running in the DEOPT mode");
             }
 
             int threadID = e.getThreadID();
-            runAfterDeoptWithID(input, target, function, nArgs, additionalArgs, argsName, value, threadID);
-            invalidateCaches(function, target);
-            try {
-                result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes, totalSize, numArgumentsOriginalFunction);
-            } catch (AcceleratorExecutionException e1) {
-                e1.printStackTrace();
+            boolean executionValid = false;
+            int deoptCounter = 0;
+            while (!executionValid) {
+                runAfterDeoptWithID(input, target, function, nArgs, additionalArgs, argsName, value, threadID);
+                invalidateCaches(function, target);
+                try {
+                    result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes, totalSize, numArgumentsOriginalFunction);
+                    executionValid = true;
+                } catch (AcceleratorExecutionException e1) {
+                    threadID = e1.getThreadID();
+                    deoptCounter++;
+                    if (deoptCounter > 10) {
+                        executionValid = true;
+                        throw new RuntimeException("Too many deoptimizations");
+                    }
+                }
             }
         }
         long endExecution = System.nanoTime();
 
-        // Get the result (un-marshal)
+        // Marshal from OpenCL to R
         boolean isGPUExecution = RGPUCache.INSTANCE.getCachedObjects(function).isGPUExecution();
         long startUnmarshal = System.nanoTime();
         RAbstractVector resultFastR = getResultFromPArray(isGPUExecution, outputType, result);
         long endUnmarshal = System.nanoTime();
 
-        // Print profiler
         if (ASTxOptions.profileOpenCL_ASTx) {
             writeProfilerIntoBuffers(startMarshal, endMarshal, startExecution, endExecution, startUnmarshal, endUnmarshal);
         }
@@ -556,7 +564,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
                     result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArray, interoperable, lexicalScopes, numArgumentsOriginalFunction);
                     executionValid = true;
                 } catch (AcceleratorExecutionException e1) {
-                    threadID = e.getThreadID();
+                    threadID = e1.getThreadID();
                     deoptCounter++;
                     if (deoptCounter > 10) {
                         executionValid = true;
