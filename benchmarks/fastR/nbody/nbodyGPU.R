@@ -17,7 +17,7 @@ NUMBODIES <- size
 DELTA <- 0.005
 ESPSQRT <- 500
 
-CHECK <- TRUE
+CHECK <- FALSE
 
 nbodyCPU <- function(px, py, pz, vx, vy, vz) {
 	acc1 <- 0
