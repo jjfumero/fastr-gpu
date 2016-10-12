@@ -47,7 +47,7 @@ import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
 import com.oracle.truffle.r.library.gpu.cache.RCacheObjects;
 import com.oracle.truffle.r.library.gpu.cache.RFunctionMetadata;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
-import com.oracle.truffle.r.library.gpu.exceptions.MarawaccExecutionException;
+import com.oracle.truffle.r.library.gpu.exceptions.AcceleratorExecutionException;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.phases.FilterInterpreterNodes;
 import com.oracle.truffle.r.library.gpu.phases.scope.ScopeData;
@@ -127,11 +127,11 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
      * @param graph
      * @param gpuCompilationUnit
      * @return {@link ArrayList}
-     * @throws MarawaccExecutionException
+     * @throws AcceleratorExecutionException
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalOpenCLCompilationUnit gpuCompilationUnit, RFunction function, boolean newAllocation)
-                    throws MarawaccExecutionException {
+                    throws AcceleratorExecutionException {
         GraalOpenCLExecutor executor = CacheGPUExecutor.INSTANCE.getExecutor(gpuCompilationUnit);
         if (executor == null) {
             executor = new GraalOpenCLExecutor();
@@ -146,7 +146,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         if (deopt != null) {
             if (deopt.get(0) != 0) {
                 System.out.println("DEOPT: " + deopt);
-                throw new MarawaccExecutionException("Deoptimization in thread: ", deopt.get(0));
+                throw new AcceleratorExecutionException("Deoptimization in thread: ", deopt.get(0));
             }
         }
         RGPUCache.INSTANCE.getCachedObjects(function).enableGPUExecution();
@@ -190,7 +190,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
      * On Stack Replacement (OSR): switch to compiled GPU code
      */
     private ArrayList<Object> checkAndRunWithOpenCL(GraalOpenCLCompilationUnit gpuCompilationUnit, RootCallTarget callTarget, int index, JITMetaInput meta, RFunction function, int inputArgs)
-                    throws MarawaccExecutionException {
+                    throws AcceleratorExecutionException {
         StructuredGraph graphToCompile = MarawaccGraalIRCache.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         if ((graphToCompile != null) && (gpuCompilationUnit == null)) {
             if (ASTxOptions.debug) {
@@ -247,7 +247,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
      * Run in the interpreter and then JIT when the CFG is prepared for compilation.
      */
     private ArrayList<Object> runJavaOpenCLJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
-                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int argsOriginal) throws MarawaccExecutionException {
+                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int argsOriginal) throws AcceleratorExecutionException {
 
         checkFunctionInCache(function, callTarget);
 
@@ -291,7 +291,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
      * @param function
      * @param callTarget
      */
-    private static void deoptimization(RFunction function, RootCallTarget callTarget) {
+    private static void invalidateCaches(RFunction function, RootCallTarget callTarget) {
         RGPUCache.INSTANCE.getCachedObjects(function).deoptimize();
 
         StructuredGraph graphToCompile = MarawaccGraalIRCache.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
@@ -302,7 +302,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     // Run in the interpreter and then JIT when the CFG is prepared for compilation
     private ArrayList<Object> runJavaOpenCLJIT(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
-                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int totalSize, int inputArgs) throws MarawaccExecutionException {
+                    Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int totalSize, int inputArgs) throws AcceleratorExecutionException {
 
         checkFunctionInCache(function, callTarget);
 
@@ -357,7 +357,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     }
 
     // Run in the interpreter and then JIT when the CFG is prepared for compilation
-    private static ArrayList<Object> runAfterDeopt(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
+    private static ArrayList<Object> runAfterDeoptWithThreadID(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue, int threadID) {
         checkFunctionInCache(function, callTarget);
         ArrayList<Object> output = setOutput(firstValue);
@@ -456,7 +456,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         long startExecution = System.nanoTime();
         try {
             result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes, totalSize, numArgumentsOriginalFunction);
-        } catch (MarawaccExecutionException e) {
+        } catch (AcceleratorExecutionException e) {
 
             // Deoptimization
             if (ASTxOptions.debug) {
@@ -465,10 +465,10 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
             int threadID = e.getThreadID();
             runAfterDeoptWithID(input, target, function, nArgs, additionalArgs, argsName, value, threadID);
-            deoptimization(function, target);
+            invalidateCaches(function, target);
             try {
                 result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes, totalSize, numArgumentsOriginalFunction);
-            } catch (MarawaccExecutionException e1) {
+            } catch (AcceleratorExecutionException e1) {
                 e1.printStackTrace();
             }
         }
@@ -516,7 +516,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private RAbstractVector computeOpenCLMApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes,
                     int numArgumentsOriginalFunction) {
 
-        // Objects from cache
+        // Meta-data objects from the cache
         RFunctionMetadata cachedFunctionMetadata = getCachedFunctionMetadata(input, function, additionalArgs);
         int nArgs = cachedFunctionMetadata.getnArgs();
         String[] argsName = cachedFunctionMetadata.getArgsName();
@@ -528,7 +528,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         int extraParams = nArgs - numArgumentsOriginalFunction;
         TypeInfoList inputTypeList = createTypeInfoList(input, additionalArgs, extraParams);
 
-        // Marshal
+        // Marshal from R to OpenCL (PArray)
         long startMarshal = System.nanoTime();
         PArray<?> inputPArray = ASTxUtils.createPArrays(input, additionalArgs, inputTypeList);
         long endMarshal = System.nanoTime();
@@ -542,31 +542,36 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             } else {
                 result = runInASTInterpreter(input, target, function, nArgs, additionalArgs, argsName, value);
             }
-        } catch (MarawaccExecutionException e) {
-            // Deoptimization technique
+        } catch (AcceleratorExecutionException e) {
             if (ASTxOptions.debug) {
                 System.out.println("Running in the DEOPT mode");
             }
             int threadID = e.getThreadID();
-            runAfterDeopt(input, target, function, nArgs, additionalArgs, argsName, value, threadID);
-            deoptimization(function, target);
-            try {
-                result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArray, interoperable, lexicalScopes, numArgumentsOriginalFunction);
-            } catch (MarawaccExecutionException e1) {
-                // Another deopt?
-                e1.printStackTrace();
+            runAfterDeoptWithThreadID(input, target, function, nArgs, additionalArgs, argsName, value, threadID);
+            invalidateCaches(function, target);
+            boolean executionValid = false;
+            int deoptCounter = 0;
+            while (!executionValid) {
+                try {
+                    result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArray, interoperable, lexicalScopes, numArgumentsOriginalFunction);
+                    executionValid = true;
+                } catch (AcceleratorExecutionException e1) {
+                    deoptCounter++;
+                    if (deoptCounter > 10) {
+                        executionValid = true;
+                        throw new RuntimeException("Too many deoptimizations, not possible to run on again");
+                    }
+                }
             }
         }
-
+        boolean isGPUExecution = RGPUCache.INSTANCE.getCachedObjects(function).isGPUExecution();
         long endExecution = System.nanoTime();
 
-        // Get the result (un-marshal)
-        boolean isGPUExecution = RGPUCache.INSTANCE.getCachedObjects(function).isGPUExecution();
+        // Marshal from OpenCL to R
         long startUnmarshal = System.nanoTime();
         RAbstractVector resultFastR = getResult(isGPUExecution, outputType, result);
         long endUnmarshal = System.nanoTime();
 
-        // Print profiler information into buffer
         if (ASTxOptions.profileOpenCL_ASTx) {
             writeProfilerIntoBuffers(startMarshal, endMarshal, startExecution, endExecution, startUnmarshal, endUnmarshal);
         }

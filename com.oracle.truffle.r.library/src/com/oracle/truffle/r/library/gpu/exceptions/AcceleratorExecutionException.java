@@ -22,12 +22,12 @@
  */
 package com.oracle.truffle.r.library.gpu.exceptions;
 
-public class MarawaccExecutionException extends MarawaccException {
+public class AcceleratorExecutionException extends AcceleratorException {
 
     private static final long serialVersionUID = 1L;
     private int threadID;
 
-    public MarawaccExecutionException(String message, int threadIDX) {
+    public AcceleratorExecutionException(String message, int threadIDX) {
         super(message);
         this.threadID = threadIDX;
     }
