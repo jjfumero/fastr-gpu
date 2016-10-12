@@ -547,15 +547,16 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
                 System.out.println("Running in the DEOPT mode");
             }
             int threadID = e.getThreadID();
-            runAfterDeoptWithThreadID(input, target, function, nArgs, additionalArgs, argsName, value, threadID);
-            invalidateCaches(function, target);
             boolean executionValid = false;
             int deoptCounter = 0;
             while (!executionValid) {
+                runAfterDeoptWithThreadID(input, target, function, nArgs, additionalArgs, argsName, value, threadID);
+                invalidateCaches(function, target);
                 try {
                     result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArray, interoperable, lexicalScopes, numArgumentsOriginalFunction);
                     executionValid = true;
                 } catch (AcceleratorExecutionException e1) {
+                    threadID = e.getThreadID();
                     deoptCounter++;
                     if (deoptCounter > 10) {
                         executionValid = true;
