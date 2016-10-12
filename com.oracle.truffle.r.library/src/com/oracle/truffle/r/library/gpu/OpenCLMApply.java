@@ -243,7 +243,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return false;
     }
 
-    // Run in the interpreter and then JIT when the CFG is prepared for compilation
+    /**
+     * Run in the interpreter and then JIT when the CFG is prepared for compilation.
+     */
     private ArrayList<Object> runJavaOpenCLJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int argsOriginal) throws MarawaccExecutionException {
 
@@ -268,6 +270,17 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             if (result != null) {
                 return result;
             }
+        }
+        return output;
+    }
+
+    private static ArrayList<Object> runInASTInterpreter(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
+                    Object firstValue) {
+        ArrayList<Object> output = setOutput(firstValue);
+        for (int i = 1; i < input.getLength(); i++) {
+            Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
+            Object value = callTarget.call(argsPackage);
+            output.add(value);
         }
         return output;
     }
@@ -524,7 +537,11 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         ArrayList<Object> result = null;
         long startExecution = System.nanoTime();
         try {
-            result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArray, interoperable, lexicalScopes, numArgumentsOriginalFunction);
+            if (!ASTxOptions.runOnASTIntepreterOnly) {
+                result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArray, interoperable, lexicalScopes, numArgumentsOriginalFunction);
+            } else {
+                result = runInASTInterpreter(input, target, function, nArgs, additionalArgs, argsName, value);
+            }
         } catch (MarawaccExecutionException e) {
             // Deoptimization technique
             if (ASTxOptions.debug) {

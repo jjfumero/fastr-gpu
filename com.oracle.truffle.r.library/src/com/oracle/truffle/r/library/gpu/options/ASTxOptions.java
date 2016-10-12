@@ -106,6 +106,19 @@ public final class ASTxOptions {
      */
     public static boolean newPArrayStrategy = getBoolean("astx.marawacc.primArrays", true);
 
+    /**
+     * This option is just for debugging. It runs on the AST interpreter and there is no interaction
+     * with the OpenCL backend.
+     */
+    public static boolean runOnASTIntepreterOnly = getBoolean("astx.marawacc.runOnAST", false);
+
+    /**
+     * Get the value of a property at runtime.
+     *
+     * @param property
+     * @param defaultValue
+     * @return boolean
+     */
     private static boolean getBoolean(String property, boolean defaultValue) {
         if (System.getProperty(property) == null) {
             return defaultValue;
