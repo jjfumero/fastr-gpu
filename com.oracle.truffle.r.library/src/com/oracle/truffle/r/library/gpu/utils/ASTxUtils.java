@@ -997,6 +997,17 @@ public class ASTxUtils {
         return parray;
     }
 
+    public static PArray<?> buildIntPArrayForSequencePrimitve(RAbstractVector input) {
+        PArray<Integer> parray = new PArray<>(2, TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER, false);
+        int start = ((RIntSequence) input).start();
+        int stride = ((RIntSequence) input).stride();
+        parray.setSequence(true);
+        int[] array = new int[]{start, stride};
+        parray.setIntArray(array);
+        parray.setTotalSize(input.getLength());
+        return parray;
+    }
+
     public static PArray<?> buildDoublePArrayForSequence(RAbstractVector input) {
         PArray<Double> parray = new PArray<>(2, TypeFactory.Double(), StorageMode.OPENCL_BYTE_BUFFER);
         double start = ((RDoubleSequence) input).start();
@@ -1100,7 +1111,8 @@ public class ASTxUtils {
         switch (type) {
             case RIntSequence:
                 if (ASTxOptions.optimizeRSequence) {
-                    parray = buildIntPArrayForSequence(input);
+                    System.out.println("Allocating new sequence");
+                    parray = buildIntPArrayForSequencePrimitve(input);
                     // Guarantee the new parray primitive branch in marawacc
                     GraalAcceleratorOptions.newPArraysPrimitive = true;
                 } else {
