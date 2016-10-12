@@ -272,8 +272,13 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return output;
     }
 
+    /**
+     * This method invalidates the binary caches, and meta-data.
+     *
+     * @param function
+     * @param callTarget
+     */
     private static void deoptimization(RFunction function, RootCallTarget callTarget) {
-
         RGPUCache.INSTANCE.getCachedObjects(function).deoptimize();
 
         StructuredGraph graphToCompile = MarawaccGraalIRCache.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
