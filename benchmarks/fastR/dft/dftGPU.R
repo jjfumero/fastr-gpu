@@ -58,6 +58,7 @@ inputImag <<- runif(size)
 resultSeq <- mapply(dftCPUFunction, input)
 
 for (i in 1:REPETITIONS) {
+	system.gc()
 	start <- nanotime()
 	result <- marawacc.testGPU(input, dftGPUFunction);
 	total <- nanotime() - start

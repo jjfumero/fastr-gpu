@@ -13,7 +13,7 @@ size <- as.integer(args[1])
 REPETITIONS <- 11
 KS <- 10
 
-CHECK_RESULT <- TRUE
+CHECK_RESULT <- FALSE
 
 benchmark <- function(inputSize) {
 
@@ -55,6 +55,7 @@ benchmark <- function(inputSize) {
 	}	
 
 	for (i in 1:REPETITIONS) {
+		system.gc()
 		start <- nanotime()
 		result <- marawacc.gpusapply(x, kmeansOpenCLFunction, y);
 		end <- nanotime()

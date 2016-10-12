@@ -118,6 +118,7 @@ benchmark <- function(inputSize) {
 	seq <- mapply(nbodyCPU, px, py, pz, vx, vy, vz)
 
 	for (i in 1:REPETITIONS) {
+		system.gc()
 		start <- nanotime()
 		result <- marawacc.gpusapply(px, nbodyFunction, py, pz, vx, vy, vz);
 		end <- nanotime()
