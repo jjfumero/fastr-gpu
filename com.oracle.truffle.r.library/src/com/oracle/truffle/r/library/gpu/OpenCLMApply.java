@@ -609,16 +609,29 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings("deprecation")
-    @Override
-    public Object call(RArgsValuesAndNames args) {
-        Profiler.getInstance().print("\nIteration: " + iteration++);
-
-        long start = System.nanoTime();
-
+    private static void checkOptions() {
         if (ASTxOptions.usePArrays) {
             // This will be deprecated
             RVector.WITH_PARRAYS = true;
         }
+    }
+
+    private static void printProfiler(long start, long end, String component) {
+        // Write profiler information into a buffer
+        if (ASTxOptions.profileOpenCL_ASTx) {
+            Profiler.getInstance().writeInBuffer(component + " start-end", (end - start));
+            Profiler.getInstance().writeInBuffer(component + " start", start);
+            Profiler.getInstance().writeInBuffer(component + " end", end);
+        }
+    }
+
+    @Override
+    public Object call(RArgsValuesAndNames args) {
+        Profiler.getInstance().print("\nIteration: " + iteration++);
+
+        checkOptions();
+
+        long start = System.nanoTime();
 
         Object firstParam = args.getArgument(0);
         RFunction function = (RFunction) args.getArgument(1);
@@ -685,18 +698,14 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             PArray<?>[] additionalInputs = ASTxUtils.getPArrayWithAdditionalArguments(args);
             mapResult = computeOpenCLMApply(parrayInput, function, target, additionalInputs, lexicalScopes, numArgumentsOriginalFunction);
         }
-        long end = System.nanoTime();
 
         if (scopedNodes != null) {
             scopedNodes.clear();
         }
 
-        // Write profiler information into a buffer
-        if (ASTxOptions.profileOpenCL_ASTx) {
-            Profiler.getInstance().writeInBuffer("gpu start-end", (end - start));
-            Profiler.getInstance().writeInBuffer("gpu start", start);
-            Profiler.getInstance().writeInBuffer("gpu end", end);
-        }
+        long end = System.nanoTime();
+
+        printProfiler(start, end, "gpu");
 
         return mapResult;
     }
