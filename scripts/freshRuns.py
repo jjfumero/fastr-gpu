@@ -7,7 +7,7 @@ import os
 
 SCRIPT="./runbench "
 URL="benchmarks/fastR/"
-DIRNAME = "newLogsSizes"
+DIRNAME = "veeCallRUN"
 DEBUG = False
 
 NUMBER_OF_FRESH_RUNS=3
