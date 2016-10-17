@@ -55,6 +55,7 @@ public abstract class MarawaccInitilization extends RExternalBuiltinNode.Arg0 {
     @Specialization
     public int doInitialization() {
         marawaccInitialization();
+        MethodInstallation.Installation.installMApply();
         return 0;
     }
 }

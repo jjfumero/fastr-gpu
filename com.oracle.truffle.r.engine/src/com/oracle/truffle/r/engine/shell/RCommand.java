@@ -54,6 +54,7 @@ import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.vm.PolyglotEngine;
 import com.oracle.truffle.r.engine.TruffleRLanguage;
+import com.oracle.truffle.r.library.gpu.MethodInstallation;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.nodes.builtin.base.Quit;
 import com.oracle.truffle.r.runtime.BrowserQuitException;
@@ -179,6 +180,13 @@ public class RCommand {
     private static final Source QUIT_EOF = Source.fromText("quit(\"default\", 0L, TRUE)", "<quit_eof>").withMimeType(TruffleRLanguage.MIME);
 
     /**
+     * Installation of the new parallel methods.
+     */
+    private static void installParallelMethods() {
+        MethodInstallation.Installation.installMApply();
+    }
+
+    /**
      * The read-eval-print loop, which can take input from a console, command line expression or a
      * file. There are two ways the repl can terminate:
      * <ol>
@@ -193,6 +201,7 @@ public class RCommand {
         PolyglotEngine vm = info.apply(PolyglotEngine.newBuilder()).build();
         ConsoleHandler consoleHandler = info.getConsoleHandler();
         Source source = Source.fromNamedAppendableText(consoleHandler.getInputDescription());
+
         try {
             // console.println("initialize time: " + (System.currentTimeMillis() - start));
             REPL: for (;;) {
@@ -212,6 +221,8 @@ public class RCommand {
                         // nothing to parse
                         continue;
                     }
+
+                    installParallelMethods();
 
                     String continuePrompt = getContinuePrompt();
                     Source subSource = Source.subSource(source, startLength).withMimeType(TruffleRLanguage.MIME);

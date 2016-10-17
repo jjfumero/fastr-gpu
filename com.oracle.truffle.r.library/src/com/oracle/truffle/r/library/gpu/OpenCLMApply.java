@@ -663,6 +663,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     @Override
     public Object call(RArgsValuesAndNames args) {
+
         Profiler.getInstance().print("\nIteration: " + iteration++);
 
         checkOptions();

@@ -33,6 +33,8 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.r.library.gpu.OpenCLAvailability;
+import com.oracle.truffle.r.library.gpu.OpenCLMApply;
 import com.oracle.truffle.r.nodes.RRootNode;
 import com.oracle.truffle.r.nodes.access.WriteVariableNode;
 import com.oracle.truffle.r.nodes.access.WriteVariableNode.Mode;
@@ -83,6 +85,7 @@ public abstract class Mapply extends RBuiltinNode {
 
     @Specialization
     protected Object mApply(VirtualFrame frame, RFunction fun, RList dots, RList moreArgs) {
+
         if (moreArgs.getLength() > 0) {
             throw RError.nyi(this, "moreArgs");
         }

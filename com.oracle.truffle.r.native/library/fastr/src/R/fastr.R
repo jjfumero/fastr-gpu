@@ -168,6 +168,10 @@ marawacc.init <- function() {
 	.FastR(.NAME="marawacc.init")
 }
 
+marawacc.isOpenCL <- function() {
+	.FastR(.NAME="marawacc.isOpenCL")
+}
+
 marawacc.deviceInfo <- function() {
 	.FastR(.NAME="marawacc.deviceInfo")
 }
