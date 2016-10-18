@@ -161,7 +161,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return output;
     }
 
-    private static void checkFunctionInCache(RFunction function, RootCallTarget callTarget) {
+    private static void checkIfFunctionIsInCache(RFunction function, RootCallTarget callTarget) {
         if (RGPUCache.INSTANCE.getCachedObjects(function).getIDExecution() == 0) {
             callTarget.generateIDForOpenCL();
             // Set the GPU execution to true;
@@ -269,7 +269,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private ArrayList<Object> runJavaOpenCLJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int argsOriginal) throws AcceleratorExecutionException {
 
-        checkFunctionInCache(function, callTarget);
+        checkIfFunctionIsInCache(function, callTarget);
 
         StructuredGraph graphToCompile = MarawaccGraalIRCache.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         GraalOpenCLCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
@@ -320,11 +320,13 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         InternalGraphCache.INSTANCE.deoptimize(graphToCompile);
     }
 
-    // Run in the interpreter and then JIT when the CFG is prepared for compilation
+    /**
+     * Run in the interpreter and then JIT when the CFG is prepared for compilation.
+     */
     private ArrayList<Object> runJavaOpenCLJIT(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int totalSize, int inputArgs) throws AcceleratorExecutionException {
 
-        checkFunctionInCache(function, callTarget);
+        checkIfFunctionIsInCache(function, callTarget);
 
         StructuredGraph graphToCompile = MarawaccGraalIRCache.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         GraalOpenCLCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
@@ -351,11 +353,10 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return output;
     }
 
-    // Run in the interpreter and then JIT when the CFG is prepared for compilation
     @SuppressWarnings("unused")
     private static ArrayList<Object> runAfterDeopt(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
                     Object firstValue, int totalSize) {
-        checkFunctionInCache(function, callTarget);
+        checkIfFunctionIsInCache(function, callTarget);
         ArrayList<Object> output = setOutput(firstValue);
         for (int i = 1; i < totalSize; i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
@@ -365,10 +366,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return output;
     }
 
-    // Run in the interpreter and then JIT when the CFG is prepared for compilation
     private static ArrayList<Object> runAfterDeoptWithID(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
                     Object firstValue, int threadID) {
-        checkFunctionInCache(function, callTarget);
+        checkIfFunctionIsInCache(function, callTarget);
         ArrayList<Object> output = setOutput(firstValue);
         Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, threadID);
         Object value = callTarget.call(argsPackage);
@@ -376,10 +376,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return output;
     }
 
-    // Run in the interpreter and then JIT when the CFG is prepared for compilation
     private static ArrayList<Object> runAfterDeoptWithThreadID(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue, int threadID) {
-        checkFunctionInCache(function, callTarget);
+        checkIfFunctionIsInCache(function, callTarget);
         ArrayList<Object> output = setOutput(firstValue);
         Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, threadID);
         Object value = callTarget.call(argsPackage);
