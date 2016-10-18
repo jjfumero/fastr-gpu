@@ -73,6 +73,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private static final String R_EVAL_DESCRIPTION = "<eval>";
     private static final boolean ISTRUFFLE = true;
     private static int iteration = 0;
+    private long startTime;
 
     ArrayList<com.oracle.graal.graph.Node> scopedNodes;
 
@@ -198,6 +199,10 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             }
             GraalOpenCLCompilationUnit openCLCompileUnit = compileForMarawaccBackend(meta.inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, meta.firstValue, meta.interoperable,
                             meta.lexicalScopes, inputArgs);
+            long totalTime = System.nanoTime() - startTime;
+            if (ASTxOptions.profileOpenCL_ASTx) {
+                System.out.println("COMPILATION TIME: " + totalTime);
+            }
             return runWithMarawaccAccelerator(meta.inputPArray, graphToCompile, openCLCompileUnit, function, false);
         }
         return null;
@@ -269,8 +274,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private ArrayList<Object> runJavaOpenCLJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int argsOriginal) throws AcceleratorExecutionException {
 
+        startTime = System.nanoTime();
         checkIfFunctionIsInCache(function, callTarget);
-
         StructuredGraph graphToCompile = MarawaccGraalIRCache.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         GraalOpenCLCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
@@ -453,7 +458,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     }
 
     private RAbstractVector computeOpenCLMApply(PArray<?> input, RFunction function, RootCallTarget target, PArray<?>[] additionalArgs, Object[] lexicalScopes, int numArgumentsOriginalFunction) {
-
         // Get the meta-data from the cache
         RFunctionMetadata cachedFunctionMetadata = getCachedFunctionMetadata(input, function, additionalArgs);
         int nArgs = cachedFunctionMetadata.getnArgs();
@@ -680,6 +684,12 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
+    private void cleanUp() {
+        if (scopedNodes != null) {
+            scopedNodes.clear();
+        }
+    }
+
     @Override
     public Object call(RArgsValuesAndNames args) {
 
@@ -755,14 +765,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             mapResult = computeOpenCLMApply(parrayInput, function, target, additionalInputs, lexicalScopes, numArgumentsOriginalFunction);
         }
 
-        if (scopedNodes != null) {
-            scopedNodes.clear();
-        }
-
+        cleanUp();
         long end = System.nanoTime();
-
         printProfiler(start, end, "gpu");
-
         return mapResult;
     }
 }
