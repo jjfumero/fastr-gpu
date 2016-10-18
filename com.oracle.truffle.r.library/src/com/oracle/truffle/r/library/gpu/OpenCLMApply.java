@@ -203,10 +203,20 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return null;
     }
 
+    /**
+     * It tells if the buffers in the GPUExecution unit has to be re-allocated or not. This is
+     * mainly because the input function keeps stable and the input data is changed.
+     *
+     * @param input
+     * @param additionalArgs
+     * @param function
+     * @return boolean
+     */
     private static boolean newAllocationBuffer(RAbstractVector input, RAbstractVector[] additionalArgs, RFunction function) {
         int len = (additionalArgs == null) ? 1 : additionalArgs.length + 1;
         RAbstractVector[] v = new RAbstractVector[len];
         v[0] = input;
+        // compose the input
         if (additionalArgs != null) {
             for (int i = 0; i < additionalArgs.length; i++) {
                 v[i + 1] = additionalArgs[0];
@@ -223,10 +233,20 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return false;
     }
 
+    /**
+     * It tells if the buffers in the GPUExecution unit has to be re-allocated or not. This is
+     * mainly because the input function keeps stable and the input data is changed.
+     *
+     * @param input
+     * @param additionalArgs
+     * @param function
+     * @return boolean
+     */
     private static boolean newAllocationBuffer(PArray<?> input, PArray<?>[] additionalArgs, RFunction function) {
         int len = (additionalArgs == null) ? 1 : additionalArgs.length + 1;
         PArray<?>[] v = new PArray<?>[len];
         v[0] = input;
+        // compose the input
         if (additionalArgs != null) {
             for (int i = 0; i < additionalArgs.length; i++) {
                 v[i + 1] = additionalArgs[0];
