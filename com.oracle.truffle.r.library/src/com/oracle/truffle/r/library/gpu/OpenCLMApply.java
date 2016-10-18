@@ -200,9 +200,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             GraalOpenCLCompilationUnit openCLCompileUnit = compileForMarawaccBackend(meta.inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, meta.firstValue, meta.interoperable,
                             meta.lexicalScopes, inputArgs);
             long totalTime = System.nanoTime() - startTime;
-            if (ASTxOptions.profileOpenCL_ASTx) {
-                System.out.println("COMPILATION TIME: " + totalTime);
-            }
+            // if (ASTxOptions.profileOpenCL_ASTx) {
+            // System.out.println("COMPILATION TIME: " + totalTime);
+            // }
             return runWithMarawaccAccelerator(meta.inputPArray, graphToCompile, openCLCompileUnit, function, false);
         }
         return null;

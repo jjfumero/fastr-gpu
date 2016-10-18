@@ -222,7 +222,7 @@ public class RCommand {
                         continue;
                     }
 
-                    installParallelMethods();
+                    // installParallelMethods();
 
                     String continuePrompt = getContinuePrompt();
                     Source subSource = Source.subSource(source, startLength).withMimeType(TruffleRLanguage.MIME);
