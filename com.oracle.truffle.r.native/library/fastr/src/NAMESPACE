@@ -43,6 +43,9 @@ export(marawacc.gpusapply)
 export(marawacc.parray)		# PArray transformation
 export(marawacc.isOpenCL)
 
+# Debugging
+export(compiler.printAST)
+
 # Utilities
 export(nanotime)
 export(random)

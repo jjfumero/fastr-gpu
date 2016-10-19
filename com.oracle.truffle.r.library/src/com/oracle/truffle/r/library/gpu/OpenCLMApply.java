@@ -618,7 +618,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         } else if (ASTxOptions.usePArrays) {
             // get the references
             return ASTxUtils.unMarshallFromFullPArrays(outputType, (PArray) result.get(0));
-        } else if (ASTxOptions.newPArrayStrategy) {
+        } else if (ASTxOptions.usePrimitivePArray) {
             // Get the stored array reference
             return ASTxUtils.unmarshalFromPrimitivePArrays(outputType, (PArray) result.get(0));
         } else {

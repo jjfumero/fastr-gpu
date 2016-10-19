@@ -1770,7 +1770,7 @@ public class ASTxUtils {
             // XXX: This branch is deprecated
 
             inputPArrayFormat = ASTxUtils.marshalWithReferences(input, additionalArgs, inputTypeList);
-        } else if (ASTxOptions.newPArrayStrategy) {
+        } else if (ASTxOptions.usePrimitivePArray) {
             // No marshal, just passing primitive vectors, we completely save the marshal and
             // unmarshal
             inputPArrayFormat = ASTxUtils.createPArrayForPrimitives(input, additionalArgs, inputTypeList);

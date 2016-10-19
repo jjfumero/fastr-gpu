@@ -104,7 +104,7 @@ public final class ASTxOptions {
     /**
      * It uses the new {@link PArray} strategy for passing primitive array vectors.
      */
-    public static boolean newPArrayStrategy = getBoolean("astx.marawacc.primArrays", true);
+    public static boolean usePrimitivePArray = getBoolean("astx.marawacc.primArrays", true);
 
     /**
      * This option is just for debugging. It runs on the AST interpreter and there is no interaction
