@@ -50,7 +50,7 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 public abstract class OCLVectorMulBuiltin extends RExternalBuiltinNode.Arg2 {
 
     // @formatter:off
-    private static final String SAXPY_KERNELS=
+    private static final String DAXPY_KERNELS=
                     "__kernel void vectorMultiplicationDouble( __global double *a, __global double *b, __global double *c)\n" +
                     "{\n" +
                     "   int idx = get_global_id(0);\n" +
@@ -93,7 +93,6 @@ public abstract class OCLVectorMulBuiltin extends RExternalBuiltinNode.Arg2 {
         // get the first GPU platform
         boolean found = false;
         for (int i = 0; i < numPlatforms; i++) {
-            // System.out.println("Checking platform: " + i);
             if (getGPUPlatform(platforms[i])) {
                 found = true;
                 break;
@@ -118,7 +117,7 @@ public abstract class OCLVectorMulBuiltin extends RExternalBuiltinNode.Arg2 {
         cl_device_id devices[] = new cl_device_id[numDevices];
         CL.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, numBytes[0], Pointer.to(devices), null);
         commandQueue = CL.clCreateCommandQueue(context, devices[0], CL.CL_QUEUE_PROFILING_ENABLE, null);
-        String programSource = SAXPY_KERNELS;
+        String programSource = DAXPY_KERNELS;
         program = CL.clCreateProgramWithSource(context, 1, new String[]{programSource}, null, null);
         CL.clBuildProgram(program, 0, null, null, null, null);
         kernelDouble = CL.clCreateKernel(program, "vectorMultiplicationDouble", null);

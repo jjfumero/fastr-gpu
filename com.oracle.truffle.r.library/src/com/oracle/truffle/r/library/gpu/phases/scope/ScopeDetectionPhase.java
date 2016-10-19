@@ -71,8 +71,8 @@ public class ScopeDetectionPhase extends Phase {
         Constant value = ((ConstantNode) node).getValue();
         if (value instanceof HotSpotObjectConstant) {
             HotSpotObjectConstantImpl constantValue = (HotSpotObjectConstantImpl) value;
-            Object object = constantValue.object();
-            rawData.add(object);
+            Object data = constantValue.object();
+            rawData.add(data);
             arrayConstantNodes.add((ConstantNode) node);
         }
     }
