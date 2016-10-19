@@ -1,4 +1,12 @@
-# ChangeLog ASTx GPU Compiler Framework
+# ChangeLog ASTx OpenCL Compiler and Execution Environment
+
+## astx-0.11
+	* Option for node rewriting for scope detection
+	* New Parray Strategy for primitives arrays such as int[] or double[], marshal is zero overhead.
+	* RSequence with the new PArray primitives
+	* Deoptimisation technique improved (maximum number of deopts and node rewriting supported)	
+	* Buffer reallocation when needed for the same input function
+	* MApply parallel version supported 
 
 ## astx-0.10
 	* Deoptimizations supported with a flag in OpenCL
