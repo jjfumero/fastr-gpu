@@ -12,6 +12,6 @@ mx Rscript --J @'-DR:+IgnoreVisibility
 -Xmx12g -Xms12g 
 -XX:+UseSerialGC 
 -Dmarawacc.printOCLKernel=true 
--Dastx.marawacc.optimizeRSequence=false  
+-Dastx.marawacc.optimizeRSequence=true  
 -Dastx.marawacc.primArrays=true ' $* 
  
