@@ -48,9 +48,9 @@ public abstract class MarawaccInitilization extends RExternalBuiltinNode.Arg0 {
     }
 
     /**
-     * Communication via marawac.init()
-     *
-     * @return Object
+     * <code>
+     * marawac.init()
+     * </code>
      */
     @Specialization
     public int doInitialization() {
