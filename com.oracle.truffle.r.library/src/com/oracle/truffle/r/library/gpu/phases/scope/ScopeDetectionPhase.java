@@ -23,12 +23,18 @@
 package com.oracle.truffle.r.library.gpu.phases.scope;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import jdk.vm.ci.hotspot.HotSpotObjectConstant;
-import jdk.vm.ci.hotspot.HotSpotObjectConstantImpl;
-import jdk.vm.ci.meta.Constant;
+import jdk.vm.ci.meta.JavaConstant;
+import jdk.vm.ci.meta.JavaKind;
+import jdk.vm.ci.runtime.JVMCI;
+import jdk.vm.ci.runtime.JVMCICompiler;
 import uk.ac.ed.datastructures.common.PArray;
 
+import com.oracle.graal.api.replacements.SnippetReflectionProvider;
+import com.oracle.graal.api.runtime.GraalJVMCICompiler;
+import com.oracle.graal.api.runtime.GraalRuntime;
 import com.oracle.graal.graph.Node;
 import com.oracle.graal.graph.NodePosIterator;
 import com.oracle.graal.nodes.ConstantNode;
@@ -47,6 +53,13 @@ public class ScopeDetectionPhase extends Phase {
 
     private ArrayList<Object> rawData;
     private ArrayList<ConstantNode> arrayConstantNodes;
+    private GraalRuntime graal;
+    private SnippetReflectionProvider reflectionProvider;
+
+    public ScopeDetectionPhase() {
+        initializeRuntime();
+        initSnippetReflection();
+    }
 
     @Override
     protected void run(StructuredGraph graph) {
@@ -67,13 +80,43 @@ public class ScopeDetectionPhase extends Phase {
         return arrayConstantNodes;
     }
 
-    private void analyseConstant(Node node) {
-        Constant value = ((ConstantNode) node).getValue();
+    private GraalRuntime initializeRuntime() {
+        JVMCICompiler compiler = JVMCI.getRuntime().getCompiler();
+        if (compiler instanceof GraalJVMCICompiler) {
+            GraalJVMCICompiler graalCompiler = (GraalJVMCICompiler) compiler;
+            graal = graalCompiler.getGraalRuntime();
+            return graalCompiler.getGraalRuntime();
+        } else {
+            return null;
+        }
+    }
+
+    private void initSnippetReflection() {
+        reflectionProvider = graal.getCapability(SnippetReflectionProvider.class);
+    }
+
+    private void getArrayConstantReference(JavaConstant value) {
+        // In R we currently support 3 main data types: double[], int[] and boolean[]
+        String valueString = value.toValueString();
+        if (valueString.startsWith("double[")) {
+            double[] asObject = reflectionProvider.asObject(double[].class, value);
+            System.out.println(Arrays.toString(asObject));
+        } else if (valueString.startsWith("int[")) {
+            int[] asObject = reflectionProvider.asObject(int[].class, value);
+            rawData.add(asObject);
+        } else if (valueString.startsWith("boolean[")) {
+            boolean[] asObject = reflectionProvider.asObject(boolean[].class, value);
+            rawData.add(asObject);
+        }
+    }
+
+    private void analyseConstant(ConstantNode node) {
+        JavaConstant value = node.asJavaConstant();
         if (value instanceof HotSpotObjectConstant) {
-            HotSpotObjectConstantImpl constantValue = (HotSpotObjectConstantImpl) value;
-            Object data = constantValue.object();
-            rawData.add(data);
-            arrayConstantNodes.add((ConstantNode) node);
+            if (node.getStackKind() == JavaKind.Object) {
+                getArrayConstantReference(value);
+                arrayConstantNodes.add(node);
+            }
         }
     }
 
@@ -82,7 +125,7 @@ public class ScopeDetectionPhase extends Phase {
             Node scopeNode = iterator.next();
             if (scopeNode instanceof ConstantNode) {
                 if (!arrayConstantNodes.contains(scopeNode)) {
-                    analyseConstant(scopeNode);
+                    analyseConstant((ConstantNode) scopeNode);
                 }
             }
         }
