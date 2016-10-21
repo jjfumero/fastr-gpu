@@ -31,7 +31,7 @@ import uk.ac.ed.datastructures.common.AcceleratorPArray;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.interop.InteropTable;
 import uk.ac.ed.datastructures.interop.Interoperable;
-import uk.ac.ed.jpai.graal.GraalGPUCompiler;
+import uk.ac.ed.jpai.graal.GraalOpenCLJITCompiler;
 import uk.ac.ed.jpai.graal.GraalOpenCLCompilationUnit;
 import uk.ac.ed.jpai.graal.GraalOpenCLExecutor;
 import uk.ac.ed.marawacc.compilation.MarawaccGraalIRCache;
@@ -66,7 +66,8 @@ import com.oracle.truffle.r.runtime.data.RVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 
 /**
- * AST Node to check the connection with Marawacc. This is just a proof of concept.
+ * MApply parallel skeleton for OpenCL. It executes the normal R mapply function but it has the
+ * logic for JIT compilation for OpenCL and execution.
  */
 public final class OpenCLMApply extends RExternalBuiltinNode {
 
@@ -105,12 +106,12 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
 
         new FilterInterpreterNodes(6).apply(graphToCompile);
-        CompilerUtils.dumpGraph(graphToCompile, "Filter");
+        CompilerUtils.dumpGraph(graphToCompile, "GraphToTheOpenCLBackend");
 
-        GraalOpenCLCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToOpenCL(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData(),
+        GraalOpenCLCompilationUnit gpuCompilationUnit = GraalOpenCLJITCompiler.compileGraphToOpenCL(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData(),
                         scopedNodes, nArgs);
-        gpuCompilationUnit.setScopeArrays(scopeData.getData());
-        gpuCompilationUnit.setScopeNodes(scopedNodes);
+        // gpuCompilationUnit.setScopeArrays(scopeData.getData());
+        // gpuCompilationUnit.setScopeNodes(scopedNodes);
 
         // Insert graph into Truffle OpenCL Cache
         InternalGraphCache.INSTANCE.installGPUBinaryIntoCache(graphToCompile, gpuCompilationUnit);
@@ -201,7 +202,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
                             meta.lexicalScopes, inputArgs);
             long totalTime = System.nanoTime() - startTime;
             if (ASTxOptions.profileOpenCL_ASTx) {
-                System.out.println("COMPILATION TIME: " + totalTime);
+                Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_COMPILATION_TIME, "compilationTime", totalTime);
             }
             return runWithMarawaccAccelerator(meta.inputPArray, graphToCompile, openCLCompileUnit, function, false);
         }

@@ -111,8 +111,6 @@ public class FilterInterpreterNodes extends Phase {
             }
         }
 
-        System.out.println(prevList);
-
         for (Node n : isNullNodes) {
             removeIsNullNode(n);
         }

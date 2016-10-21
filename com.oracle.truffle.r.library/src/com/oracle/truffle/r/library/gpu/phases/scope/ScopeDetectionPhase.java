@@ -23,7 +23,6 @@
 package com.oracle.truffle.r.library.gpu.phases.scope;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import jdk.vm.ci.hotspot.HotSpotObjectConstant;
 import jdk.vm.ci.meta.JavaConstant;
@@ -80,6 +79,7 @@ public class ScopeDetectionPhase extends Phase {
         return arrayConstantNodes;
     }
 
+    // Note: this part depends totally on Graal. Separate the VM
     private GraalRuntime initializeRuntime() {
         JVMCICompiler compiler = JVMCI.getRuntime().getCompiler();
         if (compiler instanceof GraalJVMCICompiler) {
@@ -95,12 +95,16 @@ public class ScopeDetectionPhase extends Phase {
         reflectionProvider = graal.getCapability(SnippetReflectionProvider.class);
     }
 
+    /**
+     * In R we currently support 3 main data types: double[], int[] and boolean[]
+     *
+     * @param value
+     */
     private void getArrayConstantReference(JavaConstant value) {
-        // In R we currently support 3 main data types: double[], int[] and boolean[]
         String valueString = value.toValueString();
         if (valueString.startsWith("double[")) {
             double[] asObject = reflectionProvider.asObject(double[].class, value);
-            System.out.println(Arrays.toString(asObject));
+            rawData.add(asObject);
         } else if (valueString.startsWith("int[")) {
             int[] asObject = reflectionProvider.asObject(int[].class, value);
             rawData.add(asObject);

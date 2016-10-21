@@ -1,0 +1,9 @@
+./run benchmarks/fastR/saxpy/saxpyGPU.R 1000 
+./run benchmarks/fastR/blackscholes/blackscholesGPU.R 1000
+./run benchmarks/fastR/montecarlo/montecarloGPU.R 1000
+./run benchmarks/fastR/kmeans/kmeansGPU.R 10000
+./run benchmarks/fastR/nbody/nbodyGPU.R 1000
+./run benchmarks/fastR/dft/dftGPU.R 1000
+./run benchmarks/fastR/spectralNorm/spectralNormGPU.R 1000
+./run benchmarks/fastR/mandelbrot/mandelbrotGPU.R 1000
+./run benchmarks/fastR/pi/piGPU.R 1000

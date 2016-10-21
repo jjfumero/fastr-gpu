@@ -13,6 +13,9 @@ update:
 eclipse:
 	mx eclipseinit 
 
+testOCL:
+	./scripts/runBenchTests.sh 
+
 unittests:
 	./run examples/unittestTuples.R
 

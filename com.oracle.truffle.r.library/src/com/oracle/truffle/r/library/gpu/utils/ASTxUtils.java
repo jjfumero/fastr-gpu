@@ -216,19 +216,12 @@ public class ASTxUtils {
     }
 
     public static Object[] createRArguments(int nArgs, RFunction function, RAbstractVector input, RAbstractVector[] args, String[] nameArgs, int idx, RVector[] lexicalScopes) {
-
-        System.out.println(Arrays.toString(lexicalScopes));
-
         // prepare args for the function with varargs
         Object[] argsRFunction = new Object[nArgs];
-
-        System.out.println("nArgs:" + nArgs);
-        System.out.println("lexicalScope #:" + lexicalScopes.length);
 
         argsRFunction[0] = input.getDataAtAsObject(idx);
         int last = 0;
         if (args != null) {
-            System.out.println(args.length);
             for (int i = 0; i < args.length; i++) {
                 argsRFunction[i + 1] = args[i].getDataAtAsObject(idx);
                 last = i;
@@ -1845,7 +1838,6 @@ public class ASTxUtils {
 
         ArrayList<com.oracle.graal.graph.Node> scopedNodes = null;
         if (scopeWithDeopt.isScopeDetected()) {
-            System.out.println(scopeWithDeopt.getGuardNodes());
             CleanFixedGuardNodes clean = new CleanFixedGuardNodes(scopeWithDeopt.getGuardNodes());
             clean.apply(graph);
             CompilerUtils.dumpGraph(graph, "Scope Clean Phase");
@@ -1854,7 +1846,6 @@ public class ASTxUtils {
             arraysDetectionPhase.apply(graph);
             if (arraysDetectionPhase.isScopeDetected()) {
                 scopedNodes = arraysDetectionPhase.getScopedNodes();
-                System.out.println(scopedNodes);
             }
         }
 
@@ -1876,7 +1867,6 @@ public class ASTxUtils {
 
         ArrayList<com.oracle.graal.graph.Node> scopedNodes = null;
         if (scopeWithDeopt.isScopeDetected()) {
-            System.out.println(scopeWithDeopt.getGuardNodes());
             CleanFixedGuardNodes clean = new CleanFixedGuardNodes(scopeWithDeopt.getGuardNodes());
             clean.apply(graph);
 
