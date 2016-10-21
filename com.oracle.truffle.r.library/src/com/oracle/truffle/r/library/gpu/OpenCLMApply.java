@@ -104,8 +104,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             scopedNodes = ASTxUtils.applyCompilationPhasesForOpenCL(graphToCompile);
         }
 
-        // new FilterInterpreterNodes(6).apply(graphToCompile);
-        // CompilerUtils.dumpGraph(graphToCompile, "Filter");
+        new FilterInterpreterNodes(6).apply(graphToCompile);
+        CompilerUtils.dumpGraph(graphToCompile, "Filter");
 
         GraalOpenCLCompilationUnit gpuCompilationUnit = GraalGPUCompiler.compileGraphToOpenCL(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData(),
                         scopedNodes, nArgs);

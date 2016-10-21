@@ -27,7 +27,7 @@ import java.util.function.Function;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
-import com.oracle.truffle.api.CompilerDirectives.OpenCLArrayComplete;
+import com.oracle.truffle.api.CompilerDirectives.ArrayComplete;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.utilities.ConditionProfile;
 import com.oracle.truffle.r.runtime.FastROptions;
@@ -64,7 +64,8 @@ public abstract class RVector extends RAttributeStorage implements RShareable, R
     private static final RStringVector implicitClassHeaderArray = RDataFactory.createStringVector(new String[]{RType.Array.getName()}, true);
     private static final RStringVector implicitClassHeaderMatrix = RDataFactory.createStringVector(new String[]{RType.Matrix.getName()}, true);
 
-    @OpenCLArrayComplete protected boolean complete; // "complete" means: does not contain NAs
+    @ArrayComplete protected boolean complete; // "complete" means: does not contain NAs
+
     protected int[] dimensions;
     protected RStringVector names;
     private RList dimNames;
