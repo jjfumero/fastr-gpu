@@ -3,6 +3,5 @@ Some ideas to support in the compiler:
 * Support formulas for OpenCL on GPUs
 * Support data frames
 * Support for array vector operations
-* Count number of operations in R
-
+* Benchmarks: Count number of operations in R
 
