@@ -43,8 +43,8 @@ benchmark <- function(inputSize) {
 		print(paste("Total Time: ", total))
 
 		if (CHECK_RESULT) {
-			for (i in 1:totalSize) {
-				if (abs(resultSeq[i] - result[i]) > 0.1) {
+			for (j in 1:totalSize) {
+				if (abs(resultSeq[j] - result[j]) > 0.1) {
 					print("Result is wrong")
 					break
 				}
