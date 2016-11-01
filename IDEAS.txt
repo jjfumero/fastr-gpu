@@ -4,4 +4,7 @@ Some ideas to support in the compiler:
 * Support data frames
 * Support for array vector operations
 * Benchmarks: Count number of operations in R
+* Montecarlo benchmark
+* Matrix Vector benchmark
+
 
