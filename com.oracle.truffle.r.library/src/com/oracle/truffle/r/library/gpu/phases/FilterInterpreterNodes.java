@@ -13,6 +13,7 @@ import com.oracle.graal.nodes.LogicNode;
 import com.oracle.graal.nodes.StructuredGraph;
 import com.oracle.graal.nodes.ValueNode;
 import com.oracle.graal.nodes.calc.IsNullNode;
+import com.oracle.graal.nodes.extended.BoxNode;
 import com.oracle.graal.nodes.java.CheckCastNode;
 import com.oracle.graal.nodes.java.LoadIndexedNode;
 import com.oracle.graal.phases.Phase;
@@ -24,14 +25,19 @@ import com.oracle.graal.phases.util.Providers;
 public class FilterInterpreterNodes extends Phase {
 
     private int idx;
-    private ArrayList<Node> subTree = new ArrayList<>();
-    private ArrayList<Node> checkCastNodes = new ArrayList<>();
-    private ArrayList<Node> isNullNodes = new ArrayList<>();
-    private ArrayList<Node> guardNodes = new ArrayList<>();
-    private ArrayList<Node> prevList = new ArrayList<>();
+    private ArrayList<Node> subTree;
+    private ArrayList<Node> checkCastNodes;
+    private ArrayList<Node> isNullNodes;
+    private ArrayList<Node> guardNodes;
+    private ArrayList<Node> prevList;
 
     public FilterInterpreterNodes(int idx) {
         this.idx = idx;
+        subTree = new ArrayList<>();
+        checkCastNodes = new ArrayList<>();
+        isNullNodes = new ArrayList<>();
+        guardNodes = new ArrayList<>();
+        prevList = new ArrayList<>();
     }
 
     private static void deadCodeElimination(StructuredGraph graph) {
@@ -62,7 +68,6 @@ public class FilterInterpreterNodes extends Phase {
 
     @Override
     protected void run(StructuredGraph graph) {
-
         // Look at the LoadIndexed
         for (Node node : graph.getNodes()) {
             if (node instanceof LoadIndexedNode) {
@@ -106,6 +111,11 @@ public class FilterInterpreterNodes extends Phase {
                         first = subTree.get(i).successors().first();
                     }
                 } else {
+                    if (!(first instanceof BoxNode)) {
+                        isNullNodes.clear();
+                        checkCastNodes.clear();
+                        guardNodes.clear();
+                    }
                     notFound = false;
                 }
             }

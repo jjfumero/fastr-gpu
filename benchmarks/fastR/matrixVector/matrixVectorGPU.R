@@ -11,7 +11,7 @@ if (length(args) == 0) {
 size <- as.integer(args[1])
 
 REPETITIONS <- 11
-CHECK_RESULT <- TRUE
+CHECK_RESULT <- FALSE
 
 ## Lambda expression for the computation
 benchmark <- function(inputSize) {
@@ -21,7 +21,7 @@ benchmark <- function(inputSize) {
 		for (jdx in 1:size) {
 			m <- _matrix[idx * size + jdx]
 			v <- _vector[jdx]
-			r <- m * v			
+			r <- m * v
 			result <- result + r
 		}
 		return(result)
@@ -44,7 +44,6 @@ benchmark <- function(inputSize) {
 	}
 
 	for (i in 1:REPETITIONS) {
-		print("Running benchmark")
 		system.gc()
 		start <- nanotime()
 		result <- marawacc.testGPU(index, matrixVectorMultiplicationGPU)

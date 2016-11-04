@@ -13,7 +13,7 @@ size <- as.integer(args[1])
 
 REPETITIONS <- 11
 
-CHECK <- TRUE
+CHECK <- FALSE
 
 ## Lambda expression for the computation
 benchmark <- function(inputSize) {
