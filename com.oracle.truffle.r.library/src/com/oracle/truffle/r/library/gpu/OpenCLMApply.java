@@ -669,7 +669,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     }
 
     @SuppressWarnings("deprecation")
-    private static void checkOptions() {
+    private static void checkJVMOptions() {
         if (ASTxOptions.usePArrays) {
             // This will be deprecated
             RVector.WITH_PARRAYS = true;
@@ -696,7 +696,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         Profiler.getInstance().print("\nIteration: " + iteration++);
 
-        checkOptions();
+        checkJVMOptions();
 
         long start = System.nanoTime();
 
