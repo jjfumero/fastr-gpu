@@ -710,7 +710,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             parrayFormat = true;
             parrayInput = (PArray<?>) firstParam;
         } else {
-            throw new RuntimeException("Vector or PArray expected, but " + firstParam.getClass() + " found");
+            throw new RuntimeException("Data type not supported: R Vector or PArray expected, but " + firstParam.getClass() + " found");
         }
 
         RootCallTarget target = null;
@@ -721,7 +721,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         // Get the callTarget from the cache
         if (!RGPUCache.INSTANCE.contains(function)) {
-            // Lexical scoping from the AST level
+            // Lexical scoping in the AST level
             scopeVars = ASTxUtils.lexicalScopingAST(function);
             ScopeVarInfo valueOfScopeArrays = ASTxUtils.getValueOfScopeArrays(scopeVars, function);
             if (valueOfScopeArrays != null) {
@@ -755,8 +755,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         if (!parrayFormat) {
             mapResult = computeOpenCLMApplyForRVector(args, isRewritten, vectors, lexicalScopes, function, inputRArray, target, numArgumentsOriginalFunction);
         } else {
-            // Note this path with parrays as input does not allow the experimental optimisation
-            // node scope rewriting.
+            // Note this path with {@link Parray} as input does not allow the experimental
+            // optimisation node scope rewriting.
             mapResult = computeOpenCLMApplyForPArray(args, lexicalScopes, function, parrayInput, target, numArgumentsOriginalFunction);
         }
 
