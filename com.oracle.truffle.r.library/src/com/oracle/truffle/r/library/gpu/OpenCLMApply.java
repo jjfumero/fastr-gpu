@@ -24,16 +24,15 @@ package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
 
-import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.accelerator.profiler.Profiler;
 import uk.ac.ed.accelerator.profiler.ProfilerType;
 import uk.ac.ed.datastructures.common.AcceleratorPArray;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.interop.InteropTable;
 import uk.ac.ed.datastructures.interop.Interoperable;
-import uk.ac.ed.jpai.graal.GraalOpenCLJITCompiler;
 import uk.ac.ed.jpai.graal.GraalOpenCLCompilationUnit;
 import uk.ac.ed.jpai.graal.GraalOpenCLExecutor;
+import uk.ac.ed.jpai.graal.GraalOpenCLJITCompiler;
 import uk.ac.ed.marawacc.compilation.MarawaccGraalIRCache;
 import uk.ac.ed.marawacc.graal.CompilerUtils;
 
@@ -96,9 +95,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         if (lexicalScope != null) {
             scopeData.setData(lexicalScope);
         }
-        GraalAcceleratorOptions.printOffloadKernel = true;
-        ArrayList<com.oracle.graal.graph.Node> scopedNodes;
 
+        ArrayList<com.oracle.graal.graph.Node> scopedNodes;
         if (ASTxOptions.debug) {
             scopedNodes = ASTxUtils.applyCompilationPhasesForOpenCLAndDump(graphToCompile);
         } else {

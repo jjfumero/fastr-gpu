@@ -1,17 +1,19 @@
 #! /bin/bash
 
-# For classloading
-#mx Rscript --J @'-DR:+IgnoreVisibility -G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilation -XX:+TraceClassLoading -XX:+TraceClassUnloading -XX:-UseJVMCIClassLoader' $* 
+function runDebugModeForClassLoading {
+	# For classloading
+	mx Rscript --J @'-DR:+IgnoreVisibility -G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilation -XX:+TraceClassLoading -XX:+TraceClassUnloading -XX:-UseJVMCIClassLoader' $* 
+}
 
 mx Rscript --J @'-DR:+IgnoreVisibility 
 -G:-TruffleOSR 
 -G:-TruffleBackgroundCompilation 
--G:+TraceTruffleCompilation  
+-G:-TraceTruffleCompilation  
 -XX:-UseJVMCIClassLoader 
--Dmarawacc.printOCLInfo=true 
+-Dmarawacc.printOCLKernel=false
+-Dmarawacc.printOCLInfo=false 
 -Dmarawacc.dumpGraph=false 
 -Dastx.marawacc.profiler=true  
 -Dastx.marawacc.optimizeRSequence=true 
--Dastx.marawacc.primArrays=true 
--Dastx.marawacc.scoperewriting=false ' $* 
+-Dastx.marawacc.primArrays=true ' $* 
 
