@@ -74,6 +74,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private static final boolean ISTRUFFLE = true;
     private static int iteration = 0;
     private long startTime;
+    ArrayList<Long> times = new ArrayList<>(5);
 
     /**
      * Given the {@link StructuredGraph}, this method invokes the OpenCL code generation. We also
@@ -190,6 +191,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             if (ASTxOptions.debug) {
                 System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU - Iteration: " + index);
             }
+            times.add(System.nanoTime());
             GraalOpenCLCompilationUnit openCLCompileUnit = compileForMarawaccBackend(meta.inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, meta.firstValue, meta.interoperable,
                             meta.lexicalScopes, inputArgs);
             long totalTime = System.nanoTime() - startTime;
@@ -540,6 +542,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private RAbstractVector computeOpenCLMApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes,
                     int numArgumentsOriginalFunction) {
 
+        times.add(System.nanoTime());
+
         // Meta-data objects from the cache
         RFunctionMetadata cachedFunctionMetadata = getCachedFunctionMetadata(input, function, additionalArgs);
         int nArgs = cachedFunctionMetadata.getnArgs();
@@ -574,11 +578,13 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             boolean executionValid = false;
             int deoptCounter = 0;
             while (!executionValid) {
+                times.add(System.nanoTime());
                 runAfterDeoptWithThreadID(input, target, function, nArgs, additionalArgs, argsName, value, threadID);
                 invalidateCaches(function, target);
                 try {
                     result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArray, interoperable, lexicalScopes, numArgumentsOriginalFunction);
                     executionValid = true;
+                    times.add(System.nanoTime());
                 } catch (AcceleratorExecutionException e1) {
                     threadID = e1.getThreadID();
                     deoptCounter++;
@@ -596,10 +602,20 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         long startUnmarshal = System.nanoTime();
         RAbstractVector resultFastR = getResult(isGPUExecution, outputType, result);
         long endUnmarshal = System.nanoTime();
+        times.add(System.nanoTime());
 
         if (ASTxOptions.profileOpenCL_ASTx) {
             writeProfilerIntoBuffers(startMarshal, endMarshal, startExecution, endExecution, startUnmarshal, endUnmarshal);
         }
+
+        if (ASTxOptions.traceDeoptimisationTimers) {
+            int i = 0;
+            for (long t : times) {
+                Profiler.getInstance().writeInBuffer(ProfilerType.DEOPTTRACE, "DEOPTTRACE" + i, t);
+                i++;
+            }
+        }
+
         return resultFastR;
     }
 
@@ -685,6 +701,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     @Override
     public Object call(RArgsValuesAndNames args) {
+
+        times.clear();
 
         Profiler.getInstance().print("\nIteration: " + iteration++);
 

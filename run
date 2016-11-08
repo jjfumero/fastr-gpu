@@ -10,8 +10,9 @@ mx Rscript --J @'-DR:+IgnoreVisibility
 -G:-TruffleBackgroundCompilation 
 -G:-TraceTruffleCompilation  
 -XX:-UseJVMCIClassLoader 
--Dmarawacc.printOCLKernel=true
--Dmarawacc.printOCLInfo=true
+-Dmarawacc.printOCLKernel=false
+-Dastx.marawacc.trace.deopt=true
+-Dmarawacc.printOCLInfo=false
 -Dmarawacc.dumpGraph=false 
 -Dastx.marawacc.profiler=true  
 -Dastx.marawacc.optimizeRSequence=true 

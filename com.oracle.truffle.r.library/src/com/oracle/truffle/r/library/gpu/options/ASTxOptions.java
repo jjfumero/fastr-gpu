@@ -90,6 +90,11 @@ public final class ASTxOptions {
     public static boolean profileOpenCL_ASTx = getBoolean("astx.marawacc.profiler", true);
 
     /**
+     * Trace deoptimisations timers.
+     */
+    public static boolean traceDeoptimisationTimers = getBoolean("astx.marawacc.trace.deopt", false);
+
+    /**
      * The function it is rewritten itself with the scope variables as parameters. Therefore with
      * this option side effects are not allowed.
      */
