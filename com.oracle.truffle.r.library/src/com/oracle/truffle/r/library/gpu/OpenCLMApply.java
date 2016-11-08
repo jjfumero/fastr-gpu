@@ -110,12 +110,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         GraalOpenCLCompilationUnit gpuCompilationUnit = GraalOpenCLJITCompiler.compileGraphToOpenCL(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData(),
                         scopedNodes, nArgs);
-        // gpuCompilationUnit.setScopeArrays(scopeData.getData());
-        // gpuCompilationUnit.setScopeNodes(scopedNodes);
-
-        // Insert graph into Truffle OpenCL Cache
         InternalGraphCache.INSTANCE.installGPUBinaryIntoCache(graphToCompile, gpuCompilationUnit);
-
         return gpuCompilationUnit;
     }
 
@@ -163,7 +158,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return output;
     }
 
-    private static void checkIfFunctionIsInCache(RFunction function, RootCallTarget callTarget) {
+    private static void checkIfRFunctionIsInCache(RFunction function, RootCallTarget callTarget) {
         if (RGPUCache.INSTANCE.getCachedObjects(function).getIDExecution() == 0) {
             callTarget.generateIDForOpenCL();
             // Set the GPU execution to true;
@@ -179,7 +174,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         private PArray<?> inputPArray;
 
         public JITMetaInput(Object firstValue, Interoperable interoperable, Object[] lexicalScopes, PArray<?> inputPArray) {
-            super();
             this.firstValue = firstValue;
             this.interoperable = interoperable;
             this.lexicalScopes = lexicalScopes;
@@ -202,7 +196,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
                             meta.lexicalScopes, inputArgs);
             long totalTime = System.nanoTime() - startTime;
             if (ASTxOptions.profileOpenCL_ASTx) {
-                Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_COMPILATION_TIME, "compilationTime", totalTime);
+                Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_COMPILATION_TIME, "TruffleCompilationTime", totalTime);
             }
             return runWithMarawaccAccelerator(meta.inputPArray, graphToCompile, openCLCompileUnit, function, false);
         }
@@ -276,7 +270,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int argsOriginal) throws AcceleratorExecutionException {
 
         startTime = System.nanoTime();
-        checkIfFunctionIsInCache(function, callTarget);
+        checkIfRFunctionIsInCache(function, callTarget);
         StructuredGraph graphToCompile = MarawaccGraalIRCache.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         GraalOpenCLCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
@@ -332,8 +326,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private ArrayList<Object> runJavaOpenCLJIT(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int totalSize, int inputArgs) throws AcceleratorExecutionException {
 
-        checkIfFunctionIsInCache(function, callTarget);
-
+        startTime = System.nanoTime();
+        checkIfRFunctionIsInCache(function, callTarget);
         StructuredGraph graphToCompile = MarawaccGraalIRCache.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         GraalOpenCLCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
@@ -362,7 +356,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     @SuppressWarnings("unused")
     private static ArrayList<Object> runAfterDeopt(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
                     Object firstValue, int totalSize) {
-        checkIfFunctionIsInCache(function, callTarget);
+        checkIfRFunctionIsInCache(function, callTarget);
         ArrayList<Object> output = setOutput(firstValue);
         for (int i = 1; i < totalSize; i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
@@ -374,7 +368,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     private static ArrayList<Object> runAfterDeoptWithID(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
                     Object firstValue, int threadID) {
-        checkIfFunctionIsInCache(function, callTarget);
+        checkIfRFunctionIsInCache(function, callTarget);
         ArrayList<Object> output = setOutput(firstValue);
         Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, threadID);
         Object value = callTarget.call(argsPackage);
@@ -384,7 +378,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     private static ArrayList<Object> runAfterDeoptWithThreadID(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue, int threadID) {
-        checkIfFunctionIsInCache(function, callTarget);
+        checkIfRFunctionIsInCache(function, callTarget);
         ArrayList<Object> output = setOutput(firstValue);
         Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, threadID);
         Object value = callTarget.call(argsPackage);
@@ -569,10 +563,10 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         ArrayList<Object> result = null;
         long startExecution = System.nanoTime();
         try {
-            if (!ASTxOptions.runOnASTIntepreterOnly) {
-                result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArray, interoperable, lexicalScopes, numArgumentsOriginalFunction);
-            } else {
+            if (ASTxOptions.runOnASTIntepreterOnly) {
                 result = runInASTInterpreter(input, target, function, nArgs, additionalArgs, argsName, value);
+            } else {
+                result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArray, interoperable, lexicalScopes, numArgumentsOriginalFunction);
             }
         } catch (AcceleratorExecutionException e) {
             if (ASTxOptions.debug) {
