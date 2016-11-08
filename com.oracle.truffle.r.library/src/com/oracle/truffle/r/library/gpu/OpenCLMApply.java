@@ -76,8 +76,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private static int iteration = 0;
     private long startTime;
 
-    ArrayList<com.oracle.graal.graph.Node> scopedNodes;
-
     /**
      * Given the {@link StructuredGraph}, this method invokes the OpenCL code generation. We also
      * need some meta-data to generate the code such as the input array (in {@link PArray} form, and
@@ -89,7 +87,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
      * @param firstValue
      * @return {@link GraalOpenCLCompilationUnit}
      */
-    private GraalOpenCLCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue, Interoperable interoperable,
+    private static GraalOpenCLCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue,
+                    Interoperable interoperable,
                     Object[] lexicalScope, int nArgs) {
 
         ScopeData scopeData = ASTxUtils.scopeArrayConstantDetection(graphToCompile);
@@ -98,6 +97,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             scopeData.setData(lexicalScope);
         }
         GraalAcceleratorOptions.printOffloadKernel = true;
+        ArrayList<com.oracle.graal.graph.Node> scopedNodes;
 
         if (ASTxOptions.debug) {
             scopedNodes = ASTxUtils.applyCompilationPhasesForOpenCLAndDump(graphToCompile);
@@ -668,6 +668,12 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return mapResult;
     }
 
+    private RAbstractVector computeOpenCLMApplyForPArray(RArgsValuesAndNames args, Object[] lexicalScopes, RFunction function, PArray<?> parrayInput,
+                    RootCallTarget target, int numArgumentsOriginalFunction) {
+        PArray<?>[] additionalInputs = ASTxUtils.getPArrayWithAdditionalArguments(args);
+        return computeOpenCLMApply(parrayInput, function, target, additionalInputs, lexicalScopes, numArgumentsOriginalFunction);
+    }
+
     @SuppressWarnings("deprecation")
     private static void checkJVMOptions() {
         if (ASTxOptions.usePArrays) {
@@ -685,12 +691,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
-    private void cleanUp() {
-        if (scopedNodes != null) {
-            scopedNodes.clear();
-        }
-    }
-
     @Override
     public Object call(RArgsValuesAndNames args) {
 
@@ -703,6 +703,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         Object firstParam = args.getArgument(0);
         RFunction function = (RFunction) args.getArgument(1);
 
+        // For debugging
         if (ASTxOptions.printASTforRFunction) {
             ASTxUtils.printAST(function);
         }
@@ -762,11 +763,11 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         if (!parrayFormat) {
             mapResult = computeOpenCLMApplyForRVector(args, isRewritten, vectors, lexicalScopes, function, inputRArray, target, numArgumentsOriginalFunction);
         } else {
-            PArray<?>[] additionalInputs = ASTxUtils.getPArrayWithAdditionalArguments(args);
-            mapResult = computeOpenCLMApply(parrayInput, function, target, additionalInputs, lexicalScopes, numArgumentsOriginalFunction);
+            // Note this path with parrays as input does not allow the experimental optimisation
+            // node scope rewriting.
+            mapResult = computeOpenCLMApplyForPArray(args, lexicalScopes, function, parrayInput, target, numArgumentsOriginalFunction);
         }
 
-        cleanUp();
         long end = System.nanoTime();
         printProfiler(start, end, "gpu");
         return mapResult;
