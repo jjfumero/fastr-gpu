@@ -144,7 +144,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         PArray<Integer> deopt = executor.getDeoptBuffer();
         if (deopt != null) {
             if (deopt.get(0) != 0) {
-                System.out.println("DEOPT: " + deopt);
                 throw new AcceleratorExecutionException("Deoptimization in thread: ", deopt.get(0));
             }
         }
