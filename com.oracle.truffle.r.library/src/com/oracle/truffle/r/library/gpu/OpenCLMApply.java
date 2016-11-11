@@ -105,7 +105,10 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
 
         new FilterInterpreterNodes(6).apply(graphToCompile);
-        CompilerUtils.dumpGraph(graphToCompile, "GraphToTheOpenCLBackend");
+
+        if (ASTxOptions.debug) {
+            CompilerUtils.dumpGraph(graphToCompile, "GraphToTheOpenCLBackend");
+        }
 
         GraalOpenCLCompilationUnit gpuCompilationUnit = GraalOpenCLJITCompiler.compileGraphToOpenCL(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData(),
                         scopedNodes, nArgs);
@@ -615,7 +618,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
                 i++;
             }
         }
-
         return resultFastR;
     }
 

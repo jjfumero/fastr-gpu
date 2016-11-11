@@ -6,12 +6,12 @@ mx Rscript --J @'-DR:+IgnoreVisibility
 -G:-TruffleBackgroundCompilation 
 -G:-TraceTruffleCompilation  
 -XX:-UseJVMCIClassLoader 
--Dmarawacc.printOCLInfo=true 
+-Dmarawacc.printOCLInfo=false
 -Dmarawacc.dumpGraph=false 
 -Dastx.marawacc.profiler=true 
 -Xmx12g -Xms12g 
 -XX:+UseSerialGC 
--Dmarawacc.printOCLKernel=true 
+-Dmarawacc.printOCLKernel=false 
 -Dastx.marawacc.optimizeRSequence=true  
 -Dastx.marawacc.primArrays=true ' $* 
  

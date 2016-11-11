@@ -8,10 +8,10 @@ function runDebugModeForClassLoading {
 mx Rscript --J @'-DR:+IgnoreVisibility 
 -G:-TruffleOSR 
 -G:-TruffleBackgroundCompilation 
--G:+TraceTruffleCompilation  
+-G:-TraceTruffleCompilation  
 -XX:-UseJVMCIClassLoader 
--Dmarawacc.printOCLKernel=true
--Dastx.marawacc.trace.deopt=false
+-Dmarawacc.printOCLKernel=false
+-Dastx.marawacc.trace.deopt=true
 -Dmarawacc.printOCLInfo=false
 -Dmarawacc.dumpGraph=false 
 -Dastx.marawacc.profiler=true  

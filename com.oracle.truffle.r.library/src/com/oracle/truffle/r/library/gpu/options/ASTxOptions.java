@@ -61,7 +61,7 @@ public final class ASTxOptions {
     /**
      * Print internal messages such as deoptimisations, data types and so on for debugging.
      */
-    public static boolean debug = true;
+    public static boolean debug = false;
 
     /**
      * Print information related to the cache system.
@@ -92,7 +92,7 @@ public final class ASTxOptions {
     /**
      * Trace deoptimisations timers.
      */
-    public static boolean traceDeoptimisationTimers = getBoolean("astx.marawacc.trace.deopt", false);
+    public static boolean traceDeoptimisationTimers = getBoolean("astx.marawacc.trace.deopt", true);
 
     /**
      * The function it is rewritten itself with the scope variables as parameters. Therefore with
