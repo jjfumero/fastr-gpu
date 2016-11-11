@@ -73,7 +73,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private static final String R_EVAL_DESCRIPTION = "<eval>";
     private static final boolean ISTRUFFLE = true;
     private static int iteration = 0;
-    private long startTime;
     ArrayList<Long> times = new ArrayList<>(5);
 
     /**
@@ -196,10 +195,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             times.add(System.nanoTime());
             GraalOpenCLCompilationUnit openCLCompileUnit = compileForMarawaccBackend(meta.inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, meta.firstValue, meta.interoperable,
                             meta.lexicalScopes, inputArgs);
-            long totalTime = System.nanoTime() - startTime;
-            if (ASTxOptions.profileOpenCL_ASTx) {
-                Profiler.getInstance().writeInBuffer(ProfilerType.TRUFFLE_COMPILATION_TIME, "TruffleCompilationTime", totalTime);
-            }
+            times.add(System.nanoTime());
             return runWithMarawaccAccelerator(meta.inputPArray, graphToCompile, openCLCompileUnit, function, false);
         }
         return null;
@@ -271,7 +267,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private ArrayList<Object> runJavaOpenCLJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int argsOriginal) throws AcceleratorExecutionException {
 
-        startTime = System.nanoTime();
         checkIfRFunctionIsInCache(function, callTarget);
         StructuredGraph graphToCompile = MarawaccGraalIRCache.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         GraalOpenCLCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
@@ -328,7 +323,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private ArrayList<Object> runJavaOpenCLJIT(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int totalSize, int inputArgs) throws AcceleratorExecutionException {
 
-        startTime = System.nanoTime();
         checkIfRFunctionIsInCache(function, callTarget);
         StructuredGraph graphToCompile = MarawaccGraalIRCache.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         GraalOpenCLCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
