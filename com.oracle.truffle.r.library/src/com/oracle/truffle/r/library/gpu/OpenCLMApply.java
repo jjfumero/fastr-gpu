@@ -191,9 +191,13 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             if (ASTxOptions.debug) {
                 System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU - Iteration: " + index);
             }
+            Profiler.getInstance().writeInBuffer(ProfilerType.DEOPTTRACE, "OpenCL_Compilation_start", System.nanoTime());
             GraalOpenCLCompilationUnit openCLCompileUnit = compileForMarawaccBackend(meta.inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, meta.firstValue, meta.interoperable,
                             meta.lexicalScopes, inputArgs);
-            return runWithMarawaccAccelerator(meta.inputPArray, graphToCompile, openCLCompileUnit, function, false);
+            Profiler.getInstance().writeInBuffer(ProfilerType.DEOPTTRACE, "OpenCL_Exec_start", System.nanoTime());
+            ArrayList<Object> runWithMarawaccAccelerator = runWithMarawaccAccelerator(meta.inputPArray, graphToCompile, openCLCompileUnit, function, false);
+            Profiler.getInstance().writeInBuffer(ProfilerType.DEOPTTRACE, "OpenCL_Exec_end", System.nanoTime());
+            return runWithMarawaccAccelerator;
         }
         return null;
     }
@@ -264,7 +268,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private static ArrayList<Object> runJavaOpenCLJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int argsOriginal) throws AcceleratorExecutionException {
 
-        long startInterpreter = System.nanoTime();
+        Profiler.getInstance().writeInBuffer(ProfilerType.DEOPTTRACE, "AST_INTERPRETER", System.nanoTime());
 
         checkIfRFunctionIsInCache(function, callTarget);
         StructuredGraph graphToCompile = MarawaccGraalIRCache.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
@@ -447,7 +451,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
-    private RAbstractVector computeOpenCLMApply(PArray<?> input, RFunction function, RootCallTarget target, PArray<?>[] additionalArgs, Object[] lexicalScopes, int numArgumentsOriginalFunction) {
+    private static RAbstractVector computeOpenCLMApply(PArray<?> input, RFunction function, RootCallTarget target, PArray<?>[] additionalArgs, Object[] lexicalScopes, int numArgumentsOriginalFunction) {
         // Get the meta-data from the cache
         RFunctionMetadata cachedFunctionMetadata = getCachedFunctionMetadata(input, function, additionalArgs);
         int nArgs = cachedFunctionMetadata.getnArgs();
@@ -534,8 +538,10 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
-    private RAbstractVector computeOpenCLMApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes,
+    private static RAbstractVector computeOpenCLMApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes,
                     int numArgumentsOriginalFunction) {
+
+        Profiler.getInstance().writeInBuffer(ProfilerType.DEOPTTRACE, "StartRunning", System.nanoTime());
 
         // Meta-data objects from the cache
         RFunctionMetadata cachedFunctionMetadata = getCachedFunctionMetadata(input, function, additionalArgs);
@@ -571,9 +577,11 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             boolean executionValid = false;
             int deoptCounter = 0;
             while (!executionValid) {
+                Profiler.getInstance().writeInBuffer(ProfilerType.DEOPTTRACE, "DEOPT_CACHED", System.nanoTime());
                 runAfterDeoptWithThreadID(input, target, function, nArgs, additionalArgs, argsName, value, threadID);
                 invalidateCaches(function, target);
                 try {
+                    Profiler.getInstance().writeInBuffer(ProfilerType.DEOPTTRACE, "RE_RUN", System.nanoTime());
                     result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArray, interoperable, lexicalScopes, numArgumentsOriginalFunction);
                     executionValid = true;
                 } catch (AcceleratorExecutionException e1) {
@@ -596,14 +604,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         if (ASTxOptions.profileOpenCL_ASTx) {
             writeProfilerIntoBuffers(startMarshal, endMarshal, startExecution, endExecution, startUnmarshal, endUnmarshal);
-        }
-
-        if (ASTxOptions.traceDeoptimisationTimers) {
-            int i = 0;
-// for (long t : times) {
-// Profiler.getInstance().writeInBuffer(ProfilerType.DEOPTTRACE, "DEOPTTRACE" + i, t);
-// i++;
-// }
         }
         return resultFastR;
     }
@@ -657,7 +657,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return additionalInputs;
     }
 
-    private RAbstractVector computeOpenCLMApplyForRVector(RArgsValuesAndNames args, boolean isRewritten, RVector[] vectors, Object[] lexicalScopes, RFunction function, RAbstractVector inputRArray,
+    private static RAbstractVector computeOpenCLMApplyForRVector(RArgsValuesAndNames args, boolean isRewritten, RVector[] vectors, Object[] lexicalScopes, RFunction function,
+                    RAbstractVector inputRArray,
                     RootCallTarget target, int numArgumentsOriginalFunction) {
         RAbstractVector mapResult = null;
         RAbstractVector[] additionalInputs = getAddiotionalInputs(args, isRewritten, vectors, lexicalScopes);
@@ -665,7 +666,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return mapResult;
     }
 
-    private RAbstractVector computeOpenCLMApplyForPArray(RArgsValuesAndNames args, Object[] lexicalScopes, RFunction function, PArray<?> parrayInput,
+    private static RAbstractVector computeOpenCLMApplyForPArray(RArgsValuesAndNames args, Object[] lexicalScopes, RFunction function, PArray<?> parrayInput,
                     RootCallTarget target, int numArgumentsOriginalFunction) {
         PArray<?>[] additionalInputs = ASTxUtils.getPArrayWithAdditionalArguments(args);
         return computeOpenCLMApply(parrayInput, function, target, additionalInputs, lexicalScopes, numArgumentsOriginalFunction);
