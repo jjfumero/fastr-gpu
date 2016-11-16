@@ -23,7 +23,6 @@
 package com.oracle.truffle.r.library.gpu.utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1566,15 +1565,33 @@ public class ASTxUtils {
         return scopeVars;
     }
 
-    public static RAbstractVector[] getRArrayWithAdditionalArguments(RArgsValuesAndNames args) {
-        RAbstractVector[] additionalInputs = null;
-        if (args.getLength() > 2) {
-            additionalInputs = new RAbstractVector[args.getLength() - 2];
-            for (int i = 0; i < additionalInputs.length; i++) {
-                additionalInputs[i] = (RAbstractVector) args.getArgument(i + 2);
-            }
+    private static RAbstractVector[] getRExtraArgumentsFromRList(RArgsValuesAndNames args) {
+        int total = ((RList) args.getArgument(2)).getLength();
+        RAbstractVector[] additionalInputs = new RAbstractVector[total];
+
+        for (int i = 0; i < total; i++) {
+            additionalInputs[i] = (RAbstractVector) ((RList) args.getArgument(2)).getDataAt(i);
         }
         return additionalInputs;
+    }
+
+    private static RAbstractVector[] getRExtraArgumentsFromRVector(RArgsValuesAndNames args) {
+        RAbstractVector[] additionalInputs = new RAbstractVector[args.getLength() - 2];
+        for (int i = 0; i < additionalInputs.length; i++) {
+            additionalInputs[i] = (RAbstractVector) args.getArgument(i + 2);
+        }
+        return additionalInputs;
+    }
+
+    public static RAbstractVector[] getRArrayWithAdditionalArguments(RArgsValuesAndNames args) {
+        if (args.getLength() > 2) {
+            if (args.getArgument(2) instanceof RList) {
+                return getRExtraArgumentsFromRList(args);
+            } else {
+                return getRExtraArgumentsFromRVector(args);
+            }
+        }
+        return null;
     }
 
     public static RAbstractVector[] getAdditionalArguments(RArgsValuesAndNames args, boolean isRewritten, RVector[] vectors, int lenthScope) {
