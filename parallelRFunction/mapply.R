@@ -2,9 +2,13 @@ mapply <- function (FUN, ..., MoreArgs = NULL, SIMPLIFY = TRUE, USE.NAMES = TRUE
 {
     FUN <- match.fun(FUN)
     dots <- list(...)
+	# OpenCL builtin exploration
 	marawacc.init()
+	# Return TRUE if there is an OpenCL device available
 	isOCL <- marawacc.isOpenCL()
 	if (isOCL[1] == 1) {
+		# In that case, we switch to the FastR + OpenCL implementation of 
+		# mapply builtin 
 		dosts <- list(...)
 		size <- length(dots)
 		if (size > 1) {
