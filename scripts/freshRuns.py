@@ -1,16 +1,21 @@
+#!/usr/bin/python
+
 """
 Author: Juan Fumero
 Email : juan.fumero@ed.ac.uk
 """
 
-import os
-
+# ########################################
+# Config variables
+# ########################################
 SCRIPT="./runbench "
 URL="benchmarks/fastR/"
-DIRNAME = "veeCallRUN"
-DEBUG = False
-
+DIRNAME = "veeColdRUN"
 NUMBER_OF_FRESH_RUNS=3
+DEBUG = False
+# ########################################
+
+import os
 
 def createDirectory(directoryName):
     if not os.path.exists(directoryName):

@@ -1,3 +1,6 @@
+#!/bin/bash
+
+# Run the largest data size we report in VEE paper
 
 function saxpy {
 	size=33554432

@@ -1,3 +1,6 @@
+#!/bin/bash
+
+# Run the mid size reported in VEE paper 
 
 function saxpy {
 	echo "SAXPY"
