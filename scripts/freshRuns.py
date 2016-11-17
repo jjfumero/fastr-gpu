@@ -171,11 +171,8 @@ def spectralNorm():
     symbolicNames = ["spectralNormASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
- 
-if __name__ == "__main__":
 
-    createDirectory(DIRNAME)
-    
+def runBenchmarks():
     saxpy()
     blacksholes()   
     nbody()
@@ -184,4 +181,9 @@ if __name__ == "__main__":
     kmeans()
     hilbert()
     spectralNorm()
+
+# ###############################
+if __name__ == "__main__":
+    createDirectory(DIRNAME)
+    runBenchmarks()    
 
