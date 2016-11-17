@@ -10,9 +10,9 @@ Email : juan.fumero@ed.ac.uk
 # ########################################
 SCRIPT="./runbench "
 URL="benchmarks/fastR/"
-DIRNAME = "veeColdRUN"
+DIRNAME = "veeColdRUNLarge"
 NUMBER_OF_FRESH_RUNS=3
-DEBUG = True
+DEBUG = False
 # ########################################
 
 import os
