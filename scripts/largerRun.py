@@ -12,7 +12,7 @@ SCRIPT="./runbench "
 URL="benchmarks/fastR/"
 DIRNAME = "veeColdRUN"
 NUMBER_OF_FRESH_RUNS=3
-DEBUG = False
+DEBUG = True
 # ########################################
 
 import os
@@ -42,16 +42,17 @@ def saxpy():
 
     mainSize = 8388608
     sizes = []
-    divide = 128
-    value = mainSize/divide
-    for i in range(10):
+    divide = 1/8.0
+    #divide = 128
+    value = int(mainSize/divide)
+    for i in range(2):
         sizes.append(value)
         value *= 2
 
     #versions = ["saxpySeq.R", "saxpyGPU.R", "saxpyGPUPArrays.R"]
-    versions = ["saxpyGPU.R"]
+    versions = ["saxpySeq.R"]
     #symbolicNames = ["saxpySeq", "saxpyASTxFull", "saxpyASTx"]
-    symbolicNames = ["saxpyASTx"]
+    symbolicNames = ["saxpySeq"]
 
     runExperiment(bench, sizes, versions, symbolicNames)
 
@@ -61,15 +62,16 @@ def blacksholes():
     mainSize = 1048576
     sizes = []
     divide = 128
-    value = mainSize/divide
-    for i in range(10):
+    divide = 1/8.0
+    value = int(mainSize/divide)
+    for i in range(4):
         sizes.append(value)
         value *= 2
 
     #versions = ["blackscholesSeq.R",  "blackscholesGPU.R", "blackscholesGPUPArrays.R"]
-    versions = ["blackscholesGPU.R"]
+    versions = ["blackscholesSeq.R"]
     #symbolicNames = ["blackcholesSeq", "blackcholesASTxFull", "blackcholesASTx"]
-    symbolicNames = ["blackcholesASTx"]
+    symbolicNames = ["blackcholesSeq"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
 
@@ -113,16 +115,17 @@ def mandelbrot():
     bench = "mandelbrot"
     mainSize = 1024
     sizes = []
-    divide = 128
-    value = mainSize/divide
-    for i in range(10):
+    #divide = 128
+    divide = 1/8.0
+    value = int(mainSize/divide)
+    for i in range(4):
         sizes.append(value)
         value *= 2
 
     #versions = ["mandelbrotSeq.R",  "mandelbrotGPU.R", "mandelbrotGPUPArrays.R"]
-    versions = ["mandelbrotGPU.R"]
+    versions = ["mandelbrotSeq.R"]
     #symbolicNames = ["mandelbrotSeq", "mandelbrotASTxFull", "mandelbrotASTx"]
-    symbolicNames = ["mandelbrotASTx"]
+    symbolicNames = ["mandelbrotSeq"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
 
@@ -130,16 +133,17 @@ def kmeans():
     bench = "kmeans"
     mainSize = 4194304
     sizes = []
-    divide = 256
-    value = mainSize/divide
-    for i in range(10):
+    #divide = 256
+    divide = 1/4.0
+    value = int(mainSize/divide)
+    for i in range(4):
         sizes.append(value)
         value *= 2
 
     #versions = ["kmeansSeq.R", "kmeansGPU.R", "kmeansGPUPArrays.R"]
-    versions = ["kmeansGPU.R"]
+    versions = ["kmeansSeq.R"]
     #symbolicNames = ["kmeansSeq", "kmeansASTxFull", "kmeansASTx"]
-    symbolicNames = ["kmeansASTx"]
+    symbolicNames = ["kmeansSeq"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
  
@@ -147,9 +151,10 @@ def hilbert():
     bench = "hilbert"
     mainSize = 4096
     sizes = []
-    divide = 256
-    value = mainSize/divide
-    for i in range(10):
+    #divide = 256
+    divide = 1/4.0
+    value = int(mainSize/divide)
+    for i in range(4):
         sizes.append(value)
         value *= 2
 
@@ -180,12 +185,12 @@ def spectralNorm():
 def runBenchmarks():
     saxpy()
     blacksholes()   
-    nbody()
-    dft()
+    #nbody()
+    #dft()
     mandelbrot()
     kmeans()
     hilbert()
-    spectralNorm()
+    #spectralNorm()
 
 # ###############################
 if __name__ == "__main__":
