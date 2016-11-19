@@ -10,7 +10,7 @@ Email : juan.fumero@ed.ac.uk
 # ########################################
 SCRIPT="./runbench "
 URL="benchmarks/fastR/"
-DIRNAME = "veeColdRUNLarge"
+DIRNAME = "veeColdRUNLargeGPU"
 NUMBER_OF_FRESH_RUNS=3
 DEBUG = False
 # ########################################
@@ -50,9 +50,11 @@ def saxpy():
         value *= 2
 
     #versions = ["saxpySeq.R", "saxpyGPU.R", "saxpyGPUPArrays.R"]
-    versions = ["saxpySeq.R"]
+    #versions = ["saxpySeq.R"]
+    versions = ["saxpyGPU.R"]
     #symbolicNames = ["saxpySeq", "saxpyASTxFull", "saxpyASTx"]
-    symbolicNames = ["saxpySeq"]
+    #symbolicNames = ["saxpySeq"]
+    symbolicNames = ["saxpyASTx"]
 
     runExperiment(bench, sizes, versions, symbolicNames)
 
@@ -69,9 +71,11 @@ def blacksholes():
         value *= 2
 
     #versions = ["blackscholesSeq.R",  "blackscholesGPU.R", "blackscholesGPUPArrays.R"]
-    versions = ["blackscholesSeq.R"]
+    #versions = ["blackscholesSeq.R"]
+    versions = ["blackscholesGPU.R"]
     #symbolicNames = ["blackcholesSeq", "blackcholesASTxFull", "blackcholesASTx"]
-    symbolicNames = ["blackcholesSeq"]
+    #symbolicNames = ["blackcholesSeq"]
+    symbolicNames = ["blackcholesASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
 
@@ -123,9 +127,11 @@ def mandelbrot():
         value *= 2
 
     #versions = ["mandelbrotSeq.R",  "mandelbrotGPU.R", "mandelbrotGPUPArrays.R"]
-    versions = ["mandelbrotSeq.R"]
+    #versions = ["mandelbrotSeq.R"]
+    versions = ["mandelbrotGPU.R"]
     #symbolicNames = ["mandelbrotSeq", "mandelbrotASTxFull", "mandelbrotASTx"]
-    symbolicNames = ["mandelbrotSeq"]
+    #symbolicNames = ["mandelbrotSeq"]
+    symbolicNames = ["mandelbrotASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
 
@@ -141,9 +147,11 @@ def kmeans():
         value *= 2
 
     #versions = ["kmeansSeq.R", "kmeansGPU.R", "kmeansGPUPArrays.R"]
-    versions = ["kmeansSeq.R"]
+    #versions = ["kmeansSeq.R"]
+    versions = ["kmeansGPU.R"]
     #symbolicNames = ["kmeansSeq", "kmeansASTxFull", "kmeansASTx"]
-    symbolicNames = ["kmeansSeq"]
+    #symbolicNames = ["kmeansSeq"]
+    symbolicNames = ["kmeansASTx"]
     
     runExperiment(bench, sizes, versions, symbolicNames)
  
@@ -189,7 +197,7 @@ def runBenchmarks():
     #dft()
     mandelbrot()
     kmeans()
-    hilbert()
+    #hilbert()
     #spectralNorm()
 
 # ###############################
