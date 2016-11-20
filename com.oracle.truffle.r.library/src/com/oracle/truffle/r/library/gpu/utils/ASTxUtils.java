@@ -1866,7 +1866,6 @@ public class ASTxUtils {
                 scopedNodes = arraysDetectionPhase.getScopedNodes();
             }
         }
-
         return scopedNodes;
     }
 
