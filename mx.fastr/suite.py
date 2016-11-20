@@ -27,7 +27,7 @@ suite = {
     "suites" : [
             {
                "name" : "marawacc",
-               "version" : "63b037c9e27947bf1ba322d9a424ba0ac103ddb2",
+               "version" : "6203acffdeee27994c472ce7cf16992ef4eafc96",
                "urls" : [{"url" : "ssh://hg@bitbucket.org/juanfumero/marawacc-dev", "kind" : "hg"}]
             },
         ],
