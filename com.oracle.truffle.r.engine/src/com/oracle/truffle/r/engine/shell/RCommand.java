@@ -47,6 +47,7 @@ import java.util.List;
 
 import jline.console.ConsoleReader;
 import jline.console.UserInterruptException;
+import uk.ac.ed.accelerator.ocl.GraalOpenCLGenerator;
 import uk.ac.ed.accelerator.profiler.Profiler;
 
 import com.oracle.truffle.api.instrument.QuitException;
@@ -54,6 +55,7 @@ import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.vm.PolyglotEngine;
 import com.oracle.truffle.r.engine.TruffleRLanguage;
+import com.oracle.truffle.r.library.gpu.MarawaccInitilization;
 import com.oracle.truffle.r.library.gpu.MethodInstallation;
 import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.nodes.builtin.base.Quit;
@@ -223,6 +225,11 @@ public class RCommand {
                     }
 
                     // installParallelMethods();
+
+                    if (ASTxOptions.preinitialization) {
+                        MarawaccInitilization.marawaccInitialization();
+                        new GraalOpenCLGenerator(false, null);
+                    }
 
                     String continuePrompt = getContinuePrompt();
                     Source subSource = Source.subSource(source, startLength).withMimeType(TruffleRLanguage.MIME);

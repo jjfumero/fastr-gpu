@@ -19,6 +19,8 @@ public abstract class MethodInstallation extends RExternalBuiltinNode.Arg0 {
 
     private static final String R_EVAL_DESCRIPTION = "<eval>";
     public static final String PATH_TO_MAPPLY = System.getProperty("rhome.path") + "/parallelRFunction/mapply.R";
+    private boolean isMethodInstalled = false;
+    private RFunction newRFunctionDefined;
 
     public static class Installation {
 
@@ -38,7 +40,7 @@ public abstract class MethodInstallation extends RExternalBuiltinNode.Arg0 {
             return null;
         }
 
-        public static Object installMApply() {
+        public static RFunction installMApply() {
             String newFunction = getRSourceForFunction(PATH_TO_MAPPLY);
             Source newSourceFunction = Source.fromText(newFunction, R_EVAL_DESCRIPTION).withMimeType(RRuntime.R_APP_MIME);
             try {
@@ -58,6 +60,10 @@ public abstract class MethodInstallation extends RExternalBuiltinNode.Arg0 {
 
     @Specialization
     public Object installMethod() {
-        return Installation.installMApply();
+        if (!isMethodInstalled) {
+            newRFunctionDefined = Installation.installMApply();
+            isMethodInstalled = true;
+        }
+        return newRFunctionDefined;
     }
 }

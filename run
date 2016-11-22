@@ -5,6 +5,8 @@ function runDebugModeForClassLoading {
 	mx Rscript --J @'-DR:+IgnoreVisibility -G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilation -XX:+TraceClassLoading -XX:+TraceClassUnloading -XX:-UseJVMCIClassLoader' $* 
 }
 
+. source.sh
+
 mx Rscript --J @'-DR:+IgnoreVisibility 
 -G:-TruffleOSR 
 -G:-TruffleBackgroundCompilation 
