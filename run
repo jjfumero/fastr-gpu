@@ -5,7 +5,11 @@ function runDebugModeForClassLoading {
 	mx Rscript --J @'-DR:+IgnoreVisibility -G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilation -XX:+TraceClassLoading -XX:+TraceClassUnloading -XX:-UseJVMCIClassLoader' $* 
 }
 
-. source.sh
+if ! [ -n "$JAVA_HOME" ]
+then
+	. ../sources.sh
+	. source.sh
+fi
 
 mx Rscript --J @'-DR:+IgnoreVisibility 
 -G:-TruffleOSR 
