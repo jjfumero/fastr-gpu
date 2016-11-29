@@ -26,10 +26,10 @@ benchmark <- function(inputSize) {
 	}	
 
 	x <- rep(1, size)
-	x[size] = 100
+	x[1000] <- 100
 
 	r <- rep(0, size)
-	r[size] = 1
+	r[1000] = 1
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
