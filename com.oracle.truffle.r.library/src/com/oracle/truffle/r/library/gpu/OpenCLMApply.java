@@ -191,6 +191,11 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             if (ASTxOptions.debug) {
                 System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU - Iteration: " + index);
             }
+            // For debugging
+            if (ASTxOptions.printASTforRFunction) {
+                ASTxUtils.printAST(function);
+            }
+
             Profiler.getInstance().writeInBuffer(ProfilerType.DEOPTTRACE, "OpenCL_Compilation_start", System.nanoTime());
             GraalOpenCLCompilationUnit openCLCompileUnit = compileForMarawaccBackend(meta.inputPArray, (OptimizedCallTarget) callTarget, graphToCompile, meta.firstValue, meta.interoperable,
                             meta.lexicalScopes, inputArgs);
@@ -760,6 +765,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         RAbstractVector mapResult = null;
         if (!parrayFormat) {
             mapResult = computeOpenCLMApplyForRVector(args, isRewritten, vectors, lexicalScopes, function, inputRArray, target, numArgumentsOriginalFunction);
+
         } else {
             // Note this path with {@link Parray} as input does not allow the experimental
             // optimisation node scope rewriting.

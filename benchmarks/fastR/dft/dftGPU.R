@@ -13,7 +13,7 @@ size <- as.integer(args[1])
 
 REPETITIONS <- 11
 
-CHECK_RESULT <- FALSE
+CHECK_RESULT <- T
 
 dftGPUFunction <- function(x) {
     sumreal <- 0
@@ -70,8 +70,8 @@ for (i in 1:REPETITIONS) {
 		j <- 1
 		while (k < size) {
 			lseq <- c(resultSeq[[k]], resultSeq[[k+1]])
-			lgpu <- c(result[[j]][[1]], result[[j]][[2]])
-			#lgpu <- c(result[[k]], result[[k+1]])
+			#lgpu <- c(result[[j]][[1]], result[[j]][[2]])
+			lgpu <- c(result[[k]], result[[k+1]])
 
 			# check the elements for the tuple
 			if (abs(lseq[1] - lgpu[1]) > 0.1) {

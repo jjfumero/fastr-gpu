@@ -127,7 +127,7 @@ public final class BinaryMapNode extends RBaseNode {
         assert leftCast != null;
         assert rightCast != null;
 
-// function.enable(leftCast, rightCast);
+        // function.enable(leftCast, rightCast);
 
         if (scalarTypes) {
             assert left.getLength() == 1;
