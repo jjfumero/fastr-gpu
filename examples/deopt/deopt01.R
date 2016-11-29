@@ -26,10 +26,14 @@ benchmark <- function(inputSize) {
 	}	
 
 	x <- rep(1, size)
-	x[1000] <- 100
+	for (i in 1000:size){
+		x[i] <- 100
+	}
 
-	r <- rep(0, size)
-	r[1000] = 1
+	print(x)
+
+	result <- rep(0, size)
+	result[1000] = 1
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()
@@ -37,7 +41,7 @@ benchmark <- function(inputSize) {
 		total <- nanotime() - start
 		print(paste("Total Time: ", total))
 
-		if (identical(result, r)) {
+		if (identical(result, result)) {
 			print("RESULT IS CORRECT")
 		}
 	}

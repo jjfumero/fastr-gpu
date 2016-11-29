@@ -144,6 +144,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         PArray<Integer> deopt = executor.getDeoptBuffer();
         if (deopt != null) {
             if (deopt.get(0) != 0) {
+                Profiler.getInstance().writeInBuffer(ProfilerType.GENERAL_LOG_MESSAGE, "Deoptimization in thread:", deopt.get(0));
                 throw new AcceleratorExecutionException("Deoptimization in thread: ", deopt.get(0));
             }
         }
@@ -192,7 +193,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         if ((graphToCompile != null) && (gpuCompilationUnit == null)) {
             if (ASTxOptions.debug) {
                 System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU - Iteration: " + index);
+
             }
+            Profiler.getInstance().writeInBuffer(ProfilerType.GENERAL_LOG_MESSAGE, "Compiling the Graph to GPU - Iteration:", index);
             compileIndex = index;
             // For debugging
             if (ASTxOptions.printASTforRFunction) {

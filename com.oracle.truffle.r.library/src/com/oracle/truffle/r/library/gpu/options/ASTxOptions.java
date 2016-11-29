@@ -61,7 +61,7 @@ public final class ASTxOptions {
     /**
      * Print internal messages such as deoptimisations, data types and so on for debugging.
      */
-    public static boolean debug = false;
+    public static boolean debug = true;
 
     /**
      * Print information related to the cache system.
