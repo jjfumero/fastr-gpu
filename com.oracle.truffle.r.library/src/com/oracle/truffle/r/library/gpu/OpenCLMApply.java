@@ -293,6 +293,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         JITMetaInput meta = new JITMetaInput(firstValue, interoperable, lexicalScopes, inputPArray);
         listResult = setOutput(firstValue);
+        Profiler.getInstance().writeInBuffer(ProfilerType.GENERAL_LOG_MESSAGE, "START ID: ", compileIndex);
         for (int i = compileIndex; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             Object value = callTarget.call(argsPackage);
