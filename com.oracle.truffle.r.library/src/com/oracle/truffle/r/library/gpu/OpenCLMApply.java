@@ -73,6 +73,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private static final String R_EVAL_DESCRIPTION = "<eval>";
     private static final boolean ISTRUFFLE = true;
     private static int iteration = 0;
+    private ArrayList<Object> listResult = null;
+    private int compileIndex = 1;
 
     /**
      * Given the {@link StructuredGraph}, this method invokes the OpenCL code generation. We also
@@ -184,13 +186,14 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
      * Check if the graph is prepared for GPU compilation and invoke the compilation and execution.
      * On Stack Replacement (OSR): switch to compiled GPU code
      */
-    private static ArrayList<Object> checkAndRunWithOpenCL(GraalOpenCLCompilationUnit gpuCompilationUnit, RootCallTarget callTarget, int index, JITMetaInput meta, RFunction function, int inputArgs)
+    private ArrayList<Object> checkAndRunWithOpenCL(GraalOpenCLCompilationUnit gpuCompilationUnit, RootCallTarget callTarget, int index, JITMetaInput meta, RFunction function, int inputArgs)
                     throws AcceleratorExecutionException {
         StructuredGraph graphToCompile = MarawaccGraalIRCache.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         if ((graphToCompile != null) && (gpuCompilationUnit == null)) {
             if (ASTxOptions.debug) {
                 System.out.println("[MARAWACC-ASTX] Compiling the Graph to GPU - Iteration: " + index);
             }
+            compileIndex = index;
             // For debugging
             if (ASTxOptions.printASTforRFunction) {
                 ASTxUtils.printAST(function);
@@ -270,7 +273,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     /**
      * Run in the interpreter and then JIT when the CFG is prepared for compilation.
      */
-    private static ArrayList<Object> runJavaOpenCLJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
+    private ArrayList<Object> runJavaOpenCLJIT(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int argsOriginal) throws AcceleratorExecutionException {
 
         Profiler.getInstance().writeInBuffer(ProfilerType.DEOPTTRACE, "AST_INTERPRETER", System.nanoTime());
@@ -286,17 +289,18 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
 
         JITMetaInput meta = new JITMetaInput(firstValue, interoperable, lexicalScopes, inputPArray);
-        ArrayList<Object> output = setOutput(firstValue);
-        for (int i = 1; i < input.getLength(); i++) {
+        listResult = setOutput(firstValue);
+        System.out.println("Running from ID: " + compileIndex);
+        for (int i = compileIndex; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             Object value = callTarget.call(argsPackage);
-            output.add(value);
+            listResult.add(value);
             ArrayList<Object> result = checkAndRunWithOpenCL(gpuCompilationUnit, callTarget, i, meta, function, argsOriginal);
             if (result != null) {
                 return result;
             }
         }
-        return output;
+        return listResult;
     }
 
     private static ArrayList<Object> runInASTInterpreter(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
@@ -328,7 +332,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     /**
      * Run in the interpreter and then JIT when the CFG is prepared for compilation.
      */
-    private static ArrayList<Object> runJavaOpenCLJIT(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
+    private ArrayList<Object> runJavaOpenCLJIT(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
                     Object firstValue, PArray<?> inputPArray, Interoperable interoperable, Object[] lexicalScopes, int totalSize, int inputArgs) throws AcceleratorExecutionException {
 
         checkIfRFunctionIsInCache(function, callTarget);
@@ -456,7 +460,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
-    private static RAbstractVector computeOpenCLMApply(PArray<?> input, RFunction function, RootCallTarget target, PArray<?>[] additionalArgs, Object[] lexicalScopes, int numArgumentsOriginalFunction) {
+    private RAbstractVector computeOpenCLMApply(PArray<?> input, RFunction function, RootCallTarget target, PArray<?>[] additionalArgs, Object[] lexicalScopes, int numArgumentsOriginalFunction) {
         // Get the meta-data from the cache
         RFunctionMetadata cachedFunctionMetadata = getCachedFunctionMetadata(input, function, additionalArgs);
         int nArgs = cachedFunctionMetadata.getnArgs();
@@ -543,7 +547,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
-    private static RAbstractVector computeOpenCLMApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes,
+    private RAbstractVector computeOpenCLMApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes,
                     int numArgumentsOriginalFunction) {
 
         Profiler.getInstance().writeInBuffer(ProfilerType.DEOPTTRACE, "StartRunning", System.nanoTime());
@@ -662,7 +666,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return additionalInputs;
     }
 
-    private static RAbstractVector computeOpenCLMApplyForRVector(RArgsValuesAndNames args, boolean isRewritten, RVector[] vectors, Object[] lexicalScopes, RFunction function,
+    private RAbstractVector computeOpenCLMApplyForRVector(RArgsValuesAndNames args, boolean isRewritten, RVector[] vectors, Object[] lexicalScopes, RFunction function,
                     RAbstractVector inputRArray,
                     RootCallTarget target, int numArgumentsOriginalFunction) {
         RAbstractVector mapResult = null;
@@ -671,7 +675,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return mapResult;
     }
 
-    private static RAbstractVector computeOpenCLMApplyForPArray(RArgsValuesAndNames args, Object[] lexicalScopes, RFunction function, PArray<?> parrayInput,
+    private RAbstractVector computeOpenCLMApplyForPArray(RArgsValuesAndNames args, Object[] lexicalScopes, RFunction function, PArray<?> parrayInput,
                     RootCallTarget target, int numArgumentsOriginalFunction) {
         PArray<?>[] additionalInputs = ASTxUtils.getPArrayWithAdditionalArguments(args);
         return computeOpenCLMApply(parrayInput, function, target, additionalInputs, lexicalScopes, numArgumentsOriginalFunction);
@@ -700,6 +704,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         Profiler.getInstance().print("\nIteration: " + iteration++);
 
         checkJVMOptions();
+        compileIndex = 1;
 
         long start = System.nanoTime();
 
@@ -771,6 +776,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             // optimisation node scope rewriting.
             mapResult = computeOpenCLMApplyForPArray(args, lexicalScopes, function, parrayInput, target, numArgumentsOriginalFunction);
         }
+
+        compileIndex = 1;
 
         long end = System.nanoTime();
         printProfiler(start, end, "gpu");
