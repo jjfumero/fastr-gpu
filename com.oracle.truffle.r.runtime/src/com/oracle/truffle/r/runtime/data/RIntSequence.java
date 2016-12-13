@@ -26,6 +26,7 @@ import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.common.TypeFactory;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.r.runtime.RType;
 import com.oracle.truffle.r.runtime.data.closures.RClosures;
@@ -36,6 +37,8 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
 
     private final int start;
     private final int stride;
+    @CompilationFinal private final int repetitions;
+    private final TypeOfSequence typeOfSequence;
 
     private PArray<Integer> parray;
 
@@ -44,6 +47,25 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
         // assert length > 0;
         this.start = start;
         this.stride = stride;
+        this.repetitions = 0;
+        this.typeOfSequence = null;
+        if (RVector.WITH_PARRAYS) {
+            createPArray(length);
+        }
+    }
+
+    public enum TypeOfSequence {
+        SequenceOfRepetitions,
+        RepetitionsOfSequences
+    }
+
+    RIntSequence(int start, int stride, int length, int repetitions, TypeOfSequence type) {
+        super(length);
+        // assert length > 0;
+        this.start = start;
+        this.stride = stride;
+        this.repetitions = repetitions;
+        this.typeOfSequence = type;
         if (RVector.WITH_PARRAYS) {
             createPArray(length);
         }
@@ -70,7 +92,19 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
 
     public int getDataAt(int index) {
         assert index >= 0 && index < getLength();
-        return start + stride * index;
+
+        if (repetitions != 0) {
+            // repetitions is compilation final
+            if (this.typeOfSequence == TypeOfSequence.SequenceOfRepetitions) {
+                int m = index / repetitions;
+                return start + stride * m;
+            } else {
+                int m = index % getLength();
+                return start + stride * m;
+            }
+        } else {
+            return start + stride * index;
+        }
     }
 
     public RAbstractVector castSafe(RType type) {

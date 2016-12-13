@@ -240,3 +240,11 @@ mylist <- function() {
 compiler.printAST <- function(userFunction) {
 	.FastR(.NAME="compiler.printAST", userFunction) 
 }
+
+
+# #########################################################################
+# Experiments
+# #########################################################################
+seqOfRepetitions <- function(start, max, repetitions) {
+	.FastR(.NAME="seqOfRepetitions", start, max, repetitions);
+}

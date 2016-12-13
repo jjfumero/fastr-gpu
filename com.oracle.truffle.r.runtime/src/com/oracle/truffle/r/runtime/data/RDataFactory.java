@@ -35,6 +35,7 @@ import com.oracle.truffle.api.utilities.ConditionProfile;
 import com.oracle.truffle.r.runtime.RCaller;
 import com.oracle.truffle.r.runtime.RPerfStats;
 import com.oracle.truffle.r.runtime.RRuntime;
+import com.oracle.truffle.r.runtime.data.RIntSequence.TypeOfSequence;
 import com.oracle.truffle.r.runtime.data.RPromise.Closure;
 import com.oracle.truffle.r.runtime.data.RPromise.EagerFeedback;
 import com.oracle.truffle.r.runtime.data.RPromise.OptType;
@@ -247,6 +248,14 @@ public final class RDataFactory {
 
     public static RIntSequence createIntSequence(int start, int stride, int length) {
         return traceDataCreated(new RIntSequence(start, stride, length));
+    }
+
+    public static RIntSequence createIntSequenceOfRepetitions(int start, int stride, int length, int repetitions) {
+        return traceDataCreated(new RIntSequence(start, stride, length, repetitions, TypeOfSequence.SequenceOfRepetitions));
+    }
+
+    public static RIntSequence createIntRepetitionsOfSequences(int start, int stride, int length, int repetitions) {
+        return traceDataCreated(new RIntSequence(start, stride, length, repetitions, TypeOfSequence.RepetitionsOfSequences));
     }
 
     public static RDoubleSequence createAscendingRange(double start, double end) {

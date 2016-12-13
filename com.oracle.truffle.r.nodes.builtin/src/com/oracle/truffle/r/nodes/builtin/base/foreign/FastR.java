@@ -61,6 +61,7 @@ import com.oracle.truffle.r.library.gpu.TestFunctionNodeGen;
 import com.oracle.truffle.r.library.gpu.intrinsics.RRandomBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.nodes.utils.RGCBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.nodes.utils.RNanoTimeBuiltinNodeGen;
+import com.oracle.truffle.r.library.gpu.sequences.SequenceOfRepetitionsNodeGen;
 import com.oracle.truffle.r.library.gpu.tuples.ASTxTuple2NodeGen;
 import com.oracle.truffle.r.library.gpu.tuples.ASTxTuple3NodeGen;
 import com.oracle.truffle.r.nodes.builtin.RBuiltinNode;
@@ -198,6 +199,14 @@ public abstract class FastR extends RBuiltinNode {
 
             case "compiler.printAST":
                 return TestFunctionNodeGen.create();
+
+                /*
+                 * ***************************************************
+                 * Efficient index types for OpenCL
+                 * ***************************************************
+                 */
+            case "seqOfRepetitions":
+                return SequenceOfRepetitionsNodeGen.create();
 
                 /*
                  * ***************************************************
