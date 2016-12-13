@@ -12,7 +12,7 @@ benchmark <- function(inputSize) {
 	}	
 
 
-	x <- seqOfRepetitions(1, 2, size)
+	x <- flagSequence(1, 2, size)
 
 	print(x)
 
