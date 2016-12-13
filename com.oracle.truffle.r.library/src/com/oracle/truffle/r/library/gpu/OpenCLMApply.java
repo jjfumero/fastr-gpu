@@ -582,6 +582,16 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
                 result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArray, interoperable, lexicalScopes, numArgumentsOriginalFunction);
             }
         } catch (AcceleratorExecutionException e) {
+
+            // Control deoptimizations.
+            // First, it runs in the interpreter with the ID that failed.
+            // Then, the function is executed again in the normal path.
+            // Eventually, the VM compiles the function as usual and compiles/runs the new version
+            // on GPU.
+            // The new version also can fail, so we catch the exception again and repeat the same
+            // process.
+            // If it fails more than 10 times, we just deopt and run in the interpreter.
+
             if (ASTxOptions.debug) {
                 System.out.println("Running in the DEOPT mode");
             }
