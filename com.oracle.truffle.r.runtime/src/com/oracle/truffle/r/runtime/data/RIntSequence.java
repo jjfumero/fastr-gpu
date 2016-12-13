@@ -37,8 +37,9 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
 
     private final int start;
     private final int stride;
+    private final int max;
     @CompilationFinal private final int repetitions;
-    private final TypeOfSequence typeOfSequence;
+    @CompilationFinal private final TypeOfSequence typeOfSequence;
 
     private PArray<Integer> parray;
 
@@ -48,6 +49,7 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
         this.start = start;
         this.stride = stride;
         this.repetitions = 0;
+        this.max = length;
         this.typeOfSequence = null;
         if (RVector.WITH_PARRAYS) {
             createPArray(length);
@@ -64,11 +66,19 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
         // assert length > 0;
         this.start = start;
         this.stride = stride;
+        this.max = length;
         this.repetitions = repetitions;
         this.typeOfSequence = type;
-        if (RVector.WITH_PARRAYS) {
-            createPArray(length);
-        }
+    }
+
+    RIntSequence(int start, int stride, int length, int repetitions, int max, TypeOfSequence type) {
+        super(length);
+        // assert length > 0;
+        this.start = start;
+        this.stride = stride;
+        this.max = max;
+        this.repetitions = repetitions;
+        this.typeOfSequence = type;
     }
 
     @TruffleBoundary
@@ -98,9 +108,11 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
             if (this.typeOfSequence == TypeOfSequence.SequenceOfRepetitions) {
                 int m = index / repetitions;
                 return start + stride * m;
-            } else {
-                int m = index % getLength();
+            } else if (this.typeOfSequence == TypeOfSequence.RepetitionsOfSequences) {
+                int m = index % max;
                 return start + stride * m;
+            } else {
+                return -1;
             }
         } else {
             return start + stride * index;

@@ -60,3 +60,4 @@ export(mylist)
 
 # Data types sequences for OpenCL
 export(seqOfRepetitions)
+export(repetitionsOfSeq)
