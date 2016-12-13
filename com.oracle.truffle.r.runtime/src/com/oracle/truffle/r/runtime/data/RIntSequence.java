@@ -81,6 +81,18 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
         this.typeOfSequence = type;
     }
 
+    public TypeOfSequence getType() {
+        return this.typeOfSequence;
+    }
+
+    public int getRepetitions() {
+        return this.repetitions;
+    }
+
+    public int getMax() {
+        return this.max;
+    }
+
     @TruffleBoundary
     public RIntSequence createPArray(int size) {
         if (size >= 1) {

@@ -82,6 +82,7 @@ import com.oracle.truffle.r.runtime.data.RDoubleSequence;
 import com.oracle.truffle.r.runtime.data.RDoubleVector;
 import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.RIntSequence;
+import com.oracle.truffle.r.runtime.data.RIntSequence.TypeOfSequence;
 import com.oracle.truffle.r.runtime.data.RIntVector;
 import com.oracle.truffle.r.runtime.data.RList;
 import com.oracle.truffle.r.runtime.data.RLogicalVector;
@@ -979,28 +980,52 @@ public class ASTxUtils {
         System.out.println(array);
     }
 
-    public static PArray<?> buildIntPArrayForSequence(RAbstractVector input) {
-        PArray<Integer> parray = new PArray<>(2, TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER);
-        int start = ((RIntSequence) input).start();
-        int stride = ((RIntSequence) input).stride();
+    public static int getValueForRepetitionSequence(RIntSequence input) {
+        int value = 0;
+        if (input.getType() != null) {
+            if (input.getType() == TypeOfSequence.Flag) {
+                value = input.getRepetitions();
+            } else if (input.getType() == TypeOfSequence.Flag) {
+                value = input.getMax();
+            }
+        }
+        return value;
+    }
+
+    public static PArray<?> buildIntPArrayForSequence(RIntSequence input) {
+        PArray<Integer> parray = new PArray<>(3, TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER);
+        int start = input.start();
+        int stride = input.stride();
         parray.setSequence(true);
         parray.setTotalSize(input.getLength());
         parray.put(0, start);
         parray.put(1, stride);
+
+        if (input.getType() != null) {
+            int value = getValueForRepetitionSequence(input);
+            parray.put(2, value);
+        } else {
+            // Set 0 in the position 2
+            parray.put(2, 0);
+        }
         return parray;
     }
 
     public static PArray<?> buildIntPArrayForSequencePrimitve(RAbstractVector input) {
-        PArray<Integer> parray = new PArray<>(2, TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER, false);
+        PArray<Integer> parray = new PArray<>(3, TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER, false);
         int start = ((RIntSequence) input).start();
         int stride = ((RIntSequence) input).stride();
         parray.setSequence(true);
-        int[] array = new int[]{start, stride};
+
+        int value = getValueForRepetitionSequence((RIntSequence) input);
+
+        int[] array = new int[]{start, stride, value};
         parray.setIntArray(array);
         parray.setTotalSize(input.getLength());
         return parray;
     }
 
+    // XXX: check if compass and flag sequences work with ints
     public static PArray<?> buildDoublePArrayForSequence(RAbstractVector input) {
         PArray<Double> parray = new PArray<>(2, TypeFactory.Double(), StorageMode.OPENCL_BYTE_BUFFER);
         double start = ((RDoubleSequence) input).start();
@@ -1015,7 +1040,7 @@ public class ASTxUtils {
     public static PArray<?> getReferencePArrayWithOptimizationsSequence(TypeInfo type, RAbstractVector input) {
         switch (type) {
             case RIntSequence:
-                return buildIntPArrayForSequence(input);
+                return buildIntPArrayForSequence((RIntSequence) input);
             case RDoubleSequence:
                 return buildDoublePArrayForSequence(input);
             case RIntVector:
@@ -1104,7 +1129,7 @@ public class ASTxUtils {
         switch (type) {
             case RIntSequence:
                 if (ASTxOptions.optimizeRSequence) {
-                    parray = buildIntPArrayForSequence(input);
+                    parray = buildIntPArrayForSequence((RIntSequence) input);
                     // Guarantee the new parray primitive branch in marawacc
                     GraalAcceleratorOptions.newPArraysPrimitive = true;
                 } else {
@@ -1249,7 +1274,7 @@ public class ASTxUtils {
                 // 3. Update the reference to the parray instead of the setIntArray with
                 // sequence enable
 
-                PArray parraySequence = buildIntPArrayForSequence(input);
+                PArray parraySequence = buildIntPArrayForSequence((RIntSequence) input);
                 boolean sequence = true;
                 parray.setTotalSize(input.getLength());
                 parray.setBuffer(idx, parraySequence.getArrayReference(), sequence);
@@ -1316,7 +1341,7 @@ public class ASTxUtils {
             case 2:
                 PArray a = null;
                 if (input instanceof RIntSequence) {
-                    a = buildIntPArrayForSequence(input);
+                    a = buildIntPArrayForSequence((RIntSequence) input);
                 } else if (input instanceof RDoubleSequence) {
                     a = buildDoublePArrayForSequence(input);
                 } else {
@@ -1326,7 +1351,7 @@ public class ASTxUtils {
 
                 PArray b = null;
                 if (additionalArgs[0] instanceof RIntSequence) {
-                    b = buildIntPArrayForSequence(additionalArgs[0]);
+                    b = buildIntPArrayForSequence((RIntSequence) additionalArgs[0]);
                 } else if (additionalArgs[0] instanceof RDoubleSequence) {
                     b = buildDoublePArrayForSequence(additionalArgs[0]);
                 } else {
