@@ -245,11 +245,11 @@ compiler.printAST <- function(userFunction) {
 # #########################################################################
 # Efficient sequences for OpenCL
 # #########################################################################
-seqOfRepetitions <- function(start, max, repetitions) {
-	.FastR(.NAME="seqOfRepetitions", start, max, repetitions);
+flagSequence <- function(start, max, repetitions) {
+	.FastR(.NAME="flagSequence", start, max, repetitions);
 }
 
-repetitionsOfSeq <- function(start, max, repetitions) {
-	.FastR(.NAME="repetitionsOfSeq", start, max, repetitions);
+compassSequence <- function(start, max, repetitions) {
+	.FastR(.NAME="compassSequence", start, max, repetitions);
 }
 

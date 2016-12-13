@@ -57,8 +57,8 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
     }
 
     public enum TypeOfSequence {
-        SequenceOfRepetitions,
-        RepetitionsOfSequences
+        Flag,
+        Compass
     }
 
     RIntSequence(int start, int stride, int length, int repetitions, TypeOfSequence type) {
@@ -105,10 +105,10 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
 
         if (repetitions != 0) {
             // repetitions is compilation final
-            if (this.typeOfSequence == TypeOfSequence.SequenceOfRepetitions) {
+            if (this.typeOfSequence == TypeOfSequence.Flag) {
                 int m = index / repetitions;
                 return start + stride * m;
-            } else if (this.typeOfSequence == TypeOfSequence.RepetitionsOfSequences) {
+            } else if (this.typeOfSequence == TypeOfSequence.Compass) {
                 int m = index % max;
                 return start + stride * m;
             } else {

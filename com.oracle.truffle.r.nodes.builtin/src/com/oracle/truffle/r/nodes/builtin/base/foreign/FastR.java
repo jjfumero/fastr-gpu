@@ -52,7 +52,6 @@ import com.oracle.truffle.r.library.gpu.MarawaccReduceBuiltin;
 import com.oracle.truffle.r.library.gpu.MarawaccSapplyBuiltin;
 import com.oracle.truffle.r.library.gpu.MarawaccTerminalReduceBuiltin;
 import com.oracle.truffle.r.library.gpu.OCLVectorMulBuiltinNodeGen;
-import com.oracle.truffle.r.library.gpu.OpenCLAvailability;
 import com.oracle.truffle.r.library.gpu.OpenCLAvailabilityNodeGen;
 import com.oracle.truffle.r.library.gpu.OpenCLMApply;
 import com.oracle.truffle.r.library.gpu.PArrayBuiltinNodeGen;
@@ -61,8 +60,9 @@ import com.oracle.truffle.r.library.gpu.TestFunctionNodeGen;
 import com.oracle.truffle.r.library.gpu.intrinsics.RRandomBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.nodes.utils.RGCBuiltinNodeGen;
 import com.oracle.truffle.r.library.gpu.nodes.utils.RNanoTimeBuiltinNodeGen;
-import com.oracle.truffle.r.library.gpu.sequences.RepetitionsOfRepetitionsNodeGen;
-import com.oracle.truffle.r.library.gpu.sequences.SequenceOfRepetitionsNodeGen;
+import com.oracle.truffle.r.library.gpu.sequences.CompassSequence;
+import com.oracle.truffle.r.library.gpu.sequences.CompassSequenceNodeGen;
+import com.oracle.truffle.r.library.gpu.sequences.FlagSequenceNodeGen;
 import com.oracle.truffle.r.library.gpu.tuples.ASTxTuple2NodeGen;
 import com.oracle.truffle.r.library.gpu.tuples.ASTxTuple3NodeGen;
 import com.oracle.truffle.r.nodes.builtin.RBuiltinNode;
@@ -206,10 +206,10 @@ public abstract class FastR extends RBuiltinNode {
                  * Efficient index types for OpenCL
                  * ***************************************************
                  */
-            case "seqOfRepetitions":
-                return SequenceOfRepetitionsNodeGen.create();
-            case "repetitionsOfSeq":
-                return RepetitionsOfRepetitionsNodeGen.create();
+            case "flagSequence":
+                return FlagSequenceNodeGen.create();
+            case "compassSequence":
+                return CompassSequenceNodeGen.create();
 
                 /*
                  * ***************************************************

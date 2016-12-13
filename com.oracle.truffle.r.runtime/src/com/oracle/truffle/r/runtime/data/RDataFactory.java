@@ -250,12 +250,12 @@ public final class RDataFactory {
         return traceDataCreated(new RIntSequence(start, stride, length));
     }
 
-    public static RIntSequence createIntSequenceOfRepetitions(int start, int stride, int length, int repetitions) {
-        return traceDataCreated(new RIntSequence(start, stride, length, repetitions, TypeOfSequence.SequenceOfRepetitions));
+    public static RIntSequence createIntSequenceFlag(int start, int stride, int length, int repetitions) {
+        return traceDataCreated(new RIntSequence(start, stride, length, repetitions, TypeOfSequence.Flag));
     }
 
-    public static RIntSequence createIntRepetitionsOfSequences(int start, int stride, int length, int max, int repetitions) {
-        return traceDataCreated(new RIntSequence(start, stride, length, repetitions, max, TypeOfSequence.RepetitionsOfSequences));
+    public static RIntSequence createIntSequenceCompass(int start, int stride, int length, int max, int repetitions) {
+        return traceDataCreated(new RIntSequence(start, stride, length, repetitions, max, TypeOfSequence.Compass));
     }
 
     public static RDoubleSequence createAscendingRange(double start, double end) {
