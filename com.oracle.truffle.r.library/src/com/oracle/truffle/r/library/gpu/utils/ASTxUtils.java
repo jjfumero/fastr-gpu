@@ -992,7 +992,9 @@ public class ASTxUtils {
     }
 
     public static PArray<?> buildIntPArrayForSequence(RIntSequence input) {
+        // Build the PArray with the meta-data needed for the sequence computation
         PArray<Integer> parray = new PArray<>(3, TypeFactory.Integer(), StorageMode.OPENCL_BYTE_BUFFER);
+
         int start = input.start();
         int stride = input.stride();
         parray.setSequence(true);
@@ -1000,21 +1002,23 @@ public class ASTxUtils {
         parray.put(0, start);
         parray.put(1, stride);
 
-        // Set the type of optimize sequence
-        if (input.getType() != TypeOfSequence.Basic) {
-            int value = getValueForRepetitionSequence(input);
-            parray.put(2, value);
+        if (ASTxOptions.useTypeOfSequences) {
+            // Set the type of optimize sequence
+            if (input.getType() != TypeOfSequence.Basic) {
+                int value = getValueForRepetitionSequence(input);
+                parray.put(2, value);
 
-            // Set type of sequence. It could be: < compass | flag >
-            if (input.getType() == TypeOfSequence.Compass) {
-                parray.setCompass(true);    // e.g.: 1 2 3 4 1 2 ...
+                // Set type of sequence. It could be: < compass | flag >
+                if (input.getType() == TypeOfSequence.Compass) {
+                    parray.setCompass(true);    // e.g.: 1 2 3 4 1 2 ...
+                } else {
+                    parray.setFlag(true);       // e.g.: 1 1 1 2 2 2 ...
+                }
+
             } else {
-                parray.setFlag(true);       // e.g.: 1 1 1 2 2 2 ...
+                // Set 0 in the position 2
+                parray.put(2, 0);
             }
-
-        } else {
-            // Set 0 in the position 2
-            parray.put(2, 0);
         }
         return parray;
     }

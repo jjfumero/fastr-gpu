@@ -118,9 +118,14 @@ public final class ASTxOptions {
     public static boolean runOnASTIntepreterOnly = getBoolean("astx.marawacc.runOnAST", false);
 
     /**
-     * Preinitialization of the OpeNCL + Code generation
+     * Preinitialization of the OpenCL + Code generation
      */
     public static boolean preinitialization = getBoolean("astx.marawacc.preinit", true);
+
+    /**
+     * Use the new optimized types of sequences
+     */
+    public static boolean useTypeOfSequences = getBoolean("astx.marawacc.useTypeOfSequences", true);
 
     /**
      * Get the value of a property at runtime.
