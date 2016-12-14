@@ -238,17 +238,16 @@ public class ASTxUtils {
         return argsPackage;
     }
 
+    @SuppressWarnings("unchecked")
     public static Object getFromSequence(PArray<?> input, int idx) {
         if (input.getClassObject() == Integer.class) {
-            @SuppressWarnings("unchecked")
             int value = ((PArray<Integer>) input).get(0) + ((PArray<Integer>) input).get(1) * idx;
             return value;
         } else if (input.getClassObject() == Double.class) {
-            @SuppressWarnings("unchecked")
             double value = ((PArray<Double>) input).get(0) + ((PArray<Double>) input).get(1) * idx;
             return value;
         } else {
-            throw new RuntimeException("Error, data type not supported yet");
+            throw new RuntimeException("Error, data type not supported yet: " + input.getClassObject());
         }
     }
 
@@ -259,7 +258,7 @@ public class ASTxUtils {
         } else if (parray.getClassObject() == Double.class) {
             return (((PArray<Double>) parray).get(0) + ((PArray<Double>) parray).get(1) * idx);
         } else {
-            throw new RuntimeException("");
+            throw new RuntimeException("Error, data type not supported yet: " + parray.getClassObject());
         }
     }
 
