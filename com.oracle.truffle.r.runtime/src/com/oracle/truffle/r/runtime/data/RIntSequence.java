@@ -56,12 +56,6 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
         }
     }
 
-    public enum TypeOfSequence {
-        Basic,
-        Flag,
-        Compass
-    }
-
     RIntSequence(int start, int stride, int length, int repetitions, TypeOfSequence type) {
         super(length);
         // assert length > 0;

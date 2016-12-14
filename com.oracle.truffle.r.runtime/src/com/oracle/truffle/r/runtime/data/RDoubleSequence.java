@@ -23,6 +23,7 @@
 package com.oracle.truffle.r.runtime.data;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.r.runtime.RType;
 import com.oracle.truffle.r.runtime.data.closures.RClosures;
 import com.oracle.truffle.r.runtime.data.model.RAbstractDoubleVector;
@@ -32,12 +33,50 @@ public final class RDoubleSequence extends RSequence implements RAbstractDoubleV
 
     private final double start;
     private final double stride;
+    private final int max;
+    @CompilationFinal private final int repetitions;
+    @CompilationFinal private final TypeOfSequence typeOfSequence;
 
     RDoubleSequence(double start, double stride, int length) {
         super(length);
         assert length > 0;
+        this.repetitions = 0;
+        this.max = length;
+        this.typeOfSequence = TypeOfSequence.Basic;
         this.start = start;
         this.stride = stride;
+    }
+
+    RDoubleSequence(double start, double stride, int length, int repetitions, TypeOfSequence type) {
+        super(length);
+        assert length > 0;
+        this.max = length;
+        this.start = start;
+        this.stride = stride;
+        this.repetitions = repetitions;
+        this.typeOfSequence = type;
+    }
+
+    RDoubleSequence(double start, double stride, int length, int repetitions, int max, TypeOfSequence type) {
+        super(length);
+        assert length > 0;
+        this.start = start;
+        this.stride = stride;
+        this.repetitions = repetitions;
+        this.typeOfSequence = type;
+        this.max = max;
+    }
+
+    public TypeOfSequence getType() {
+        return this.typeOfSequence;
+    }
+
+    public int getRepetitions() {
+        return this.repetitions;
+    }
+
+    public int getMax() {
+        return this.max;
     }
 
     public double start() {
@@ -51,7 +90,20 @@ public final class RDoubleSequence extends RSequence implements RAbstractDoubleV
     @Override
     public double getDataAt(int index) {
         assert index >= 0 && index < getLength();
-        return start + stride * index;
+        if (repetitions != 0) {
+            // repetitions is compilation final
+            if (this.typeOfSequence == TypeOfSequence.Flag) {
+                int m = index / repetitions;
+                return start + stride * m;
+            } else if (this.typeOfSequence == TypeOfSequence.Compass) {
+                int m = index % max;
+                return start + stride * m;
+            } else {
+                return -1;
+            }
+        } else {
+            return start + stride * index;
+        }
     }
 
     public double getStart() {

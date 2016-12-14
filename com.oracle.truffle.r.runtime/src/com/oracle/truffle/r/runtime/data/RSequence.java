@@ -31,6 +31,12 @@ public abstract class RSequence implements RAbstractVector {
 
     private final int length;
 
+    public enum TypeOfSequence {
+        Basic,
+        Flag,
+        Compass
+    }
+
     protected RSequence(int length) {
         this.length = length;
     }

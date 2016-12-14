@@ -35,11 +35,11 @@ import com.oracle.truffle.api.utilities.ConditionProfile;
 import com.oracle.truffle.r.runtime.RCaller;
 import com.oracle.truffle.r.runtime.RPerfStats;
 import com.oracle.truffle.r.runtime.RRuntime;
-import com.oracle.truffle.r.runtime.data.RIntSequence.TypeOfSequence;
 import com.oracle.truffle.r.runtime.data.RPromise.Closure;
 import com.oracle.truffle.r.runtime.data.RPromise.EagerFeedback;
 import com.oracle.truffle.r.runtime.data.RPromise.OptType;
 import com.oracle.truffle.r.runtime.data.RPromise.PromiseType;
+import com.oracle.truffle.r.runtime.data.RSequence.TypeOfSequence;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 import com.oracle.truffle.r.runtime.env.REnvironment;
 import com.oracle.truffle.r.runtime.gnur.SEXPTYPE;
@@ -270,6 +270,14 @@ public final class RDataFactory {
 
     public static RDoubleSequence createDoubleSequence(double start, double stride, int length) {
         return traceDataCreated(new RDoubleSequence(start, stride, length));
+    }
+
+    public static RDoubleSequence createDoubleSequenceFlag(double start, double stride, int length, int repetitions) {
+        return traceDataCreated(new RDoubleSequence(start, stride, length, repetitions, TypeOfSequence.Flag));
+    }
+
+    public static RDoubleSequence createDoubleSequenceFlag(double start, double stride, int length, int max, int repetitions) {
+        return traceDataCreated(new RDoubleSequence(start, stride, length, repetitions, max, TypeOfSequence.Flag));
     }
 
     public static RIntVector createEmptyIntVector() {
