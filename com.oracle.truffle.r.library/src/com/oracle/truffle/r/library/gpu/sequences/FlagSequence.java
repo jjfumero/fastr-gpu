@@ -24,11 +24,20 @@ public abstract class FlagSequence extends RExternalBuiltinNode.Arg3 {
         return vector;
     }
 
+    private static int extractValue(Object value) {
+        if (value instanceof Double) {
+            return ((Double) value).intValue();
+        } else if (value instanceof Integer) {
+            return ((Integer) value).intValue();
+        }
+        throw new RuntimeException("Type not supported: " + value.getClass());
+    }
+
     @Specialization
     protected RAbstractVector buildSequenceOfRepetitions(Object startObject, Object maxObject, Object repetitionsObject) {
-        int start = ((Double) startObject).intValue();
-        int max = ((Double) maxObject).intValue();
-        int repetitions = ((Double) repetitionsObject).intValue();
+        int start = extractValue(startObject);
+        int max = extractValue(maxObject);
+        int repetitions = extractValue(repetitionsObject);
         RIntSequence sequence = RDataFactory.createIntSequenceFlag(start, 1, max * repetitions, repetitions);
         return sequence;
     }

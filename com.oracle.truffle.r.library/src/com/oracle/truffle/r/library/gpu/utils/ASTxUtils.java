@@ -1326,10 +1326,8 @@ public class ASTxUtils {
                 } else {
                     parray.setBuffer(idx, parraySequence.getArrayReference(), sequence);
                 }
-
                 // Guarantee the new parray primitive branch in marawacc
                 GraalAcceleratorOptions.newPArraysPrimitive = true;
-
             }
         } else if (typeInfo == TypeInfo.RDoubleVector) {
             parray.setDoubleArray(idx, ((RDoubleVector) input).getDataWithoutCopying());

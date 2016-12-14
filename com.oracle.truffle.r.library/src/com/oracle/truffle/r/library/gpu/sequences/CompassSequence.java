@@ -20,12 +20,21 @@ public abstract class CompassSequence extends RExternalBuiltinNode.Arg3 {
         return vector;
     }
 
+    private static int extractValue(Object value) {
+        if (value instanceof Double) {
+            return ((Double) value).intValue();
+        } else if (value instanceof Integer) {
+            return ((Integer) value).intValue();
+        }
+        throw new RuntimeException("Type not supported: " + value.getClass());
+    }
+
     @Specialization
     protected RAbstractVector buildCompassSequence(Object startObject, Object maxObject, Object repetitionsObject) {
-        int start = ((Double) startObject).intValue();
+        int start = extractValue(startObject);
         int stride = 1;
-        int max = ((Double) maxObject).intValue();
-        int repetitions = ((Double) repetitionsObject).intValue();
+        int max = extractValue(maxObject);
+        int repetitions = extractValue(repetitionsObject);
         RIntSequence sequence = RDataFactory.createIntSequenceCompass(start, stride, max * repetitions, max, repetitions);
         return sequence;
     }
