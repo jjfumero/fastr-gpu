@@ -985,7 +985,7 @@ public class ASTxUtils {
         if (input.getType() != null) {
             if (input.getType() == TypeOfSequence.Flag) {
                 value = input.getRepetitions();
-            } else if (input.getType() == TypeOfSequence.Flag) {
+            } else if (input.getType() == TypeOfSequence.Compass) {
                 value = input.getMax();
             }
         }
@@ -1001,9 +1001,18 @@ public class ASTxUtils {
         parray.put(0, start);
         parray.put(1, stride);
 
-        if (input.getType() != null) {
+        // Set the type of optimize sequence
+        if (input.getType() != TypeOfSequence.Basic) {
             int value = getValueForRepetitionSequence(input);
             parray.put(2, value);
+
+            // Set type of sequence. It could be: < compass | flag >
+            if (input.getType() == TypeOfSequence.Compass) {
+                parray.setCompass(true);    // e.g.: 1 2 3 4 1 2 ...
+            } else {
+                parray.setFlag(true);       // e.g.: 1 1 1 2 2 2 ...
+            }
+
         } else {
             // Set 0 in the position 2
             parray.put(2, 0);
@@ -1277,7 +1286,14 @@ public class ASTxUtils {
                 PArray parraySequence = buildIntPArrayForSequence((RIntSequence) input);
                 boolean sequence = true;
                 parray.setTotalSize(input.getLength());
-                parray.setBuffer(idx, parraySequence.getArrayReference(), sequence);
+
+                if (parraySequence.isCompass()) {
+                    parray.setBufferCompassSequence(idx, parraySequence.getArrayReference(), sequence);
+                } else if (parraySequence.isFlag()) {
+                    parray.setBufferFlagSequence(idx, parraySequence.getArrayReference(), sequence);
+                } else {
+                    parray.setBuffer(idx, parraySequence.getArrayReference(), sequence);
+                }
 
                 // Guarantee the new parray primitive branch in marawacc
                 GraalAcceleratorOptions.newPArraysPrimitive = true;

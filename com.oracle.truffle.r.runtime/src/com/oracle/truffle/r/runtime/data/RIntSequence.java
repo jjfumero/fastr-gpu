@@ -50,13 +50,14 @@ public final class RIntSequence extends RSequence implements RAbstractIntVector 
         this.stride = stride;
         this.repetitions = 0;
         this.max = length;
-        this.typeOfSequence = null;
+        this.typeOfSequence = TypeOfSequence.Basic;
         if (RVector.WITH_PARRAYS) {
             createPArray(length);
         }
     }
 
     public enum TypeOfSequence {
+        Basic,
         Flag,
         Compass
     }

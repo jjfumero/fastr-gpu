@@ -12,7 +12,8 @@ benchmark <- function(inputSize) {
 	}	
 
 
-	x <- flagSequence(1, 2, size)
+	#x <- flagSequence(1, 2, size)
+	x <- compassSequence(1, size, 2)
 
 	print(x)
 
