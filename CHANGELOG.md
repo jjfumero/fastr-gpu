@@ -1,5 +1,10 @@
 # ChangeLog ASTx OpenCL Compiler and Execution Environment
 
+## astx-0.12
+	* Rsequence improved for OpenCL data transfer optimization (flag and compass sequences)
+	* Refactor and documentation improved
+	* OpenCL deoptimization technique improved (resume from last element in the AST interpreter)
+
 ## astx-0.11
 	* Option for node rewriting for scope detection
 	* New Parray Strategy for primitives arrays such as int[] or double[], marshal is zero overhead.
