@@ -8,7 +8,7 @@ if (length(args) == 0) {
 
 size <- as.integer(args[1])
 
-REPETITIONS <- 1
+REPETITIONS <-11
 
 CHECK_RESULT <- FALSE
 
@@ -70,8 +70,8 @@ mandelbrotCPU <- function(indexIDX, indexJDX) {
 
 
 totalSize <- size*size
-x <<- 1:totalSize
-y <<- 1:totalSize
+x <<- flagSequence(1, size, size)
+y <<- compassSequence(1, size, size)
 	
 if (CHECK_RESULT) {
 	resultSeq <- mapply(mandelbrotCPU, x, y)

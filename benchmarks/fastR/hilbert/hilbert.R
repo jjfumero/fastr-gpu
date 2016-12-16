@@ -11,7 +11,7 @@ if (length(args) == 0) {
 
 size <- as.integer(args[1])
 
-REPETITIONS <- 1
+REPETITIONS <-11
 
 CHECK_RESULT <- FALSE
 
@@ -24,8 +24,8 @@ benchmark <- function(inputSize) {
 	}	
 
 	totalSize <- size*size
-	x <- 1:totalSize
-	y <- 1:totalSize
+	x <- flagSequence(1, size, size)
+	y <- compassSequence(1, size, size)
 
 	for (i in 1:REPETITIONS) {
 		start <- nanotime()

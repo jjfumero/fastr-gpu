@@ -11,7 +11,7 @@ if (length(args) == 0) {
 
 size <- as.integer(args[1])
 
-REPETITIONS <- 1
+REPETITIONS <-11
 
 space <- 2/size
 
@@ -44,8 +44,16 @@ benchmark <- function(inputSize) {
 	}
 
 	totalSize <- size*size
+
 	x <- 1:totalSize
 	y <- 1:totalSize
+
+	for (i in 1:size) {
+		for (j in 1:size) {
+			x[i * size + j] = i
+			y[i * size + j] = j
+		}
+	}
 		
 	for (i in 1:REPETITIONS) {
 		start <- proc.time()
