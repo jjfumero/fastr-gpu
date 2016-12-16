@@ -20,7 +20,7 @@ unittests:
 	./run examples/unittestTuples.R
 
 sample:
-	./run examples/cpu/map.R 
+	./run benchmarks/fastR/saxpy/saxpyGPU.R 1000
 
 clean:
 	mx clean
