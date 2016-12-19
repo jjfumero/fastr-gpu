@@ -8,7 +8,8 @@ mx Rscript --J @'-DR:+IgnoreVisibility
 -XX:-UseJVMCIClassLoader 
 -Dmarawacc.printOCLInfo=false
 -Dmarawacc.dumpGraph=false 
--Dastx.marawacc.profiler=true 
+-Dastx.marawacc.profiler=true
+-Dmarawacc.multidevice=false 
 -Xmx12g -Xms12g 
 -XX:+UseSerialGC 
 -Dmarawacc.printOCLKernel=false 
