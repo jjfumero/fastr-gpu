@@ -17,6 +17,7 @@ mx Rscript --J @'-DR:+IgnoreVisibility
 -G:-TraceTruffleCompilation  
 -XX:-UseJVMCIClassLoader 
 -Dmarawacc.printOCLKernel=true
+-Dmarawacc.multidevice=true
 -Dmarawacc.printOCLInfo=true
 -Dastx.marawacc.printast=false
 -Dmarawacc.multidevice=false
