@@ -14,7 +14,7 @@ eclipse:
 	mx eclipseinit 
 
 testOCL:
-	./scripts/runBenchTests.sh 
+	./scripts/runBenchTest.sh 
 
 unittests:
 	./run examples/unittestTuples.R
