@@ -20,7 +20,6 @@ mx Rscript --J @'-DR:+IgnoreVisibility
 -Dmarawacc.multidevice=true
 -Dmarawacc.printOCLInfo=true
 -Dastx.marawacc.printast=false
--Dmarawacc.multidevice=false
 -Dmarawacc.dumpGraph=false 
 -Dastx.marawacc.profiler=true  
 -Dastx.marawacc.optimizeRSequence=true 
