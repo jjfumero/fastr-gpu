@@ -1,5 +1,8 @@
 # ChangeLog ASTx OpenCL Compiler and Execution Environment
 
+## astx-0.13
+	* Marawacc Multi-Device support imported
+
 ## astx-0.12
 	* Rsequence improved for OpenCL data transfer optimization (flag and compass sequences)
 	* Refactor and documentation improved
