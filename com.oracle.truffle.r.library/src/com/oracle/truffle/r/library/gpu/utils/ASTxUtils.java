@@ -1303,6 +1303,7 @@ public class ASTxUtils {
 
     @SuppressWarnings("rawtypes")
     private static void insertCorrectArray(TypeInfo typeInfo, PArray parray, RAbstractVector input, int idx) {
+        System.out.println("TYPE: " + typeInfo);
         if (typeInfo == TypeInfo.RIntVector) {
             parray.setIntArray(idx, ((RIntVector) input).getDataWithoutCopying());
         } else if (typeInfo == TypeInfo.RIntSequence) {
@@ -1352,7 +1353,11 @@ public class ASTxUtils {
 
         // PArray with no buffer allocation
         PArray parray = new PArray<>(input.getLength(), TypeFactory.Tuple(returns), StorageMode.OPENCL_BYTE_BUFFER, false);
+
+        System.out.println("BUILDING PARRAY");
+
         if (infoList.size() == 2) {
+            System.out.println("?? 2 ??");
             insertCorrectArray(infoList.get(0), parray, input, 0);
             insertCorrectArray(infoList.get(1), parray, additionalArgs[0], 1);
             return parray;

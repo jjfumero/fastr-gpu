@@ -71,7 +71,9 @@ mandelbrotCPU <- function(indexIDX, indexJDX) {
 
 totalSize <- size*size
 x <<- flagSequence(1, size, size)
-y <<- compassSequence(1, size, size)
+#y <<- compassSequence(1, size, size)
+y <<- as.integer(runif(totalSize))
+
 	
 if (CHECK_RESULT) {
 	resultSeq <- mapply(mandelbrotCPU, x, y)
