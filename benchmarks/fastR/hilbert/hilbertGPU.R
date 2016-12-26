@@ -44,8 +44,10 @@ benchmark <- function(inputSize) {
 
 		if (CHECK_RESULT) {
 			for (j in 1:totalSize) {
-				if (abs(resultSeq[j] - result[j]) > 0.1) {
+				if (abs(resultSeq[j] - result[j]) > 0.5) {
 					print("Result is wrong")
+					print(paste("FOUND   : ", result[j]))
+					print(paste("Expected: ", resultSeq[j]))
 					break
 				}
 			}
