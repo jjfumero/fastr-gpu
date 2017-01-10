@@ -639,7 +639,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             // get the references
             return ASTxUtils.unMarshallFromFullPArrays(outputType, (PArray) result.get(0));
         } else if (ASTxOptions.usePrimitivePArray) {
-            // Get the stored array reference
+            // Get the stored primitive array reference
             return ASTxUtils.unmarshalFromPrimitivePArrays(outputType, (PArray) result.get(0));
         } else {
             // Real un-marshal
