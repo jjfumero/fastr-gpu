@@ -116,6 +116,17 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return gpuCompilationUnit;
     }
 
+    private static void profiling(long startCopy, long endCopy, long startExecution, long endExecution, long startDeviceToHost, long endDeviceToHost) {
+        // Marshal
+        Profiler.getInstance().writeInBuffer(ProfilerType.COPY_TO_DEVICE, "end-start", (endCopy - startCopy));
+
+        // Execution
+        Profiler.getInstance().writeInBuffer(ProfilerType.COMPUTE_MAP, "end-start", (endExecution - startExecution));
+
+        // Unmarshal
+        Profiler.getInstance().writeInBuffer(ProfilerType.COPY_TO_HOST, "end-start", (endDeviceToHost - startDeviceToHost));
+    }
+
     /**
      * Given the {@link GraalOpenCLCompilationUnit}, this method executes the OpenCL code. It copies
      * the data to the device, runs the kernel and copies back the result.
@@ -138,9 +149,14 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
 
         executor.setNewAllocation(newAllocation);
+        long s1 = System.nanoTime();
         AcceleratorPArray copyToDevice = executor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
+        long s2 = System.nanoTime();
         AcceleratorPArray executeOnTheDevice = executor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType(), gpuCompilationUnit.getScopeArrays());
+        long s3 = System.nanoTime();
         PArray result = executor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
+        long s4 = System.nanoTime();
+        profiling(s1, s2, s2, s3, s3, s4);
         PArray<Integer> deopt = executor.getDeoptBuffer();
         if (deopt != null) {
             if (deopt.get(0) != 0) {
