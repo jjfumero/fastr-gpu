@@ -1969,27 +1969,31 @@ public class ASTxUtils {
 
     public static boolean isFlagSequence(int[] input) {
         int counterMax = 0;
-        boolean isValid = true;
+        boolean valid = true;
         int i = 1;
         int last = input[0];
 
-        while (isValid) {
-
+        while (valid) {
             if (i >= input.length) {
                 break;
             }
-
             int val = input[i];
+            if (last != val) {
+                valid = false;
+                break;
+            }
             counterMax++;
             i++;
-            if (last != val) {
-                isValid = false;
-            }
+        }
+
+        if (counterMax == 1) {
+            // This is a normal sequence, not a flag sequence
+            return false;
         }
 
         int increment = input[counterMax] - input[counterMax - 1];
 
-        boolean valid = true;
+        valid = true;
         int k = 1;
         while (valid) {
 
@@ -2048,9 +2052,7 @@ public class ASTxUtils {
             i++;
 
         }
-
         valid = true;
-
         int k = 1;
         while (valid) {
 
@@ -2081,7 +2083,6 @@ public class ASTxUtils {
             }
             k++;
         }
-
         return true;
     }
 
