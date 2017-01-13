@@ -1967,6 +1967,124 @@ public class ASTxUtils {
         return scopedNodes;
     }
 
+    public static boolean isFlagSequence(int[] input) {
+        int counterMax = 0;
+        boolean isValid = true;
+        int i = 1;
+        int last = input[0];
+
+        while (isValid) {
+
+            if (i >= input.length) {
+                break;
+            }
+
+            int val = input[i];
+            counterMax++;
+            i++;
+            if (last != val) {
+                isValid = false;
+            }
+        }
+
+        int increment = input[counterMax] - input[counterMax - 1];
+
+        boolean valid = true;
+        int k = 1;
+        while (valid) {
+
+            int base = counterMax * k;
+
+            if (base >= input.length) {
+                return valid;
+            }
+
+            if (input[base] != input[base - 1] + increment) {
+                return false;
+            }
+
+            for (int j = 1; j < counterMax; j++) {
+                int index = base + j;
+                if (input[index] != input[index - 1]) {
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (!valid) {
+                return false;
+            }
+            k++;
+        }
+        return true;
+    }
+
+    public static boolean isCompasSequence(int[] input) {
+        if (input.length < 2) {
+            return false;
+        }
+
+        int increment = input[1] - input[0];
+        int start = input[0];
+
+        if (increment == 0) {
+            return false;
+        }
+
+        int counterMax = 2;
+        boolean valid = true;
+        int i = 2;
+
+        while (valid) {
+
+            if (i >= input.length) {
+                break;
+            }
+            if ((input[i] - input[i - 1]) != increment) {
+                valid = false;
+                break;
+            }
+            counterMax++;
+            i++;
+
+        }
+
+        valid = true;
+
+        int k = 1;
+        while (valid) {
+
+            int base = counterMax * k;
+
+            if (base >= input.length) {
+                if (k == 1) {
+                    return false;
+                } else {
+                    return valid;
+                }
+            }
+
+            if (input[base] != start) {
+                return false;
+            }
+
+            for (int j = 1; j < counterMax; j++) {
+                int index = base + j;
+                if ((input[index] - input[index - 1]) != increment) {
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (!valid) {
+                return false;
+            }
+            k++;
+        }
+
+        return true;
+    }
+
     private ASTxUtils() {
         // empty constructor
     }
