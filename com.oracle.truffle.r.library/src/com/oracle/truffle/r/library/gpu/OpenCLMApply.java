@@ -195,13 +195,17 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         executor.setNewAllocation(newAllocation);
         ArrayList<Object> arrayList = new ArrayList<>();
+        PArray result = null;
         for (int i = 0; i < iterations; i++) {
+
+            int offset = (inputPArray.size() / size) * i;
+
             long s1 = System.nanoTime();
-            AcceleratorPArray copyToDevice = executor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
+            AcceleratorPArray copyToDevice = executor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType(), size, offset);
             long s2 = System.nanoTime();
-            AcceleratorPArray executeOnTheDevice = executor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType(), gpuCompilationUnit.getScopeArrays());
+            AcceleratorPArray executeOnTheDevice = executor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType(), gpuCompilationUnit.getScopeArrays(), size);
             long s3 = System.nanoTime();
-            PArray result = executor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
+            result = executor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType(), size, offset);
             long s4 = System.nanoTime();
             profiling(s1, s2, s2, s3, s3, s4);
             PArray<Integer> deopt = executor.getDeoptBuffer();
@@ -212,8 +216,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
                 }
             }
             RGPUCache.INSTANCE.getCachedObjects(function).enableGPUExecution();
-            arrayList.add(result);
         }
+        arrayList.add(result);
         return arrayList;
 
     }
