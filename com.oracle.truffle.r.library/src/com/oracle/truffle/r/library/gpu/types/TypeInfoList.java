@@ -23,8 +23,9 @@
 package com.oracle.truffle.r.library.gpu.types;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
-public class TypeInfoList {
+public class TypeInfoList implements Iterable<TypeInfo> {
 
     private ArrayList<TypeInfo> listTypes;
 
@@ -42,6 +43,10 @@ public class TypeInfoList {
 
     public int size() {
         return listTypes.size();
+    }
+
+    public Iterator<TypeInfo> iterator() {
+        return listTypes.iterator();
     }
 
     @Override

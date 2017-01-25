@@ -75,6 +75,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private static int iteration = 0;
     private ArrayList<Object> listResult = null;
     private int compileIndex = 1;
+    private ArrayList<Integer> typeSizes = new ArrayList<>();
+    private int scopeBytes;
 
     /**
      * Given the {@link StructuredGraph}, this method invokes the OpenCL code generation. We also
@@ -87,7 +89,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
      * @param firstValue
      * @return {@link GraalOpenCLCompilationUnit}
      */
-    private static GraalOpenCLCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue,
+    private GraalOpenCLCompilationUnit compileForMarawaccBackend(PArray<?> inputPArray, OptimizedCallTarget callTarget, StructuredGraph graphToCompile, Object firstValue,
                     Interoperable interoperable,
                     Object[] lexicalScope, int nArgs) {
 
@@ -103,6 +105,18 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         } else {
             scopedNodes = ASTxUtils.applyCompilationPhasesForOpenCL(graphToCompile);
         }
+
+        int numScopeBytes = 0;
+        if (scopedNodes != null) {
+            for (int i = 0; i < lexicalScope.length; i++) {
+                if (lexicalScope[i] instanceof double[]) {
+                    numScopeBytes += 8 * ((double[]) lexicalScope[i]).length;
+                } else {
+                    System.err.println("Data type not suppported yet.");
+                }
+            }
+        }
+        scopeBytes = numScopeBytes;
 
         new FilterInterpreterNodes(6).apply(graphToCompile);
 
@@ -127,20 +141,18 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         Profiler.getInstance().writeInBuffer(ProfilerType.COPY_TO_HOST, "end-start", (endDeviceToHost - startDeviceToHost));
     }
 
-    /**
-     * Given the {@link GraalOpenCLCompilationUnit}, this method executes the OpenCL code. It copies
-     * the data to the device, runs the kernel and copies back the result.
-     *
-     * It returns an array list with one element, the result in Object format (PArray).
-     *
-     * @param inputPArray
-     * @param graph
-     * @param gpuCompilationUnit
-     * @return {@link ArrayList}
-     * @throws AcceleratorExecutionException
-     */
+    private long computeTotalBytes(int elements) {
+        int totalBytes = 0;
+        // Input - output
+        for (int i = 0; i < typeSizes.size(); i++) {
+            totalBytes += typeSizes.get(i) * elements;
+        }
+        totalBytes += scopeBytes;
+        return totalBytes;
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalOpenCLCompilationUnit gpuCompilationUnit, RFunction function, boolean newAllocation)
+    private static ArrayList<Object> run(PArray<?> inputPArray, StructuredGraph graph, GraalOpenCLCompilationUnit gpuCompilationUnit, RFunction function, boolean newAllocation)
                     throws AcceleratorExecutionException {
         GraalOpenCLExecutor executor = CacheGPUExecutor.INSTANCE.getExecutor(gpuCompilationUnit);
         if (executor == null) {
@@ -168,6 +180,88 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         ArrayList<Object> arrayList = new ArrayList<>();
         arrayList.add(result);
         return arrayList;
+
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static ArrayList<Object> runBatch(PArray<?> inputPArray, StructuredGraph graph, GraalOpenCLCompilationUnit gpuCompilationUnit, RFunction function, boolean newAllocation, int iterations,
+                    int size)
+                    throws AcceleratorExecutionException {
+        GraalOpenCLExecutor executor = CacheGPUExecutor.INSTANCE.getExecutor(gpuCompilationUnit);
+        if (executor == null) {
+            executor = new GraalOpenCLExecutor();
+            CacheGPUExecutor.INSTANCE.insert(gpuCompilationUnit, executor);
+        }
+
+        executor.setNewAllocation(newAllocation);
+        ArrayList<Object> arrayList = new ArrayList<>();
+        for (int i = 0; i < iterations; i++) {
+            long s1 = System.nanoTime();
+            AcceleratorPArray copyToDevice = executor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType());
+            long s2 = System.nanoTime();
+            AcceleratorPArray executeOnTheDevice = executor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType(), gpuCompilationUnit.getScopeArrays());
+            long s3 = System.nanoTime();
+            PArray result = executor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
+            long s4 = System.nanoTime();
+            profiling(s1, s2, s2, s3, s3, s4);
+            PArray<Integer> deopt = executor.getDeoptBuffer();
+            if (deopt != null) {
+                if (deopt.get(0) != 0) {
+                    Profiler.getInstance().writeInBuffer(ProfilerType.GENERAL_LOG_MESSAGE, "Deoptimization in thread:", deopt.get(0));
+                    throw new AcceleratorExecutionException("Deoptimization in thread: ", deopt.get(0));
+                }
+            }
+            RGPUCache.INSTANCE.getCachedObjects(function).enableGPUExecution();
+            arrayList.add(result);
+        }
+        return arrayList;
+
+    }
+
+    /**
+     * Given the {@link GraalOpenCLCompilationUnit}, this method executes the OpenCL code. It copies
+     * the data to the device, runs the kernel and copies back the result.
+     *
+     * It returns an array list with one element, the result in Object format (PArray).
+     *
+     * @param inputPArray
+     * @param graph
+     * @param gpuCompilationUnit
+     * @return {@link ArrayList}
+     * @throws AcceleratorExecutionException
+     */
+    private ArrayList<Object> runWithMarawaccAccelerator(PArray<?> inputPArray, StructuredGraph graph, GraalOpenCLCompilationUnit gpuCompilationUnit, RFunction function, boolean newAllocation)
+                    throws AcceleratorExecutionException {
+        GraalOpenCLExecutor executor = CacheGPUExecutor.INSTANCE.getExecutor(gpuCompilationUnit);
+        if (executor == null) {
+            executor = new GraalOpenCLExecutor();
+            CacheGPUExecutor.INSTANCE.insert(gpuCompilationUnit, executor);
+        }
+
+        long globalMaxGPUMemory = executor.getGlobalMaxGPUMemory();
+        int iterations = 1;
+
+        int elements = inputPArray.size();
+        long totalBytes = computeTotalBytes(elements);
+
+        if (totalBytes > globalMaxGPUMemory) {
+            // Set Appropriate size
+            System.out.println("Data does not fit in Memory");
+            while (true) {
+                elements /= 2;
+                totalBytes = computeTotalBytes(elements);
+                iterations++;
+                if (totalBytes < globalMaxGPUMemory) {
+                    break;
+                }
+            }
+        }
+
+        if (iterations == 1) {
+            return run(inputPArray, graph, gpuCompilationUnit, function, newAllocation);
+        } else {
+            return runBatch(inputPArray, graph, gpuCompilationUnit, function, newAllocation, iterations, elements);
+        }
     }
 
     private static ArrayList<Object> setOutput(Object firstValue) {
@@ -448,7 +542,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     /**
      * It checks if the function was already inserted into the cache. If it is that the case, we
-     * return the metadata associated with the value such as the return value, parameters and
+     * return the meta-data associated with the value such as the return value, parameters and
      * interoperable objects.
      *
      * @param input
@@ -466,14 +560,15 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
             // Inter-operable objects
             TypeInfo outputType = ASTxUtils.obtainTypeInfo(value);
-            InteropTable interop = ASTxUtils.obtainInterop(outputType);
+            InteropTable interopOutput = ASTxUtils.obtainInterop(outputType);
 
-            Class<?>[] typeObject = ASTxUtils.createListSubTypes(interop, value);
-            Interoperable interoperable = (interop != null) ? new Interoperable(interop, typeObject) : null;
+            Class<?>[] typeObject = ASTxUtils.createListSubTypes(interopOutput, value);
+            Interoperable interoperable = (interopOutput != null) ? new Interoperable(interopOutput, typeObject) : null;
 
-            RFunctionMetadata metadata = new RFunctionMetadata(nArgs, argsName, argsPackage, value, outputType, interop, typeObject, interoperable);
+            RFunctionMetadata metadata = new RFunctionMetadata(nArgs, argsName, argsPackage, value, outputType, interopOutput, typeObject, interoperable);
             RGPUCache.INSTANCE.getCachedObjects(function).insertRFuctionMetadata(metadata);
             return metadata;
+
         } else {
             return RGPUCache.INSTANCE.getCachedObjects(function).getRFunctionMetadata();
         }
@@ -566,6 +661,13 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
+    private void getBytesInputData(int nArgs, TypeInfoList inputTypeList) {
+        for (int i = 0; i < nArgs; i++) {
+            TypeInfo t = inputTypeList.get(i);
+            getSizeType(t);
+        }
+    }
+
     private RAbstractVector computeOpenCLMApply(RAbstractVector input, RFunction function, RootCallTarget target, RAbstractVector[] additionalArgs, Object[] lexicalScopes,
                     int numArgumentsOriginalFunction) {
 
@@ -582,6 +684,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         // Get input types list
         int extraParams = nArgs - numArgumentsOriginalFunction;
         TypeInfoList inputTypeList = createTypeInfoList(input, additionalArgs, extraParams);
+
+        getBytesInputData(nArgs, inputTypeList);
+        getSizeType(outputType);
 
         // Marshal from R to OpenCL (PArray)
         long startMarshal = System.nanoTime();
@@ -642,6 +747,16 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             writeProfilerIntoBuffers(startMarshal, endMarshal, startExecution, endExecution, startUnmarshal, endUnmarshal);
         }
         return resultFastR;
+    }
+
+    private void getSizeType(TypeInfo t) {
+        if (t == TypeInfo.DOUBLE) {
+            typeSizes.add(8);
+        } else if (t == TypeInfo.RDoubleVector) {
+            typeSizes.add(8);
+        } else {
+            System.out.println("Data Type not supported yet." + t);
+        }
     }
 
     @SuppressWarnings({"rawtypes", "deprecation"})

@@ -1711,14 +1711,11 @@ public class ASTxUtils {
     }
 
     public static TypeInfo obtainTypeInfo(Object value) {
-        TypeInfo outputType = null;
         try {
-            outputType = ASTxUtils.typeInference(value);
+            return ASTxUtils.typeInference(value);
         } catch (MarawaccTypeException e) {
-            // TODO: DEOPTIMIZATION
             throw new RuntimeException("Interop data type not supported yet: " + value.getClass());
         }
-        return outputType;
     }
 
     public static InteropTable obtainInterop(TypeInfo outputType) {

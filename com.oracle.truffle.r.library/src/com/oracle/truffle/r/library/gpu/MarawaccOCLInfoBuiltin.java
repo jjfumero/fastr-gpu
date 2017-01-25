@@ -27,6 +27,7 @@ import uk.ac.ed.accelerator.common.GraalAcceleratorPlatform;
 import uk.ac.ed.accelerator.common.GraalAcceleratorSystem;
 import uk.ac.ed.accelerator.wocl.OCLDeviceInfo;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 
@@ -36,6 +37,7 @@ import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
  */
 public abstract class MarawaccOCLInfoBuiltin extends RExternalBuiltinNode.Arg0 {
 
+    @TruffleBoundary
     private static void printInfo(OCLDeviceInfo deviceInfo) {
         System.out.println("NAME             : " + deviceInfo.getDeviceName().replaceAll("^[ ]+", ""));
         System.out.println("VENDOR           : " + deviceInfo.getVendorName());

@@ -105,7 +105,7 @@ benchmark <- function(inputSize) {
 	vy <- runif(size)
 	vz <- runif(size)
 
-	positions <<- 1:size*4
+	positions <<- 1:(size*4)
 
 	for (i in 1:size) {
 		idx <- i * 4	
