@@ -80,7 +80,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private int scopeBytes;
     private boolean wasBatch = false;
     private int totalSizeWhenBatch = 0;
-    private boolean provokeNewAllocation = false;
 
     /**
      * Given the {@link StructuredGraph}, this method invokes the OpenCL code generation. We also
@@ -408,7 +407,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         StructuredGraph graphToCompile = MarawaccGraalIRCache.getInstance().getCompiledGraph(callTarget.getIDForOpenCL());
         GraalOpenCLCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
-        boolean newAllocation = provokeNewAllocation ? true : newAllocationBuffer(input, additionalArgs, function);
+        boolean newAllocation = newAllocationBuffer(input, additionalArgs, function);
 
         if (graphToCompile != null && gpuCompilationUnit != null) {
             return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit, function, newAllocation);
@@ -911,7 +910,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         checkJVMOptions();
         compileIndex = 1;
         typeSizes.clear();
-        provokeNewAllocation = false;
 
         long start = System.nanoTime();
 
@@ -954,7 +952,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             }
             RCacheObjects cachedObjects = new RCacheObjects(function.getTarget(), scopeVars, lexicalScopes);
             target = RGPUCache.INSTANCE.updateCacheObjects(function, cachedObjects);
-            provokeNewAllocation = true;
         } else {
             target = RGPUCache.INSTANCE.getCallTarget(function);
             lexicalScopes = RGPUCache.INSTANCE.getCachedObjects(function).getLexicalScopeVars();
