@@ -1,2 +1,14 @@
 #!/bin/bash
-mx R --J @'-DR:-IgnoreVisibility -G:-TruffleOSR -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilation  -XX:-UseJVMCIClassLoader ' $* 
+mx R --J @'-DR:-IgnoreVisibility 
+-G:-TruffleOSR 
+-G:-TruffleBackgroundCompilation 
+-G:+TraceTruffleCompilation
+-Dmarawacc.printOCLKernel=true
+-Dmarawacc.multidevice=true
+-Dmarawacc.printOCLInfo=true
+-Dastx.marawacc.printast=false
+-Dmarawacc.dumpGraph=false 
+-Dastx.marawacc.profiler=true  
+-Dastx.marawacc.optimizeRSequence=true 
+-Dastx.marawacc.primArrays=true 
+-XX:-UseJVMCIClassLoader ' $* 
