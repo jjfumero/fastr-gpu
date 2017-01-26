@@ -23,6 +23,7 @@
 package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import uk.ac.ed.accelerator.profiler.Profiler;
 import uk.ac.ed.accelerator.profiler.ProfilerType;
@@ -60,6 +61,7 @@ import com.oracle.truffle.r.runtime.RRuntime;
 import com.oracle.truffle.r.runtime.context.Engine.ParseException;
 import com.oracle.truffle.r.runtime.context.RContext;
 import com.oracle.truffle.r.runtime.data.RArgsValuesAndNames;
+import com.oracle.truffle.r.runtime.data.RDataFactory;
 import com.oracle.truffle.r.runtime.data.RFunction;
 import com.oracle.truffle.r.runtime.data.RVector;
 import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
@@ -77,6 +79,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private int compileIndex = 1;
     private ArrayList<Integer> typeSizes = new ArrayList<>();
     private int scopeBytes;
+    private boolean wasBatch = false;
+    private int totalSizeWhenBatch = 0;
 
     /**
      * Given the {@link StructuredGraph}, this method invokes the OpenCL code generation. We also
@@ -180,11 +184,10 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         ArrayList<Object> arrayList = new ArrayList<>();
         arrayList.add(result);
         return arrayList;
-
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static ArrayList<Object> runBatch(PArray<?> inputPArray, StructuredGraph graph, GraalOpenCLCompilationUnit gpuCompilationUnit, RFunction function, boolean newAllocation, int iterations,
+    private ArrayList<Object> runBatch(PArray<?> inputPArray, StructuredGraph graph, GraalOpenCLCompilationUnit gpuCompilationUnit, RFunction function, boolean newAllocation, int iterations,
                     int size)
                     throws AcceleratorExecutionException {
         GraalOpenCLExecutor executor = CacheGPUExecutor.INSTANCE.getExecutor(gpuCompilationUnit);
@@ -193,19 +196,22 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             CacheGPUExecutor.INSTANCE.insert(gpuCompilationUnit, executor);
         }
 
+        // / XXX: IDEA, an executor per iterator (number of chunks)
+
         executor.setNewAllocation(newAllocation);
         ArrayList<Object> arrayList = new ArrayList<>();
         PArray result = null;
+        int base = (inputPArray.size() / iterations);
         for (int i = 0; i < iterations; i++) {
 
-            int offset = (inputPArray.size() / size) * i;
-
+            int offset = base * i;
+            executor.setNewAllocation(true);
             long s1 = System.nanoTime();
             AcceleratorPArray copyToDevice = executor.copyToDevice(inputPArray, gpuCompilationUnit.getInputType(), size, offset);
             long s2 = System.nanoTime();
-            AcceleratorPArray executeOnTheDevice = executor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType(), gpuCompilationUnit.getScopeArrays(), size);
+            AcceleratorPArray executeOnTheDevice = executor.executeOnTheDevice(graph, copyToDevice, gpuCompilationUnit.getOuputType(), gpuCompilationUnit.getScopeArrays());
             long s3 = System.nanoTime();
-            result = executor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType(), size, offset);
+            result = executor.copyToHost(executeOnTheDevice, gpuCompilationUnit.getOuputType());
             long s4 = System.nanoTime();
             profiling(s1, s2, s2, s3, s3, s4);
             PArray<Integer> deopt = executor.getDeoptBuffer();
@@ -215,11 +221,12 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
                     throw new AcceleratorExecutionException("Deoptimization in thread: ", deopt.get(0));
                 }
             }
-            RGPUCache.INSTANCE.getCachedObjects(function).enableGPUExecution();
+            arrayList.add(result);
         }
-        arrayList.add(result);
+        RGPUCache.INSTANCE.getCachedObjects(function).enableGPUExecution();
+        wasBatch = true;
+        totalSizeWhenBatch = inputPArray.size();
         return arrayList;
-
     }
 
     /**
@@ -247,6 +254,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         int elements = inputPArray.size();
         long totalBytes = computeTotalBytes(elements);
+
+        // globalMaxGPUMemory = 30000;
 
         if (totalBytes > globalMaxGPUMemory) {
             // Set Appropriate size
@@ -744,7 +753,12 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         // Marshal from OpenCL to R
         long startUnmarshal = System.nanoTime();
-        RAbstractVector resultFastR = getResult(isGPUExecution, outputType, result);
+        RAbstractVector resultFastR = null;
+        if (wasBatch) {
+            resultFastR = getResultFromPArrayBatch(outputType, result);
+        } else {
+            resultFastR = getResult(isGPUExecution, outputType, result);
+        }
         long endUnmarshal = System.nanoTime();
 
         if (ASTxOptions.profileOpenCL_ASTx) {
@@ -789,6 +803,24 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             // get the references
             return ASTxUtils.unMarshallFromFullPArrays(outputType, (PArray) result.get(0));
         }
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    private RAbstractVector getResultFromPArrayBatch(TypeInfo outputType, ArrayList<Object> result) {
+
+        int totalSize = totalSizeWhenBatch;
+        double[] finalResultDouble = new double[totalSize];
+        int destPos = 0;
+
+        for (Object o : result) {
+            Object r = ASTxUtils.primitiveFromFullPArrays(outputType, (PArray) o);
+            if (r instanceof double[]) {
+                double[] r1 = (double[]) r;
+                System.arraycopy(r, 0, finalResultDouble, destPos, r1.length);
+                destPos += r1.length;
+            }
+        }
+        return RDataFactory.createDoubleVector(finalResultDouble, false);
     }
 
     private static RFunction scopeRewritting(RFunction function, String[] scopeVars) {
@@ -851,6 +883,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         checkJVMOptions();
         compileIndex = 1;
+        typeSizes.clear();
 
         long start = System.nanoTime();
 

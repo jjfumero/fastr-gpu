@@ -894,6 +894,14 @@ public class ASTxUtils {
         return createDoubleVector;
     }
 
+    public static double[] getdoubleArrayFromPArray(PArray<Double> array) {
+        return array.asDoubleArray();
+    }
+
+    public static int[] getintArrayFromPArray(PArray<Double> array) {
+        return array.asIntegerArray();
+    }
+
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static RAbstractVector unMarshallFromFullPArrays(TypeInfo type, PArray result) {
         if (type == TypeInfo.INT) {
@@ -910,6 +918,17 @@ public class ASTxUtils {
             return getRListFromTuple5(result);
         } else if (type == TypeInfo.TUPLE6) {
             return getRListFromTuple6(result);
+        } else {
+            throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
+        }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static Object primitiveFromFullPArrays(TypeInfo type, PArray result) {
+        if (type == TypeInfo.INT) {
+            return getintArrayFromPArray(result);
+        } else if (type == TypeInfo.DOUBLE) {
+            return getdoubleArrayFromPArray(result);
         } else {
             throw new MarawaccRuntimeTypeException("Data type not supported yet " + result.get(0).getClass() + " [ " + __LINE__.print() + "]");
         }
