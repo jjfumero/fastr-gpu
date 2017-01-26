@@ -23,7 +23,6 @@
 package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import uk.ac.ed.accelerator.profiler.Profiler;
 import uk.ac.ed.accelerator.profiler.ProfilerType;
@@ -186,6 +185,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return arrayList;
     }
 
+    /**
+     * @param newAllocation
+     */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private ArrayList<Object> runBatch(PArray<?> inputPArray, StructuredGraph graph, GraalOpenCLCompilationUnit gpuCompilationUnit, RFunction function, boolean newAllocation, int iterations,
                     int size)
@@ -197,8 +199,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
 
         // / XXX: IDEA, an executor per iterator (number of chunks)
-
-        executor.setNewAllocation(newAllocation);
         ArrayList<Object> arrayList = new ArrayList<>();
         PArray result = null;
         int base = (inputPArray.size() / iterations);
@@ -805,22 +805,40 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
-    @SuppressWarnings({"rawtypes"})
-    private RAbstractVector getResultFromPArrayBatch(TypeInfo outputType, ArrayList<Object> result) {
-
+    @SuppressWarnings("rawtypes")
+    private double[] getDoubleVector(TypeInfo outputType, ArrayList<Object> result) {
         int totalSize = totalSizeWhenBatch;
         double[] finalResultDouble = new double[totalSize];
         int destPos = 0;
-
         for (Object o : result) {
-            Object r = ASTxUtils.primitiveFromFullPArrays(outputType, (PArray) o);
-            if (r instanceof double[]) {
-                double[] r1 = (double[]) r;
-                System.arraycopy(r, 0, finalResultDouble, destPos, r1.length);
-                destPos += r1.length;
-            }
+            double[] r = (double[]) ASTxUtils.primitiveFromFullPArrays(outputType, (PArray) o);
+            System.arraycopy(r, 0, finalResultDouble, destPos, r.length);
+            destPos += r.length;
         }
-        return RDataFactory.createDoubleVector(finalResultDouble, false);
+        return finalResultDouble;
+    }
+
+    @SuppressWarnings("rawtypes")
+    private int[] getIntVector(TypeInfo outputType, ArrayList<Object> result) {
+        int totalSize = totalSizeWhenBatch;
+        int[] finalResult = new int[totalSize];
+        int destPos = 0;
+        for (Object o : result) {
+            int[] r = (int[]) ASTxUtils.primitiveFromFullPArrays(outputType, (PArray) o);
+            System.arraycopy(r, 0, finalResult, destPos, r.length);
+            destPos += r.length;
+        }
+        return finalResult;
+    }
+
+    private RAbstractVector getResultFromPArrayBatch(TypeInfo outputType, ArrayList<Object> result) {
+        if (outputType == TypeInfo.DOUBLE) {
+            return RDataFactory.createDoubleVector(getDoubleVector(outputType, result), false);
+        } else if (outputType == TypeInfo.INT) {
+            return RDataFactory.createIntVector(getIntVector(outputType, result), false);
+        } else {
+            throw new RuntimeException("Data Type not supported yet: " + outputType);
+        }
     }
 
     private static RFunction scopeRewritting(RFunction function, String[] scopeVars) {
