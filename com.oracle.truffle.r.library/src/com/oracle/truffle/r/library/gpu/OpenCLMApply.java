@@ -43,6 +43,7 @@ import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.r.library.gpu.cache.CacheGPUExecutor;
 import com.oracle.truffle.r.library.gpu.cache.CacheInputBuffers;
 import com.oracle.truffle.r.library.gpu.cache.InternalGraphCache;
+import com.oracle.truffle.r.library.gpu.cache.LookupFunctionToData;
 import com.oracle.truffle.r.library.gpu.cache.RCacheObjects;
 import com.oracle.truffle.r.library.gpu.cache.RFunctionMetadata;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
@@ -408,7 +409,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         GraalOpenCLCompilationUnit gpuCompilationUnit = InternalGraphCache.INSTANCE.getGPUCompilationUnit(graphToCompile);
 
         boolean newAllocation = newAllocationBuffer(input, additionalArgs, function);
-
         if (graphToCompile != null && gpuCompilationUnit != null) {
             return runWithMarawaccAccelerator(inputPArray, graphToCompile, gpuCompilationUnit, function, newAllocation);
         }
@@ -952,6 +952,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             }
             RCacheObjects cachedObjects = new RCacheObjects(function.getTarget(), scopeVars, lexicalScopes);
             target = RGPUCache.INSTANCE.updateCacheObjects(function, cachedObjects);
+            LookupFunctionToData.INSTANCE.insert(function, args);
         } else {
             target = RGPUCache.INSTANCE.getCallTarget(function);
             lexicalScopes = RGPUCache.INSTANCE.getCachedObjects(function).getLexicalScopeVars();
