@@ -33,8 +33,7 @@ public class LookupFunctionToData {
                 return false;
             }
             for (int i = 0; i < cachedArgs.length; i++) {
-                System.out.println("Checking: " + cachedArgs[i].hashCode() + " with " + references[i].hashCode());
-                if (cachedArgs[i].hashCode() != references[i].hashCode()) {
+                if (cachedArgs[i] != references[i]) {
                     return false;
                 }
             }

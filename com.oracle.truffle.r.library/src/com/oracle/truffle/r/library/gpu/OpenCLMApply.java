@@ -957,6 +957,20 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         return new MetaData(target, lexicalScopes, vectors, filterScopeVarNames, scopeVars);
     }
 
+    @SuppressWarnings("rawtypes")
+    private RAbstractVector execute(RArgsValuesAndNames args, boolean isRewritten, RVector[] vectors, Object[] lexicalScopes, RFunction function, RAbstractVector inputRArray, RootCallTarget target,
+                    int numArgumentsOriginalFunction, boolean parrayFormat, PArray parrayInput) {
+        RAbstractVector mapResult = null;
+        if (!parrayFormat) {
+            mapResult = computeOpenCLMApplyForRVector(args, isRewritten, vectors, lexicalScopes, function, inputRArray, target, numArgumentsOriginalFunction);
+        } else {
+            // Note this path with {@link Parray} as input does not allow the experimental
+            // optimisation node scope rewriting.
+            mapResult = computeOpenCLMApplyForPArray(args, lexicalScopes, function, parrayInput, target, numArgumentsOriginalFunction);
+        }
+        return mapResult;
+    }
+
     @Override
     public Object call(RArgsValuesAndNames args) {
 
@@ -1034,14 +1048,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             target = RGPUCache.INSTANCE.updateCacheObjects(function, cachedObjects);
         }
 
-        RAbstractVector mapResult = null;
-        if (!parrayFormat) {
-            mapResult = computeOpenCLMApplyForRVector(args, isRewritten, vectors, lexicalScopes, function, inputRArray, target, numArgumentsOriginalFunction);
-        } else {
-            // Note this path with {@link Parray} as input does not allow the experimental
-            // optimisation node scope rewriting.
-            mapResult = computeOpenCLMApplyForPArray(args, lexicalScopes, function, parrayInput, target, numArgumentsOriginalFunction);
-        }
+        RAbstractVector mapResult = execute(args, isRewritten, vectors, lexicalScopes, function, inputRArray, target, numArgumentsOriginalFunction, parrayFormat, parrayInput);
 
         compileIndex = 1;
 
