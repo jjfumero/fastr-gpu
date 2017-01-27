@@ -146,11 +146,10 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     }
 
     private long computeTotalBytes(int elements) {
-        int totalBytes = 0;
         // Input - output
-        for (int i = 0; i < typeSizes.size(); i++) {
-            totalBytes += typeSizes.get(i) * elements;
-        }
+        int totalBytes = typeSizes.stream()
+                        .map(i -> i * elements)
+                        .reduce(0, (x, y) -> x + y);
         totalBytes += scopeBytes;
         return totalBytes;
     }
@@ -256,7 +255,6 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         long totalBytes = computeTotalBytes(elements);
 
         // globalMaxGPUMemory = 30000;
-
         if (totalBytes > globalMaxGPUMemory) {
             // Set Appropriate size
             System.out.println("Data does not fit in Memory");
