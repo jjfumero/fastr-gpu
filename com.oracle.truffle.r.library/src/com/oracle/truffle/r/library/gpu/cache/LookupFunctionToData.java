@@ -1,5 +1,6 @@
 package com.oracle.truffle.r.library.gpu.cache;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.oracle.truffle.r.runtime.data.RFunction;
@@ -13,15 +14,29 @@ public class LookupFunctionToData {
         table = new HashMap<>();
     }
 
+    private static Object[] buildObjectArrayForRereferences(Object[] args) {
+        ArrayList<Object> references = new ArrayList<>();
+        references.add(args[0]);
+        if (args.length > 2) {
+            for (int i = 2; i < args.length; i++) {
+                references.add(args[i]);
+            }
+        }
+        return references.toArray();
+    }
+
     public boolean checkData(RFunction function, Object... args) {
         if (table.containsKey(function)) {
             Object[] cachedArgs = table.get(function);
-            int i = 0;
-            for (Object c : cachedArgs) {
-                if (c != args[i]) {
+            Object[] references = buildObjectArrayForRereferences(args);
+            if (cachedArgs.length != references.length) {
+                return false;
+            }
+            for (int i = 0; i < cachedArgs.length; i++) {
+                System.out.println("Checking: " + cachedArgs[i].hashCode() + " with " + references[i].hashCode());
+                if (cachedArgs[i].hashCode() != references[i].hashCode()) {
                     return false;
                 }
-                i++;
             }
             return true;
         } else {
@@ -30,7 +45,8 @@ public class LookupFunctionToData {
     }
 
     public void insert(RFunction function, Object... args) {
-        table.put(function, args);
+        Object[] references = buildObjectArrayForRereferences(args);
+        table.put(function, references);
     }
 
     public void clear() {

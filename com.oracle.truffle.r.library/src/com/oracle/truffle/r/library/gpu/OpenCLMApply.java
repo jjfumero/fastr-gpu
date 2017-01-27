@@ -900,6 +900,63 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
+    private static class MetaData {
+        RootCallTarget target = null;
+        Object[] lexicalScopes = null;
+        RVector[] vectors = null;
+        String[] filterScopeVarNames = null;
+        String[] scopeVars = null;
+
+        public MetaData(RootCallTarget target, Object[] lexicalScopes, RVector[] vectors, String[] filterScopeVarNames, String[] scopeVars) {
+            super();
+            this.target = target;
+            this.lexicalScopes = lexicalScopes;
+            this.vectors = vectors;
+            this.filterScopeVarNames = filterScopeVarNames;
+            this.scopeVars = scopeVars;
+        }
+
+        public RootCallTarget getTarget() {
+            return target;
+        }
+
+        public Object[] getLexicalScopes() {
+            return lexicalScopes;
+        }
+
+        public RVector[] getVectors() {
+            return vectors;
+        }
+
+        public String[] getFilterScopeVarNames() {
+            return filterScopeVarNames;
+        }
+
+        public String[] getScopeVars() {
+            return scopeVars;
+        }
+    }
+
+    private static MetaData insertIntoCache(RFunction function, RArgsValuesAndNames args, Object firstParam) {
+        RootCallTarget target = null;
+        Object[] lexicalScopes = null;
+        RVector[] vectors = null;
+        String[] filterScopeVarNames = null;
+        String[] scopeVars = null;
+        // Lexical scoping in the AST level
+        scopeVars = ASTxUtils.lexicalScopingAST(function);
+        ScopeVarInfo valueOfScopeArrays = ASTxUtils.getValueOfScopeArrays(scopeVars, function);
+        if (valueOfScopeArrays != null) {
+            lexicalScopes = valueOfScopeArrays.getScopeVars();
+            filterScopeVarNames = valueOfScopeArrays.getNameVars();
+            vectors = valueOfScopeArrays.getVector();
+        }
+        RCacheObjects cachedObjects = new RCacheObjects(function.getTarget(), scopeVars, lexicalScopes);
+        target = RGPUCache.INSTANCE.updateCacheObjects(function, cachedObjects);
+        LookupFunctionToData.INSTANCE.insert(function, firstParam, args);
+        return new MetaData(target, lexicalScopes, vectors, filterScopeVarNames, scopeVars);
+    }
+
     @Override
     public Object call(RArgsValuesAndNames args) {
 
@@ -940,20 +997,26 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
         // Get the callTarget from the cache
         if (!RGPUCache.INSTANCE.contains(function)) {
-            // Lexical scoping in the AST level
-            scopeVars = ASTxUtils.lexicalScopingAST(function);
-            ScopeVarInfo valueOfScopeArrays = ASTxUtils.getValueOfScopeArrays(scopeVars, function);
-            if (valueOfScopeArrays != null) {
-                lexicalScopes = valueOfScopeArrays.getScopeVars();
-                filterScopeVarNames = valueOfScopeArrays.getNameVars();
-                vectors = valueOfScopeArrays.getVector();
-            }
-            RCacheObjects cachedObjects = new RCacheObjects(function.getTarget(), scopeVars, lexicalScopes);
-            target = RGPUCache.INSTANCE.updateCacheObjects(function, cachedObjects);
-            LookupFunctionToData.INSTANCE.insert(function, args);
+            MetaData insertIntoCache = insertIntoCache(function, args, firstParam);
+            target = insertIntoCache.getTarget();
+            lexicalScopes = insertIntoCache.getLexicalScopes();
+            vectors = insertIntoCache.getVectors();
+            filterScopeVarNames = insertIntoCache.getFilterScopeVarNames();
+            scopeVars = insertIntoCache.getScopeVars();
         } else {
             target = RGPUCache.INSTANCE.getCallTarget(function);
-            lexicalScopes = RGPUCache.INSTANCE.getCachedObjects(function).getLexicalScopeVars();
+            if (!LookupFunctionToData.INSTANCE.checkData(function, firstParam, args)) {
+                System.out.println("Recompile the function to the new data!!!!!!!!!!!!!");
+                invalidateCaches(function, target);
+                MetaData insertIntoCache = insertIntoCache(function, args, firstParam);
+                target = insertIntoCache.getTarget();
+                lexicalScopes = insertIntoCache.getLexicalScopes();
+                vectors = insertIntoCache.getVectors();
+                filterScopeVarNames = insertIntoCache.getFilterScopeVarNames();
+                scopeVars = insertIntoCache.getScopeVars();
+            } else {
+                lexicalScopes = RGPUCache.INSTANCE.getCachedObjects(function).getLexicalScopeVars();
+            }
         }
 
         int numArgumentsOriginalFunction = ASTxUtils.getNumberOfArguments(function);
