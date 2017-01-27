@@ -73,14 +73,20 @@ import com.oracle.truffle.r.runtime.data.model.RAbstractVector;
 public final class OpenCLMApply extends RExternalBuiltinNode {
 
     private static final String R_EVAL_DESCRIPTION = "<eval>";
-    private static final boolean ISTRUFFLE = true;
-    private static int iteration = 0;
-    private ArrayList<Object> listResult = null;
+    private static final boolean TRUFFLE_ENABLED = true;
+
     private int compileIndex = 1;
+
+    // For Batch processing
     private ArrayList<Integer> typeSizes = new ArrayList<>();
-    private int scopeBytes;
+    private int scopeTotalBytes;
     private boolean wasBatch = false;
     private int totalSizeWhenBatch = 0;
+
+    private static LookupFunctionToData lookupFunction = new LookupFunctionToData();
+
+    // For debug
+    private static int iteration = 0;
 
     /**
      * Given the {@link StructuredGraph}, this method invokes the OpenCL code generation. We also
@@ -120,7 +126,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
                 }
             }
         }
-        scopeBytes = numScopeBytes;
+        scopeTotalBytes = numScopeBytes;
 
         new FilterInterpreterNodes(6).apply(graphToCompile);
 
@@ -128,7 +134,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             CompilerUtils.dumpGraph(graphToCompile, "GraphToTheOpenCLBackend");
         }
 
-        GraalOpenCLCompilationUnit gpuCompilationUnit = GraalOpenCLJITCompiler.compileGraphToOpenCL(inputPArray, graphToCompile, callTarget, firstValue, ISTRUFFLE, interoperable, scopeData.getData(),
+        GraalOpenCLCompilationUnit gpuCompilationUnit = GraalOpenCLJITCompiler.compileGraphToOpenCL(inputPArray, graphToCompile, callTarget, firstValue, TRUFFLE_ENABLED, interoperable, scopeData.getData(),
                         scopedNodes, nArgs);
         InternalGraphCache.INSTANCE.installGPUBinaryIntoCache(graphToCompile, gpuCompilationUnit);
         return gpuCompilationUnit;
@@ -150,7 +156,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         int totalBytes = typeSizes.stream()
                         .map(i -> i * elements)
                         .reduce(0, (x, y) -> x + y);
-        totalBytes += scopeBytes;
+        totalBytes += scopeTotalBytes;
         return totalBytes;
     }
 
@@ -275,7 +281,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
     }
 
-    private static ArrayList<Object> setOutput(Object firstValue) {
+    private static ArrayList<Object> addOutputElement(Object firstValue) {
         ArrayList<Object> output = new ArrayList<>();
         output.add(firstValue);
         return output;
@@ -412,7 +418,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
 
         JITMetaInput meta = new JITMetaInput(firstValue, interoperable, lexicalScopes, inputPArray);
-        listResult = setOutput(firstValue);
+        ArrayList<Object> listResult = addOutputElement(firstValue);
         Profiler.getInstance().writeInBuffer(ProfilerType.GENERAL_LOG_MESSAGE, "START ID: ", compileIndex);
         for (int i = compileIndex; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
@@ -428,7 +434,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     private static ArrayList<Object> runInASTInterpreter(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue) {
-        ArrayList<Object> output = setOutput(firstValue);
+        ArrayList<Object> output = addOutputElement(firstValue);
         for (int i = 1; i < input.getLength(); i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             Object value = callTarget.call(argsPackage);
@@ -469,7 +475,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
 
         JITMetaInput meta = new JITMetaInput(firstValue, interoperable, lexicalScopes, inputPArray);
-        ArrayList<Object> output = setOutput(firstValue);
+        ArrayList<Object> output = addOutputElement(firstValue);
 
         for (int i = 1; i < totalSize; i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
@@ -487,7 +493,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private static ArrayList<Object> runAfterDeopt(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
                     Object firstValue, int totalSize) {
         checkIfRFunctionIsInCache(function, callTarget);
-        ArrayList<Object> output = setOutput(firstValue);
+        ArrayList<Object> output = addOutputElement(firstValue);
         for (int i = 1; i < totalSize; i++) {
             Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, i);
             Object value = callTarget.call(argsPackage);
@@ -499,7 +505,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private static ArrayList<Object> runAfterDeoptWithID(PArray<?> input, RootCallTarget callTarget, RFunction function, int nArgs, PArray<?>[] additionalArgs, String[] argsName,
                     Object firstValue, int threadID) {
         checkIfRFunctionIsInCache(function, callTarget);
-        ArrayList<Object> output = setOutput(firstValue);
+        ArrayList<Object> output = addOutputElement(firstValue);
         Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, threadID);
         Object value = callTarget.call(argsPackage);
         output.add(value);
@@ -509,7 +515,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private static ArrayList<Object> runAfterDeoptWithThreadID(RAbstractVector input, RootCallTarget callTarget, RFunction function, int nArgs, RAbstractVector[] additionalArgs, String[] argsName,
                     Object firstValue, int threadID) {
         checkIfRFunctionIsInCache(function, callTarget);
-        ArrayList<Object> output = setOutput(firstValue);
+        ArrayList<Object> output = addOutputElement(firstValue);
         Object[] argsPackage = ASTxUtils.createRArguments(nArgs, function, input, additionalArgs, argsName, threadID);
         Object value = callTarget.call(argsPackage);
         output.add(value);
@@ -953,7 +959,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
         RCacheObjects cachedObjects = new RCacheObjects(function.getTarget(), scopeVars, lexicalScopes);
         target = RGPUCache.INSTANCE.updateCacheObjects(function, cachedObjects);
-        LookupFunctionToData.INSTANCE.insert(function, firstParam, args);
+        lookupFunction.insert(function, firstParam, args);
         return new MetaData(target, lexicalScopes, vectors, filterScopeVarNames, scopeVars);
     }
 
@@ -1019,7 +1025,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             scopeVars = insertIntoCache.getScopeVars();
         } else {
             target = RGPUCache.INSTANCE.getCallTarget(function);
-            if (!LookupFunctionToData.INSTANCE.checkData(function, firstParam, args)) {
+            if (!lookupFunction.checkData(function, firstParam, args)) {
                 System.out.println("Recompile the function to the new data!!!!!!!!!!!!!");
                 invalidateCaches(function, target);
                 MetaData insertIntoCache = insertIntoCache(function, args, firstParam);

@@ -5,12 +5,18 @@ import java.util.HashMap;
 
 import com.oracle.truffle.r.runtime.data.RFunction;
 
+/**
+ * Table that keeps the function to be compiled with the input data associated. If the input data is
+ * not the one previously observed, then the check returns false and the function, although was was
+ * compiled before, has to be recompile for the new types.
+ *
+ */
 public class LookupFunctionToData {
 
-    public static LookupFunctionToData INSTANCE = new LookupFunctionToData();
+    // public static LookupFunctionToData INSTANCE = new LookupFunctionToData();
     private HashMap<RFunction, Object[]> table;
 
-    private LookupFunctionToData() {
+    public LookupFunctionToData() {
         table = new HashMap<>();
     }
 
