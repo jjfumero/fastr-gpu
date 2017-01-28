@@ -128,13 +128,15 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
         scopeTotalBytes = numScopeBytes;
 
+        // Frame in R
         new FilterInterpreterNodes(6).apply(graphToCompile);
 
         if (ASTxOptions.debug) {
             CompilerUtils.dumpGraph(graphToCompile, "GraphToTheOpenCLBackend");
         }
 
-        GraalOpenCLCompilationUnit gpuCompilationUnit = GraalOpenCLJITCompiler.compileGraphToOpenCL(inputPArray, graphToCompile, callTarget, firstValue, TRUFFLE_ENABLED, interoperable, scopeData.getData(),
+        GraalOpenCLCompilationUnit gpuCompilationUnit = GraalOpenCLJITCompiler.compileGraphToOpenCL(inputPArray, graphToCompile, callTarget, firstValue, TRUFFLE_ENABLED, interoperable,
+                        scopeData.getData(),
                         scopedNodes, nArgs);
         InternalGraphCache.INSTANCE.installGPUBinaryIntoCache(graphToCompile, gpuCompilationUnit);
         return gpuCompilationUnit;
@@ -143,10 +145,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
     private static void profiling(long startCopy, long endCopy, long startExecution, long endExecution, long startDeviceToHost, long endDeviceToHost) {
         // Marshal
         Profiler.getInstance().writeInBuffer(ProfilerType.COPY_TO_DEVICE, "end-start", (endCopy - startCopy));
-
         // Execution
         Profiler.getInstance().writeInBuffer(ProfilerType.COMPUTE_MAP, "end-start", (endExecution - startExecution));
-
         // Unmarshal
         Profiler.getInstance().writeInBuffer(ProfilerType.COPY_TO_HOST, "end-start", (endDeviceToHost - startDeviceToHost));
     }
