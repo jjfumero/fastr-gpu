@@ -1,8 +1,9 @@
 package com.oracle.truffle.r.library.gpu.deoptimization;
 
+import uk.ac.ed.accelerator.truffle.ASTxOptions;
+
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccRuntimeDeoptException;
-import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.utils.__LINE__;
 import com.oracle.truffle.r.runtime.context.Engine.ParseException;
 import com.oracle.truffle.r.runtime.context.RContext;

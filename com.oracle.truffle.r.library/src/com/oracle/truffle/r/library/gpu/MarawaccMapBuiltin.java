@@ -22,6 +22,7 @@
  */
 package com.oracle.truffle.r.library.gpu;
 
+import uk.ac.ed.accelerator.truffle.ASTxOptions;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.jpai.ArrayFunction;
 
@@ -32,7 +33,6 @@ import com.oracle.truffle.r.library.gpu.cache.RMarawaccFutures;
 import com.oracle.truffle.r.library.gpu.cache.RMarawaccPromises;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccRuntimeDeoptException;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
-import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;

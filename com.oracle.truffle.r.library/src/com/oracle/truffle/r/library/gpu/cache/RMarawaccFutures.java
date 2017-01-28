@@ -31,10 +31,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import uk.ac.ed.accelerator.truffle.ASTxOptions;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.jpai.ArrayFunction;
-
-import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 
 public class RMarawaccFutures {
 

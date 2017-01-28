@@ -22,11 +22,11 @@
  */
 package com.oracle.truffle.r.library.gpu;
 
+import uk.ac.ed.accelerator.truffle.ASTxOptions;
 import uk.ac.ed.datastructures.common.PArray;
 
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
-import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;

@@ -24,6 +24,7 @@ package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
 
+import uk.ac.ed.accelerator.truffle.ASTxOptions;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.jpai.ArrayFunction;
 
@@ -31,7 +32,6 @@ import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.deoptimization.MarawaccDeopt;
 import com.oracle.truffle.r.library.gpu.exceptions.MarawaccTypeException;
-import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
 import com.oracle.truffle.r.library.gpu.types.TypeInfoList;
 import com.oracle.truffle.r.library.gpu.utils.ASTxUtils;

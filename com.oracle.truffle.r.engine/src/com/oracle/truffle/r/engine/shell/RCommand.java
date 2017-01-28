@@ -49,6 +49,7 @@ import jline.console.ConsoleReader;
 import jline.console.UserInterruptException;
 import uk.ac.ed.accelerator.ocl.GraalOpenCLGenerator;
 import uk.ac.ed.accelerator.profiler.Profiler;
+import uk.ac.ed.accelerator.truffle.ASTxOptions;
 
 import com.oracle.truffle.api.instrument.QuitException;
 import com.oracle.truffle.api.interop.TruffleObject;
@@ -57,7 +58,6 @@ import com.oracle.truffle.api.vm.PolyglotEngine;
 import com.oracle.truffle.r.engine.TruffleRLanguage;
 import com.oracle.truffle.r.library.gpu.MarawaccInitilization;
 import com.oracle.truffle.r.library.gpu.MethodInstallation;
-import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.nodes.builtin.base.Quit;
 import com.oracle.truffle.r.runtime.BrowserQuitException;
 import com.oracle.truffle.r.runtime.RCmdOptions;

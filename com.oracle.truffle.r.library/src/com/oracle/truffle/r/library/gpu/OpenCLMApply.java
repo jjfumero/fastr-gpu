@@ -24,8 +24,10 @@ package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
 
+import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.accelerator.profiler.Profiler;
 import uk.ac.ed.accelerator.profiler.ProfilerType;
+import uk.ac.ed.accelerator.truffle.ASTxOptions;
 import uk.ac.ed.datastructures.common.AcceleratorPArray;
 import uk.ac.ed.datastructures.common.PArray;
 import uk.ac.ed.datastructures.interop.InteropTable;
@@ -48,7 +50,6 @@ import com.oracle.truffle.r.library.gpu.cache.RCacheObjects;
 import com.oracle.truffle.r.library.gpu.cache.RFunctionMetadata;
 import com.oracle.truffle.r.library.gpu.cache.RGPUCache;
 import com.oracle.truffle.r.library.gpu.exceptions.AcceleratorExecutionException;
-import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.library.gpu.phases.FilterInterpreterNodes;
 import com.oracle.truffle.r.library.gpu.phases.scope.ScopeData;
 import com.oracle.truffle.r.library.gpu.types.TypeInfo;
@@ -126,9 +127,9 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
                 }
             }
         }
+
         scopeTotalBytes = numScopeBytes;
 
-        // Frame in R
         new FilterInterpreterNodes(6).apply(graphToCompile);
 
         if (ASTxOptions.debug) {
@@ -136,8 +137,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         }
 
         GraalOpenCLCompilationUnit gpuCompilationUnit = GraalOpenCLJITCompiler.compileGraphToOpenCL(inputPArray, graphToCompile, callTarget, firstValue, TRUFFLE_ENABLED, interoperable,
-                        scopeData.getData(),
-                        scopedNodes, nArgs);
+                        scopeData.getData(), scopedNodes, nArgs);
         InternalGraphCache.INSTANCE.installGPUBinaryIntoCache(graphToCompile, gpuCompilationUnit);
         return gpuCompilationUnit;
     }

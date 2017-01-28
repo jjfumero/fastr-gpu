@@ -3,9 +3,10 @@ package com.oracle.truffle.r.library.gpu.nodes.utils;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 
+import uk.ac.ed.accelerator.truffle.ASTxOptions;
+
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.r.library.gpu.options.ASTxOptions;
 import com.oracle.truffle.r.nodes.builtin.RExternalBuiltinNode;
 
 public abstract class RGCBuiltin extends RExternalBuiltinNode.Arg0 {
