@@ -24,7 +24,6 @@ package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
 
-import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.accelerator.profiler.Profiler;
 import uk.ac.ed.accelerator.profiler.ProfilerType;
 import uk.ac.ed.accelerator.truffle.ASTxOptions;
@@ -1043,7 +1042,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
         boolean isRewritten = false;
 
         // Function rewriting for the scope variable detection
-        if (ASTxOptions.scopeRewriting && (filterScopeVarNames != null)) {
+        if (ASTxOptions.rewriteWithInputReferences && (filterScopeVarNames != null)) {
             RFunction scopeRewritting = scopeRewritting(function, filterScopeVarNames);
             if (ASTxOptions.debug) {
                 System.out.println("[DEBUG] New R Function rewritten => " + scopeRewritting.getRootNode().getSourceSection().getCode());
