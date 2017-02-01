@@ -89,7 +89,7 @@ public abstract class Runif extends RExternalBuiltinNode.Arg3 {
             }
         }
 
-        // return RDataFactory.createDoubleVector(result, RDataFactory.COMPLETE_VECTOR);
-        return RDataFactory.createDoubleVector(result, false);
+        return RDataFactory.createDoubleVector(result, RDataFactory.COMPLETE_VECTOR);
+        // return RDataFactory.createDoubleVector(result, false);
     }
 }

@@ -16,6 +16,7 @@ mx Rscript --J @'-DR:+IgnoreVisibility
 -G:-TruffleBackgroundCompilation 
 -G:-TraceTruffleCompilation  
 -XX:-UseJVMCIClassLoader 
+-G:-TruffleTraceIRToGPU
 -Dmarawacc.printOCLKernel=true
 -Dmarawacc.multidevice=true
 -Dmarawacc.printOCLInfo=true

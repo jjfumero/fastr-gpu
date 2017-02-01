@@ -1024,7 +1024,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             scopeVars = insertIntoCache.getScopeVars();
         } else {
             target = RGPUCache.INSTANCE.getCallTarget(function);
-            if (!lookupFunction.checkData(function, firstParam, args)) {
+            if (ASTxOptions.rewriteWithInputReferences && !lookupFunction.checkData(function, firstParam, args)) {
                 System.out.println("Recompile the function to the new data!!!!!!!!!!!!!");
                 invalidateCaches(function, target);
                 MetaData insertIntoCache = insertIntoCache(function, args, firstParam);

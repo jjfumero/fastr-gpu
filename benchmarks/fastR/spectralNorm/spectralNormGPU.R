@@ -13,7 +13,7 @@ size <- as.integer(args[1])
 
 REPETITIONS <-11
 
-CHECK_RESULT <- TRUE
+CHECK_RESULT <- F
 
 benchmark <- function(inputSize) {
 
