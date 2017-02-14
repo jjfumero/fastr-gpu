@@ -286,8 +286,10 @@ public class RCommand {
                             StringBuffer logBuffers = Profiler.getInstance().getLogBuffers();
                             StringBuffer mediansOCLEvents = Profiler.getInstance().getMediansOCLEvents();
 
-                            if (logBuffers.length() != 0) {
-                                System.out.println(logBuffers);
+                            if (ASTxOptions.profileASTx) {
+                                if (logBuffers.length() != 0) {
+                                    System.out.println(logBuffers);
+                                }
                             }
                             if (mediansOCLEvents.length() != 0) {
                                 System.out.println(mediansOCLEvents);

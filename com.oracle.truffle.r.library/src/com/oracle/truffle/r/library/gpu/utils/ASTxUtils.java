@@ -1918,7 +1918,7 @@ public class ASTxUtils {
 
     public static ArrayList<com.oracle.graal.graph.Node> applyCompilationPhasesForOpenCLAndDump(StructuredGraph graph) {
 
-        CompilerUtils.dumpGraph(graph, "beforeOptomisations");
+        // CompilerUtils.dumpGraph(graph, "beforeOptomisations");
 
         if (ASTxOptions.oldCleanPhases) {
             new GPUFrameStateEliminationPhase().apply(graph);
@@ -1935,7 +1935,7 @@ public class ASTxUtils {
         }
 
         new GPUBoxingEliminationPhase().apply(graph);
-        CompilerUtils.dumpGraph(graph, "GPUBoxingEliminationPhase");
+        // CompilerUtils.dumpGraph(graph, "GPUBoxingEliminationPhase");
 
         // New Experimental scope phase
         ScopeArraysWithDeopt scopeWithDeopt = new ScopeArraysWithDeopt();

@@ -23,6 +23,7 @@ mx Rscript --J @'-DR:+IgnoreVisibility
 -Dastx.marawacc.printast=false
 -Dmarawacc.dumpGraph=false 
 -Dastx.marawacc.profiler=true  
+-Dastx.marawacc.profilerASTx=false 
 -Dastx.marawacc.optimizeRSequence=true 
 -Dastx.marawacc.primArrays=true ' $* 
 
