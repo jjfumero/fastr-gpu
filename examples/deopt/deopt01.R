@@ -30,7 +30,7 @@ benchmark <- function(inputSize) {
 		x[i] <- 100
 	}
 
-	print(x)
+	#print(x)
 
 	result <- rep(0, size)
 	result[1000] = 1
