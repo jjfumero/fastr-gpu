@@ -192,6 +192,8 @@ def run_r(args, command, parser=None, extraVmArgs=None, jdk=None, nonZeroIsFatal
 
 def rshell(args):
     '''run R shell'''
+    args = ['--J', '@-DR:-IgnoreVisibility \n-G:-TruffleOSR \n-G:-TruffleBackgroundCompilation \n-G:-TraceTruffleCompilation\n-Dmarawacc.printOCLKernel=true\n-Dmarawacc.multidevice=true\n-Dmarawacc.printOCLInfo=true\n-Dastx.marawacc.printast=false\n-Dmarawacc.dumpGraph=false \n-Dastx.marawacc.profiler=true  \n-Dastx.marawacc.profilerASTx=false\n-Dastx.marawacc.optimizeRSequence=true \n-Dastx.marawacc.primArrays=true \n-XX:-UseJVMCIClassLoader ']
+    print args
     return run_r(args, 'r')
 
 def rscript(args):
