@@ -1,6 +1,6 @@
 # ASTx Compiler
 
-This is a clone of [FastR](https://bitbucket.org/allr/fastr/) with GPU support. 
+This is a fork of [FastR](https://bitbucket.org/allr/fastr/) with GPU support. 
 The GPU backend is an extension of GraalVM and Graal Compiler with OpenCL code generation
 and data management for GPU computing. 
 
