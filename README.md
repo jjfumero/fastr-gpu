@@ -1,11 +1,14 @@
-# ASTx Compiler
+# FastR-GPU Compiler 
 
 This is a fork of [FastR](https://bitbucket.org/allr/fastr/) with GPU support. 
 The GPU backend is an extension of GraalVM and Graal Compiler with OpenCL code generation
 and data management for GPU computing. 
 
-The goal of ASTx is to execute potential R level expressions on the GPU by using Graal 
-and the GPU backend (Marawacc). 
+The goal of the FastR-GPU Compiler is to automatically execute R expressions on the GPU.
+It uses Truffle, Graal and a GPU backend for Graal (Marawacc). 
+
+This project is a research prototype implemented at The University of Edinburgh partially 
+funded by Oracle Labs. 
 
 ## Example
 
@@ -56,10 +59,10 @@ OpenCL R JIT compiler:
 ```
 #!bash
 
-$ mkdir astx-compiler
-$ cd astx-compiler
-$ mx clone ssh://hg@bitbucket.org/juanfumero/astx
-$ cd astx
+$ mkdir fastr-gpu
+$ cd fastr-gpu
+$ mx clone ssh://hg@bitbucket.org/juanfumero/fastr-gpu
+$ cd fastr-gpu
 $ make 
 ```
 
@@ -76,6 +79,8 @@ $ make
 
 ### Eclipse 
 
+To generate the Eclipse files:
+
 ```
 #!bash
 
@@ -85,10 +90,17 @@ $ make eclipse
 
 Then import the projects into eclipse 
 
-# Note
+### Note
 
-This compiler has been tested on Linux Fedora 21/22/23 and OpenSuse 13 with OpenJDK >= 1.8_61.
-Current implementation with JDK 8 u91
+This compiler has been tested on Linux Fedora 21/22/23, CentOS 7.4 and OpenSuse 13 with OpenJDK >= 1.8_61.
+Current implementation with JDK 8 u91.
+
+
+# Publications 
+
+- Juan Fumero, Michel Steuwer, Lukas Stadler, and Christophe Dubach.  **Just-In-Time GPU Compilation for Interpreted Languages with Partial Evaluation.** In Proceedings of the 13th ACM SIGPLAN/SIGOPS International Conference on Virtual Execution Environments (VEE '17). ACM, New York, NY, USA, 60-73. DOI: https://doi.org/10.1145/3050748.3050761 
+
+- Juan Fumero, Michel Steuwer, Lukas Stadler, Christophe Dubach. **OpenCL JIT Compilation for Dynamic Programming Language.** MoreVMs 2017. [http://conf.researchr.org/event/MoreVMs-2017/morevms-2017-papers-opencl-jit-compilation-for-dynamic-programming-languages](http://conf.researchr.org/event/MoreVMs-2017/morevms-2017-papers-opencl-jit-compilation-for-dynamic-programming-languages)
 
 
 # FastR

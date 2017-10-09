@@ -1,9 +1,0 @@
-Some ideas to support in the compiler:
-
-* Support formulas for OpenCL on GPUs
-* Support data frames
-* Support for array vector operations
-* Benchmarks: Count number of operations in R
-* Montecarlo benchmark
-* Matrix Vector benchmark
-

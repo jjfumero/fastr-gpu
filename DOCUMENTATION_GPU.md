@@ -1,4 +1,4 @@
-# ASTx Compiler Framework for OpenCL JIT Compilation
+# FastR-GPU Compiler Framework for OpenCL JIT Compilation
 
 ## Threads options
 
