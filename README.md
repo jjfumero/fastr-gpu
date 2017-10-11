@@ -28,8 +28,10 @@ LOCAL  MEMORY    : 32768
 ENDIANESS        : LITTLE_ENDIAN
 
 
-> # Use the GPU when the function is JIT by the compiler
-> marawacc.gpusapply(1:100000, function(x, y) x * y, 1:100000) 
+> marawacc.init()
+> size <- 100000
+> # It is executed on the GPU when the R program is JIT by Graal
+> mapply(function(x, y) x * y, runif(size), runif(size)) 
 
 ```
 
