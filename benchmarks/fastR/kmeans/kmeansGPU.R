@@ -26,7 +26,6 @@ benchmark <- function(inputSize) {
 			if (currentDist < minDist) {
 				minDist <- currentDist
 				id <- i
-			} else {
 			}	
 		}
 		return(id)
@@ -46,7 +45,7 @@ benchmark <- function(inputSize) {
 		return(id)
 	}
 
-	centre <<- runif(KS*2)  * 10 * 2 - 10 
+	centre <- runif(KS*2)  * 10 * 2 - 10 
 	x <- runif(size)
 	y <- runif(size)
 

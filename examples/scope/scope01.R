@@ -1,9 +1,8 @@
-a <- 1:1000
 
 gpuFunction <- function(x) {
 	foo <- 0
 	for (i in 1:size) {
-		b <- x * scope[i]
+		b <- x * scope[i] 
 		foo <- foo + b
 	}
 	return (foo)

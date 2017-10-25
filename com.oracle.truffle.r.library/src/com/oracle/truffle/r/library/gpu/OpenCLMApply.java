@@ -24,6 +24,7 @@ package com.oracle.truffle.r.library.gpu;
 
 import java.util.ArrayList;
 
+import uk.ac.ed.accelerator.common.GraalAcceleratorOptions;
 import uk.ac.ed.accelerator.profiler.Profiler;
 import uk.ac.ed.accelerator.profiler.ProfilerType;
 import uk.ac.ed.accelerator.truffle.ASTxOptions;
@@ -152,9 +153,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
 
     private long computeTotalBytes(int elements) {
         // Input - output
-        int totalBytes = typeSizes.stream()
-                        .map(i -> i * elements)
-                        .reduce(0, (x, y) -> x + y);
+        int totalBytes = typeSizes.stream().map(i -> i * elements).reduce(0, (x, y) -> x + y);
         totalBytes += scopeTotalBytes;
         return totalBytes;
     }
@@ -623,7 +622,8 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
                 runAfterDeoptWithID(input, target, function, nArgs, additionalArgs, argsName, value, threadID);
                 invalidateCaches(function, target);
                 try {
-                    result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes, totalSize, numArgumentsOriginalFunction);
+                    result = runJavaOpenCLJIT(input, target, function, nArgs, additionalArgs, argsName, value, inputPArrayFormat, interoperable, lexicalScopes, totalSize,
+                                    numArgumentsOriginalFunction);
                     executionValid = true;
                 } catch (AcceleratorExecutionException e1) {
                     threadID = e1.getThreadID();
@@ -894,6 +894,7 @@ public final class OpenCLMApply extends RExternalBuiltinNode {
             // This will be deprecated
             RVector.WITH_PARRAYS = true;
         }
+        GraalAcceleratorOptions.isTruffleLang = true;
     }
 
     private static void printProfiler(long start, long end, String component) {
