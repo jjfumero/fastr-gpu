@@ -63,7 +63,7 @@ OpenCL R JIT compiler:
 
 $ mkdir fastr-gpu
 $ cd fastr-gpu
-$ mx clone ssh://hg@bitbucket.org/juanfumero/fastr-gpu
+$ mx sclone ssh://hg@bitbucket.org/juanfumero/fastr-gpu
 $ cd fastr-gpu
 $ make 
 ```
