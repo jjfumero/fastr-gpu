@@ -10,9 +10,9 @@ mx Rscript --J @'-DR:+IgnoreVisibility
 -Dmarawacc.dumpGraph=false 
 -Dastx.marawacc.profiler=true
 -Dmarawacc.multidevice=false 
--Xmx12g -Xms12g 
+-Xmx16g -Xms16g 
 -XX:+UseSerialGC 
--Dmarawacc.printOCLKernel=false 
+-Dmarawacc.printOCLKernel=true 
 -Dastx.marawacc.optimizeRSequence=true  
 -Dastx.marawacc.primArrays=true ' $* 
  

@@ -41,9 +41,9 @@ benchmark <- function(inputSize) {
 		total <- nanotime() - start
 		print(paste("Total Time: ", total))
 
-		if (identical(result, result)) {
-			print("RESULT IS CORRECT")
-		}
+		#if (identical(result, result)) {
+	#		print("RESULT IS CORRECT")
+	#	}
 	}
 }
 
