@@ -1,21 +1,14 @@
 # FastR-GPU Compiler 
 
-This is a fork of [FastR](https://bitbucket.org/allr/fastr/) with GPU support. 
-The GPU backend is an extension of GraalVM and Graal Compiler with OpenCL code generation
+This is a fork of [FastR](https://github.com/oracle/fastr) with GPU support. The GPU backend is an extension of GraalVM and Graal Compiler with OpenCL code generation
 and data management for GPU computing. 
 
-The goal of the FastR-GPU compiler is to automatically execute R expressions on the GPU.
-It extends Truffle, Graal and a GPU backend for Graal (Marawacc) for compiling an R program
-into OpenCL. It profiles and specialises R input programs to OpenCL using the Graal Partial 
-Evaluator and compiles the resulting intermediate representation to OpenCL at runtime.
+The goal of the FastR-GPU compiler is to automatically execute R expressions on the GPU. It extends Truffle, Graal and a GPU backend for Graal (Marawacc) for compiling an R program into OpenCL. It profiles and specialises R input programs to OpenCL using the Graal Partial Evaluator and compiles the resulting intermediate representation to OpenCL at runtime.
 This project is a research prototype. 
 
 ## Example
 
-
-```
-#!R
-
+```R
 > marawacc.deviceInfo()
 NAME             : Hawaii
 VENDOR           : Advanced Micro Devices, Inc.
@@ -37,65 +30,73 @@ ENDIANESS        : LITTLE_ENDIAN
 
 ## Installation
 
-Get mx tool:
+Get the `mx` tool:
 
-```
-#!bash
-mkdir mx
-hg clone https://bitbucket.org/allr/mx
-
+```bash
+$ mkdir ~/fastr-gpu/
+$ cd fastr-gpu
+$ git clone https://github.com/graalvm/mx
+$ cd mx 
+$ git checkout 900cc06  
+$ cd -
+$ export PATH=$PWD/mx:$PATH
 ```
 
 Create source file: 
 
-```
-#!bash
+```bash
 export PATH=/path/to/mx/mx/:$PATH
 export JAVA_HOME=/path/to/jdk1.8x/
-export DEFAULT_VM="jvmci"
+export DEFAULT_VM="server"
 ```
 
 
-OpenCL R JIT compiler:
+Get the R & Marawacc (OpenCL) JIT compilers:
 
-```
-#!bash
-
+```bash
 $ mkdir fastr-gpu
 $ cd fastr-gpu
-$ mx sclone ssh://hg@bitbucket.org/juanfumero/fastr-gpu
-$ cd fastr-gpu
+$ git clone git@github.com:jjfumero/jvmci-marawacc.git jvmci     ## Download JVMCI dependency
+$ git clone git@github.com:jjfumero/truffle-marawacc.git truffle ## Download Truffle dependency
+$ git clone https://github.com/jjfumero/graal-marawacc graal     ## Download Graal dependency
+$ git clone git@github.com:jjfumero/marawacc.git marawacc
+$ export JAVA_HOME=/home/juan/bin/jdk1.8.0_91
+$ export DEFAULT_VM="server"
+$ export PATH=/home/juan/bin/gcc/gcc-5.4.0/bin/:$PATH
+$ export LD_LIBRARY_PATH=/home/juan/bin/gcc/gcc-5.4.0/lib64/:$LD_LIBRARY_PATH 
+$ export PATH=$PWD/mx:$PATH
+$ cd marawacc
 $ make 
 ```
 
-Make will download all the dependencies. 
-For updating the repository:
+Build fastr-gpu:
 
+```bash
+$ cd ..
+$ git clone git@github.com:jjfumero/fastr-gpu.git
+$ cd fastr-gpu
+$ make 
+$ . source.sh 
 ```
-#!/bin/bash 
 
-$ mx sforceimports
-$ make
+Build done!!! 
 
-```
 
 ### Eclipse 
 
 To generate the Eclipse files:
 
-```
-#!bash
-
+```bash
 $ make eclipse 
-
 ```
 
 Then import the projects into eclipse 
 
 ### Note
 
-This compiler has been tested on Linux Fedora 21/22/23, CentOS 7.4 and OpenSuse 13 with OpenJDK >= 1.8_61.
-Current implementation with JDK 8 u91.
+This compiler has been tested on Linux Fedora 21/22/23, CentOS 7.4 - CentOS 7.9 and OpenSuse 13 with OpenJDK >= 1.8_61.
+
+**Current implementation with JDK 8 u91.**
 
 
 ## Publications 
@@ -111,12 +112,11 @@ GPL V2
 
 ## Who do I talk to?
 
-This project is a research prototype implemented at The University of Edinburgh. 
-The project was partially funded by Oracle Labs.
+This project is a research prototype implemented at The University of Edinburgh. The project was partially funded by Oracle Labs.
 
 ## Main Developer
 
-    Juan Fumero < juan.fumero @ ed.ac.uk >
+    Juan Fumero < juan.fumero @ manchester.ac.uk >
 
 ## Advisors
 
@@ -133,4 +133,4 @@ Graal is a dynamic compiler that is used to generate efficient machine code from
 
 FastR is an open-source effort of Purdue University, Johannes Kepler University Linz, and Oracle Labs.
 
-For more details and instructions for downloading and building the system, please visit the [FastR Wiki](https://bitbucket.org/allr/fastr/wiki/Home).
+For more details and instructions for downloading and building the system, please visit the [FastR Wiki](https://github.com/oracle/fastr).
