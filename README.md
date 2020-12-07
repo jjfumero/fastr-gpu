@@ -101,6 +101,8 @@ This compiler has been tested on Linux Fedora 21/22/23, CentOS 7.4 - CentOS 7.9 
 
 ## Publications 
 
+- Juan Fumero. **Accelerating interpreted programming languages on GPUs with just-in-time compilation and runtime optimisations**. PhD Dissertation, 30/11/2017 - [Link](https://era.ed.ac.uk/handle/1842/28718)
+
 - Juan Fumero, Michel Steuwer, Lukas Stadler, and Christophe Dubach.  **Just-In-Time GPU Compilation for Interpreted Languages with Partial Evaluation.** In Proceedings of the 13th ACM SIGPLAN/SIGOPS International Conference on Virtual Execution Environments (VEE '17). ACM, New York, NY, USA, 60-73. DOI: https://doi.org/10.1145/3050748.3050761 
 
 - Juan Fumero, Michel Steuwer, Lukas Stadler, Christophe Dubach. **OpenCL JIT Compilation for Dynamic Programming Language.** MoreVMs 2017. [http://conf.researchr.org/event/MoreVMs-2017/morevms-2017-papers-opencl-jit-compilation-for-dynamic-programming-languages](http://conf.researchr.org/event/MoreVMs-2017/morevms-2017-papers-opencl-jit-compilation-for-dynamic-programming-languages)
@@ -122,7 +124,7 @@ This project is a research prototype implemented at The University of Edinburgh.
 
     Christophe Dubach < christophe.dubach @ ed.ac.uk >
     Michel Steuwer < michel.steuwer @ ed.ac.uk >
-	Lukas Stadler < lukas.stadler @ oracle.com >
+    Lukas Stadler < lukas.stadler @ oracle.com >
 
 
 # FastR
